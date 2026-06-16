@@ -47,8 +47,8 @@ export default function Home() {
                     key={tool.id}
                     to={tool.isMVP ? targetPath : '#'}
                     className={cn(
-                      "group relative flex flex-col items-start gap-4 rounded-[var(--radius-lg)] border bg-[var(--surface)] p-6 transition-all hover:shadow-md hover:border-[var(--accent)]/30",
-                      !tool.isMVP && "opacity-60 grayscale cursor-not-allowed hover:shadow-sm hover:border-[var(--border)]"
+                      "group relative rounded-[28px] border border-white/5 bg-white/5 p-1.5 transition-all hover:bg-white/10",
+                      !tool.isMVP && "opacity-60 grayscale cursor-not-allowed hover:bg-white/5"
                     )}
                     onClick={(e) => {
                       if (!tool.isMVP) {
@@ -61,16 +61,18 @@ export default function Home() {
                       }
                     }}
                   >
-                    <div className={cn("rounded-[var(--radius-md)] p-2 bg-[var(--surface-2)]", tool.color)}>
-                      <Icon size={32} strokeWidth={1.5} />
-                    </div>
-                    <div>
-                      <h3 className="mb-2 font-semibold text-[var(--text)] group-hover:text-[var(--accent)] transition-colors">
-                        {tool.name}
-                      </h3>
-                      <p className="text-sm text-[var(--text-3)] line-clamp-3">
-                        {tool.description}
-                      </p>
+                    <div className="rounded-[calc(28px-4px)] bg-[var(--surface)] p-6 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)]">
+                      <div className={cn("rounded-[var(--radius-md)] p-2 bg-[var(--surface-2)] group-hover:animate-icon-float transition-transform", tool.color)}>
+                        <Icon size={32} strokeWidth={1.5} />
+                      </div>
+                      <div>
+                        <h3 className="mb-2 font-semibold text-[var(--text)] group-hover:text-[var(--accent)] transition-colors">
+                          {tool.name}
+                        </h3>
+                        <p className="text-sm text-[var(--text-3)] line-clamp-3">
+                          {tool.description}
+                        </p>
+                      </div>
                     </div>
                   </Link>
                 );
