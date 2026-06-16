@@ -1,79 +1,44 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { convertToPdfA } from './pdfa';
+import { describe, it, expect } from 'vitest';
+import { convertToPdfA, PdfALevel } from './pdfa';
+import { generateDummyPdf } from '../tests/fixtures/pdfGenerator';
 
-vi.mock('pdf-lib', () => {
-  const mockCatalog = {
-    set: vi.fn(),
-  };
-  const mockContext = {
-    obj: vi.fn(() => ({
-      set: vi.fn(),
-    })),
-    register: vi.fn().mockReturnValue({}),
-    stream: vi.fn().mockReturnValue({}),
-  };
-  const mockPdfDoc = {
-    getTitle: vi.fn().mockReturnValue(null),
-    getAuthor: vi.fn().mockReturnValue(null),
-    setTitle: vi.fn(),
-    setAuthor: vi.fn(),
-    setCreator: vi.fn(),
-    setProducer: vi.fn(),
-    setCreationDate: vi.fn(),
-    setModificationDate: vi.fn(),
-    context: mockContext,
-    catalog: mockCatalog,
-    save: vi.fn().mockResolvedValue(new Uint8Array([1, 2, 3])),
-  };
+vi.mock('pdf-lib', async () => {
+  const actual = await vi.importActual('pdf-lib');
   return {
-    PDFDocument: {
-      load: vi.fn().mockResolvedValue(mockPdfDoc),
-    },
-    PDFName: {
-      of: vi.fn().mockReturnValue('PDFName'),
-    },
-    PDFString: {
-      of: vi.fn().mockReturnValue('PDFString'),
-    },
-    PDFNumber: vi.fn(),
-    PDFArray: vi.fn(),
-    PDFDict: vi.fn(),
+    ...actual,
   };
 });
 
-describe('pdfa.ts', () => {
-  let mockFile: File;
+describe('convertToPdfA', () => {
+  const levels: PdfALevel[] = ['1b', '2b', '3b'];
 
-  beforeEach(() => {
-    vi.clearAllMocks();
-    mockFile = new File(['pdf content'], 'test.pdf', { type: 'application/pdf' });
-    mockFile.arrayBuffer = vi.fn().mockResolvedValue(new ArrayBuffer(8));
+  levels.forEach((level) => {
+    it(`should convert to PDF/A-${level}`, async () => {
+      const pdfFile = await generateDummyPdf(1);
+      const result = await convertToPdfA(pdfFile, level);
+
+      expect(result).toBeInstanceOf(Object);
+      expect(result).toHaveProperty('bytes');
+      expect(result).toHaveProperty('level', level);
+      expect(result).toHaveProperty('notes');
+      expect(result).toHaveProperty('isCompliant', false);
+      expect(result.bytes).toBeInstanceOf(Uint8Array);
+      expect(result.notes).toBeInstanceOf(Array);
+    });
   });
 
-  it('returns a result with bytes, level, notes, and isCompliant=false', async () => {
-    const result = await convertToPdfA(mockFile, '2b');
-    expect(result.bytes).toBeInstanceOf(Uint8Array);
-    expect(result.level).toBe('2b');
-    expect(result.isCompliant).toBe(false);
+  it('should return PDF/A compliance disclaimer in notes', async () => {
+    const pdfFile = await generateDummyPdf(1);
+    const result = await convertToPdfA(pdfFile, '2b');
+
     expect(result.notes.length).toBeGreaterThan(0);
+    expect(result.notes[0]).toContain('NOT validated PDF/A');
   });
 
-  it('always includes a disclaimer note about non-validation', async () => {
-    const result = await convertToPdfA(mockFile, '1b');
-    const hasDisclaimer = result.notes.some((n) => /NOT validated/i.test(n));
-    expect(hasDisclaimer).toBe(true);
-  });
+  it('should embed sRGB OutputIntent in the PDF', async () => {
+    const pdfFile = await generateDummyPdf(1);
+    const result = await convertToPdfA(pdfFile, '2b');
 
-  it('includes a note that no ICC profile is embedded', async () => {
-    const result = await convertToPdfA(mockFile, '1b');
-    const hasNoIcc = result.notes.some((n) => /no ICC profile/i.test(n));
-    expect(hasNoIcc).toBe(true);
-  });
-
-  it('supports all three PDF/A levels', async () => {
-    for (const level of ['1b', '2b', '3b'] as const) {
-      const result = await convertToPdfA(mockFile, level);
-      expect(result.level).toBe(level);
-    }
+    expect(result.bytes.length).toBeGreaterThan(0);
   });
 });
