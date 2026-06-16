@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useDocumentStore, useToolsStore, useAnnotationsStore } from '../store';
 import { useShallow } from 'zustand/react/shallow';
@@ -66,7 +66,7 @@ export default function Editor() {
   }, [searchParams, setActiveTool]);
 
   // Use the keyboard shortcuts hook
-  useKeyboardShortcuts([
+  const keyboardShortcuts = useMemo(() => [
     // Undo/Redo
     { key: 'z', ctrl: true, handler: () => {
       const result = undo(pages);
@@ -108,7 +108,9 @@ export default function Editor() {
     { key: '?', handler: () => setShowShortcuts((prev) => !prev) },
     // Properties panel toggle (Ctrl+,)
     { key: ',', ctrl: true, handler: () => togglePropertiesPanel() },
-  ]);
+  ], [undo, redo, pages, selectedAnnotationId, deleteAnnotation, zoom, setZoom, setActiveTool, setShowShortcuts, togglePropertiesPanel]);
+
+  useKeyboardShortcuts(keyboardShortcuts);
 
   const handleFilesSelected = async (files: File[]) => {
     if (files.length === 0) return;
