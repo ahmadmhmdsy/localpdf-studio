@@ -1,11 +1,11 @@
 import { useRef, useState, useEffect } from 'react';
 import { useEditor, TextAnnotation, ImageAnnotation, RedactAnnotation, CropAnnotation, DrawAnnotation, Point } from '../../contexts/EditorContext';
 import { ANNOTATION_COLORS } from '../../constants/colors';
-import { TextAnnotationItem } from './annotations/TextAnnotationItem';
-import { ImageAnnotationItem } from './annotations/ImageAnnotationItem';
-import { RedactAnnotationItem } from './annotations/RedactAnnotationItem';
-import { CropAnnotationItem } from './annotations/CropAnnotationItem';
-import { DrawAnnotationItem } from './annotations/DrawAnnotationItem';
+import TextAnnotationItem from './annotations/TextAnnotationItem';
+import ImageAnnotationItem from './annotations/ImageAnnotationItem';
+import RedactAnnotationItem from './annotations/RedactAnnotationItem';
+import CropAnnotationItem from './annotations/CropAnnotationItem';
+import DrawAnnotationItem from './annotations/DrawAnnotationItem';
 
 export default function AnnotationLayer() {
   const { 
