@@ -37,44 +37,49 @@ export default function Home() {
               {category.name}
             </h2>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
-              {category.tools.map((tool) => {
+              {category.tools.map((tool, toolIndex) => {
                 const Icon = tool.icon;
                 const isIntegrated = EDITOR_INTEGRATED_TOOLS.includes(tool.id);
                 const targetPath = isIntegrated ? `/editor?tool=${tool.id}` : `/tools/${tool.id}`;
 
                 return (
-                  <Link
+                  <div
                     key={tool.id}
-                    to={tool.isMVP ? targetPath : '#'}
-                    className={cn(
-                      "group relative rounded-[28px] border border-white/5 bg-white/5 p-1.5 transition-all hover:bg-white/10",
-                      !tool.isMVP && "opacity-60 grayscale cursor-not-allowed hover:bg-white/5"
-                    )}
-                    onClick={(e) => {
-                      if (!tool.isMVP) {
-                        e.preventDefault();
-                        showToast({
-                          message: "This feature is not available in the local MVP version yet.",
-                          type: 'warning',
-                          duration: 3000,
-                        });
-                      }
-                    }}
+                    className="animate-fade-up"
+                    style={{ animationDelay: `${toolIndex * 50}ms` }}
                   >
-                    <div className="rounded-[calc(28px-4px)] bg-[var(--surface)] p-6 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)]">
-                      <div className={cn("rounded-[var(--radius-md)] p-2 bg-[var(--surface-2)] group-hover:animate-icon-float transition-transform", tool.color)}>
-                        <Icon size={32} strokeWidth={1.5} />
+                    <Link
+                      to={tool.isMVP ? targetPath : '#'}
+                      className={cn(
+                        "group relative rounded-[28px] border border-white/5 bg-white/5 p-1.5 transition-all hover:bg-white/10",
+                        !tool.isMVP && "opacity-60 grayscale cursor-not-allowed hover:bg-white/5"
+                      )}
+                      onClick={(e) => {
+                        if (!tool.isMVP) {
+                          e.preventDefault();
+                          showToast({
+                            message: "This feature is not available in the local MVP version yet.",
+                            type: 'warning',
+                            duration: 3000,
+                          });
+                        }
+                      }}
+                    >
+                      <div className="rounded-[calc(28px-4px)] bg-[var(--surface)] p-6 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)]">
+                        <div className={cn("rounded-[var(--radius-md)] p-2 bg-[var(--surface-2)] group-hover:animate-icon-float transition-transform", tool.color)}>
+                          <Icon size={32} strokeWidth={1.5} />
+                        </div>
+                        <div>
+                          <h3 className="mb-2 font-semibold text-[var(--text)] group-hover:text-[var(--accent)] transition-colors">
+                            {tool.name}
+                          </h3>
+                          <p className="text-sm text-[var(--text-3)] line-clamp-3">
+                            {tool.description}
+                          </p>
+                        </div>
                       </div>
-                      <div>
-                        <h3 className="mb-2 font-semibold text-[var(--text)] group-hover:text-[var(--accent)] transition-colors">
-                          {tool.name}
-                        </h3>
-                        <p className="text-sm text-[var(--text-3)] line-clamp-3">
-                          {tool.description}
-                        </p>
-                      </div>
-                    </div>
-                  </Link>
+                    </Link>
+                  </div>
                 );
               })}
             </div>
