@@ -4,6 +4,7 @@ import { useToast } from '../../contexts/ToastContext';
 import { Moon, Sun, Trash2 } from 'lucide-react';
 import { PDFDocument, degrees, rgb, StandardFonts } from 'pdf-lib';
 import { useState, useRef } from 'react';
+import { hexToRgb } from '../../lib/color';
 import SignatureModal from './SignatureModal';
 import ConfirmModal from '../ui/ConfirmModal';
 import { ToolPicker } from './toolbar/ToolPicker';
@@ -73,10 +74,7 @@ export default function Toolbar() {
       for (const ann of pageAnnotations) {
         if (ann.type === 'text') {
           const textAnn = ann as TextAnnotation;
-          const hex = textAnn.color.replace('#', '');
-          const r = parseInt(hex.substring(0, 2), 16) / 255;
-          const g = parseInt(hex.substring(2, 4), 16) / 255;
-          const b = parseInt(hex.substring(4, 6), 16) / 255;
+          const { r, g, b } = hexToRgb(textAnn.color);
           const textWidth = helveticaFont.widthOfTextAtSize(textAnn.text, textAnn.fontSize);
           const textHeight = helveticaFont.heightAtSize(textAnn.fontSize);
           const x = (textAnn.x * width) - (textWidth / 2);
@@ -100,10 +98,7 @@ export default function Toolbar() {
           }
         } else if (ann.type === 'redact') {
           const redactAnn = ann as RedactAnnotation;
-          const hex = redactAnn.color.replace('#', '');
-          const r = parseInt(hex.substring(0, 2), 16) / 255;
-          const g = parseInt(hex.substring(2, 4), 16) / 255;
-          const b = parseInt(hex.substring(4, 6), 16) / 255;
+          const { r, g, b } = hexToRgb(redactAnn.color);
           const rectWidth = redactAnn.width * width;
           const rectHeight = redactAnn.height * height;
           page.drawRectangle({
@@ -121,10 +116,7 @@ export default function Toolbar() {
         } else if (ann.type === 'draw') {
           const drawAnn = ann as DrawAnnotation;
           if (drawAnn.points.length < 2) continue;
-          const hex = drawAnn.color.replace('#', '');
-          const r = parseInt(hex.substring(0, 2), 16) / 255;
-          const g = parseInt(hex.substring(2, 4), 16) / 255;
-          const b = parseInt(hex.substring(4, 6), 16) / 255;
+          const { r, g, b } = hexToRgb(drawAnn.color);
           let pathStr = '';
           for (let i = 0; i < drawAnn.points.length; i++) {
             const p = drawAnn.points[i];

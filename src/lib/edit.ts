@@ -1,4 +1,5 @@
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+import { hexToRgb } from './color';
 
 export interface CropRect {
   x: number;
@@ -50,9 +51,7 @@ export async function editPdf(file: File, annotations: TextAnnotation[]): Promis
       const { width, height } = page.getSize();
       
       // Convert hex color to rgb
-      const r = parseInt(ann.color.slice(1, 3), 16) / 255;
-      const g = parseInt(ann.color.slice(3, 5), 16) / 255;
-      const b = parseInt(ann.color.slice(5, 7), 16) / 255;
+      const { r, g, b } = hexToRgb(ann.color);
       
       // Convert percentage coordinates to points
       const x = (ann.x / 100) * width;
