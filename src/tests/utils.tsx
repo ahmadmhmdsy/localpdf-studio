@@ -4,7 +4,8 @@ import { BrowserRouter } from 'react-router-dom';
 import { ToastProvider } from '../contexts/ToastContext';
 import ToastContainer from '../components/ui/ToastContainer';
 import { EditorProvider } from '../contexts/EditorContext';
-import { vi } from 'vitest';
+import { useToastStore } from '../store/toastStore';
+import { vi, expect } from 'vitest';
 import '@testing-library/jest-dom';
 
 /**

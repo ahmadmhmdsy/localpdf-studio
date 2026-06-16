@@ -1,13 +1,8 @@
-import React, { createContext, useContext, useState, useCallback, useRef, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useEffect, ReactNode } from 'react';
+import { useToastStore, Toast, ToastType } from '../store/toastStore';
 
-export type ToastType = 'info' | 'success' | 'warning' | 'error';
-
-export interface Toast {
-  id: string;
-  message: string;
-  type: ToastType;
-  duration: number;
-}
+export type { ToastType };
+export type { Toast };
 
 interface ToastContextType {
   toasts: Toast[];
@@ -17,36 +12,35 @@ interface ToastContextType {
 
 const ToastContext = createContext<ToastContextType | undefined>(undefined);
 
-let toastIdCounter = 0;
-
 export function ToastProvider({ children }: { children: ReactNode }) {
-  const [toasts, setToasts] = useState<Toast[]>([]);
-  const timeoutRef = useRef<Record<string, NodeJS.Timeout>>({});
+  const toasts = useToastStore((state) => state.toasts);
+  const storeShowToast = useToastStore((state) => state.showToast);
+  const storeDismissToast = useToastStore((state) => state.dismissToast);
 
   useEffect(() => {
+    const timeouts: Record<string, NodeJS.Timeout> = {};
+
+    toasts.forEach((toast) => {
+      if (toast.duration > 0 && !timeouts[toast.id]) {
+        timeouts[toast.id] = setTimeout(() => {
+          storeDismissToast(toast.id);
+          delete timeouts[toast.id];
+        }, toast.duration);
+      }
+    });
+
     return () => {
-      Object.values(timeoutRef.current).forEach(clearTimeout);
+      Object.values(timeouts).forEach(clearTimeout);
     };
-  }, []);
+  }, [toasts, storeDismissToast]);
 
-  const dismissToast = useCallback((id: string) => {
-    setToasts((prev) => prev.filter((t) => t.id !== id));
-  }, []);
+  const showToast = (options: { message: string; type?: ToastType; duration?: number }) => {
+    storeShowToast(options);
+  };
 
-  const showToast = useCallback(({ message, type = 'info', duration = 5000 }: { message: string; type?: ToastType; duration?: number }) => {
-    const id = `toast-${++toastIdCounter}`;
-    const toast: Toast = { id, message, type, duration };
-
-    setToasts((prev) => [...prev, toast]);
-
-    if (duration > 0) {
-      const timeoutId = setTimeout(() => {
-        setToasts((prevToasts) => prevToasts.filter((t) => t.id !== id));
-        delete timeoutRef.current[id];
-      }, duration);
-      timeoutRef.current[id] = timeoutId;
-    }
-  }, []);
+  const dismissToast = (id: string) => {
+    storeDismissToast(id);
+  };
 
   return (
     <ToastContext.Provider value={{ toasts, showToast, dismissToast }}>
@@ -63,14 +57,4 @@ export function useToast() {
   return context;
 }
 
-export function useToastStore() {
-  throw new Error('useToastStore is only available in test environments');
-}
-
-export function setShowToastForTesting(fn: () => void) {
-  (global as any).__test_showToast = fn;
-}
-
-export function getShowToastForTesting() {
-  return (global as any).__test_showToast;
-}
+export { useToastStore };

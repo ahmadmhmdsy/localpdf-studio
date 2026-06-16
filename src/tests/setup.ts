@@ -1,5 +1,6 @@
 import '@testing-library/jest-dom';
-import { vi } from 'vitest';
+import { vi, beforeEach, afterEach } from 'vitest';
+import { useToastStore } from '../store/toastStore';
 
 // Mock idb-keyval before any imports
 vi.mock('idb-keyval', () => ({
@@ -142,6 +143,15 @@ global.ResizeObserver = vi.fn(() => ({
 vi.mock('pdfjs-dist/build/pdf.worker.min.mjs?url', () => ({
   default: '/mock-pdf-worker-url',
 }));
+
+// Reset toast store between tests
+beforeEach(() => {
+  useToastStore.getState().reset();
+});
+
+afterEach(() => {
+  useToastStore.getState().reset();
+});
 
 // Mock tesseract.js — the real lib spawns a Web Worker that loads WASM
 // and tries to use `import.meta`, both of which crash under jsdom.

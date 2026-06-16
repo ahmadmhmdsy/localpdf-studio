@@ -1,17 +1,19 @@
 import { create } from 'zustand';
-import { ToastType } from '../contexts/ToastContext';
 
-interface ToastState {
-  toasts: Toast[];
-  showToast: (options: { message: string; type?: ToastType; duration?: number }) => void;
-  dismissToast: (id: string) => void;
-}
+export type ToastType = 'info' | 'success' | 'warning' | 'error';
 
 export interface Toast {
   id: string;
   message: string;
   type: ToastType;
   duration: number;
+}
+
+interface ToastState {
+  toasts: Toast[];
+  showToast: (options: { message: string; type?: ToastType; duration?: number }) => void;
+  dismissToast: (id: string) => void;
+  reset: () => void;
 }
 
 let toastIdCounter = 0;
@@ -27,5 +29,9 @@ export const useToastStore = create<ToastState>((set) => ({
 
   dismissToast: (id) => {
     set((state) => ({ toasts: state.toasts.filter((t) => t.id !== id) }));
+  },
+
+  reset: () => {
+    set({ toasts: [] });
   },
 }));
