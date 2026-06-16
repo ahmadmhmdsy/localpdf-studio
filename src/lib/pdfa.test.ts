@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { convertToPdfA, PdfALevel } from './pdfa';
 import { generateDummyPdf } from '../tests/fixtures/pdfGenerator';
 
