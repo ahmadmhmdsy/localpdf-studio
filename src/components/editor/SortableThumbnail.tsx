@@ -1,0 +1,159 @@
+import { memo } from 'react';
+import { useSortable } from '@dnd-kit/sortable';
+import { CSS } from '@dnd-kit/utilities';
+import { RotateCw, Trash2 } from 'lucide-react';
+import { PageMeta } from '../../contexts/EditorContext';
+import { useEffect, useState, useRef } from 'react';
+import { pdfjsLib } from '../../lib/pdfjs';
+import { logError } from '../../lib/logger';
+
+interface SortableThumbnailProps {
+  page: PageMeta;
+  index: number;
+  isActive: boolean;
+  pdfJsDoc: pdfjsLib.PDFDocumentProxy;
+  onClick: () => void;
+  onRotate: (e: React.MouseEvent) => void;
+  onDelete: (e: React.MouseEvent) => void;
+}
+
+function SortableThumbnailInner({
+  page,
+  index,
+  isActive,
+  pdfJsDoc,
+  onClick,
+  onRotate,
+  onDelete
+}: SortableThumbnailProps) {
+  const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const hasLoadedRef = useRef(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    let renderTask: pdfjsLib.RenderTask | null = null;
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting && !hasLoadedRef.current) {
+            const loadThumbnail = async () => {
+              try {
+                const pdfPage = await pdfJsDoc.getPage(page.originalIndex + 1);
+                const viewport = pdfPage.getViewport({ scale: 0.2 });
+                
+                const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
+                
+                if (!context) return;
+                
+                canvas.height = viewport.height;
+                canvas.width = viewport.width;
+                
+                renderTask = pdfPage.render({
+                  canvasContext: context,
+                  viewport: viewport
+                } as any);
+                
+                await renderTask.promise;
+                
+                if (isMounted) {
+                  setThumbnailUrl(canvas.toDataURL('image/jpeg', 0.5));
+                  hasLoadedRef.current = true;
+                }
+              } catch (error: any) {
+                if (error.name !== 'RenderingCancelledException') {
+                  logError(`Error generating thumbnail for page ${page.originalIndex + 1}:`, error);
+                }
+              }
+            };
+            loadThumbnail();
+            observer.disconnect();
+          }
+        });
+      },
+      { rootMargin: '100px' }
+    );
+
+    if (containerRef.current) {
+      observer.observe(containerRef.current);
+    }
+
+    return () => {
+      isMounted = false;
+      observer.disconnect();
+      if (renderTask) {
+        renderTask.cancel();
+      }
+    };
+  }, [pdfJsDoc, page.originalIndex]);
+
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: page.id });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    zIndex: isDragging ? 10 : 1,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  return (
+    <div 
+      ref={setNodeRef} 
+      style={style}
+      className={`relative cursor-pointer group rounded-lg p-2 transition-all ${
+        isActive ? 'bg-red-50 border-2 border-red-500' : 'hover:bg-gray-100 border-2 border-transparent'
+      }`}
+      onClick={onClick}
+      {...attributes}
+      {...listeners}
+    >
+      <div ref={containerRef} className="aspect-[1/1.4] bg-white shadow-sm border border-gray-200 rounded overflow-hidden flex items-center justify-center relative">
+        {thumbnailUrl ? (
+          <img 
+            src={thumbnailUrl} 
+            alt={`Page ${index + 1}`} 
+            className="w-full h-full object-contain transition-transform duration-300"
+            style={{ transform: `rotate(${page.rotation}deg)` }}
+            draggable={false}
+          />
+        ) : (
+          <div className="w-full h-full bg-gray-100 animate-pulse" />
+        )}
+        
+        {/* Hover Actions */}
+        <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+          <button 
+            onClick={onRotate}
+            className="p-1.5 bg-white text-gray-700 rounded-full hover:bg-gray-100 hover:text-blue-600 transition-colors shadow-sm"
+            aria-label="Rotate 90 degrees"
+            title="Rotate 90°"
+          >
+            <RotateCw size={14} />
+          </button>
+          <button 
+            onClick={onDelete}
+            className="p-1.5 bg-white text-gray-700 rounded-full hover:bg-gray-100 hover:text-red-600 transition-colors shadow-sm"
+            aria-label="Delete Page"
+            title="Delete Page"
+          >
+            <Trash2 size={14} />
+          </button>
+        </div>
+      </div>
+      <div className={`text-center mt-2 text-xs font-medium ${isActive ? 'text-red-600' : 'text-gray-500'}`}>
+        {index + 1}
+      </div>
+    </div>
+  );
+}
+
+export const SortableThumbnail = memo(SortableThumbnailInner);
