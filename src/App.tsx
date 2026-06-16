@@ -3,47 +3,50 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
+import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/layout/Layout';
 import Home from './pages/Home';
-import MergePdf from './pages/tools/MergePdf';
-import SplitPdf from './pages/tools/SplitPdf';
-import PdfToJpg from './pages/tools/PdfToJpg';
-import JpgToPdf from './pages/tools/JpgToPdf';
-import AddWatermark from './pages/tools/AddWatermark';
-import RotatePdf from './pages/tools/RotatePdf';
-import RemovePages from './pages/tools/RemovePages';
-import ExtractPages from './pages/tools/ExtractPages';
-import AddPageNumbers from './pages/tools/AddPageNumbers';
-import OrganizePdf from './pages/tools/OrganizePdf';
-import ScanToPdf from './pages/tools/ScanToPdf';
-import CompressPdf from './pages/tools/CompressPdf';
-import HtmlToPdf from './pages/tools/HtmlToPdf';
-import CropPdf from './pages/tools/CropPdf';
-import EditPdf from './pages/tools/EditPdf';
-import SignPdf from './pages/tools/SignPdf';
-import BlackoutPdf from './pages/tools/BlackoutPdf';
-import ComparePdf from './pages/tools/ComparePdf';
-import DecryptPdf from './pages/tools/DecryptPdf';
-import ProtectPdf from './pages/tools/ProtectPdf';
-import RepairPdf from './pages/tools/RepairPdf';
-import AiSummarizer from './pages/tools/AiSummarizer';
-import PdfToPdfA from './pages/tools/PdfToPdfA';
-import WordToPdf from './pages/tools/WordToPdf';
-import PdfToWord from './pages/tools/PdfToWord';
-import OcrPdf from './pages/tools/OcrPdf';
-import ExcelToPdf from './pages/tools/ExcelToPdf';
-import PdfToExcel from './pages/tools/PdfToExcel';
-import PowerpointToPdf from './pages/tools/PowerpointToPdf';
-import PdfToPowerpoint from './pages/tools/PdfToPowerpoint';
-import TranslatePdf from './pages/tools/TranslatePdf';
 import Editor from './pages/Editor';
 import { EditorProvider } from './contexts/EditorContext';
 import { ToastProvider } from './contexts/ToastContext';
 import ToastContainer from './components/ui/ToastContainer';
+import LoadingSpinner from './components/ui/LoadingSpinner';
 import ErrorBoundary from './components/ErrorBoundary';
 import ToolErrorBoundary from './components/ToolErrorBoundary';
 import OnboardingTour from './components/onboarding/OnboardingTour';
+
+const MergePdf = lazy(() => import('./pages/tools/MergePdf'));
+const SplitPdf = lazy(() => import('./pages/tools/SplitPdf'));
+const PdfToJpg = lazy(() => import('./pages/tools/PdfToJpg'));
+const JpgToPdf = lazy(() => import('./pages/tools/JpgToPdf'));
+const AddWatermark = lazy(() => import('./pages/tools/AddWatermark'));
+const RotatePdf = lazy(() => import('./pages/tools/RotatePdf'));
+const RemovePages = lazy(() => import('./pages/tools/RemovePages'));
+const ExtractPages = lazy(() => import('./pages/tools/ExtractPages'));
+const AddPageNumbers = lazy(() => import('./pages/tools/AddPageNumbers'));
+const OrganizePdf = lazy(() => import('./pages/tools/OrganizePdf'));
+const ScanToPdf = lazy(() => import('./pages/tools/ScanToPdf'));
+const CompressPdf = lazy(() => import('./pages/tools/CompressPdf'));
+const HtmlToPdf = lazy(() => import('./pages/tools/HtmlToPdf'));
+const CropPdf = lazy(() => import('./pages/tools/CropPdf'));
+const EditPdf = lazy(() => import('./pages/tools/EditPdf'));
+const SignPdf = lazy(() => import('./pages/tools/SignPdf'));
+const BlackoutPdf = lazy(() => import('./pages/tools/BlackoutPdf'));
+const ComparePdf = lazy(() => import('./pages/tools/ComparePdf'));
+const DecryptPdf = lazy(() => import('./pages/tools/DecryptPdf'));
+const ProtectPdf = lazy(() => import('./pages/tools/ProtectPdf'));
+const RepairPdf = lazy(() => import('./pages/tools/RepairPdf'));
+const AiSummarizer = lazy(() => import('./pages/tools/AiSummarizer'));
+const PdfToPdfA = lazy(() => import('./pages/tools/PdfToPdfA'));
+const WordToPdf = lazy(() => import('./pages/tools/WordToPdf'));
+const PdfToWord = lazy(() => import('./pages/tools/PdfToWord'));
+const OcrPdf = lazy(() => import('./pages/tools/OcrPdf'));
+const ExcelToPdf = lazy(() => import('./pages/tools/ExcelToPdf'));
+const PdfToExcel = lazy(() => import('./pages/tools/PdfToExcel'));
+const PowerpointToPdf = lazy(() => import('./pages/tools/PowerpointToPdf'));
+const PdfToPowerpoint = lazy(() => import('./pages/tools/PdfToPowerpoint'));
+const TranslatePdf = lazy(() => import('./pages/tools/TranslatePdf'));
 
 function ToolRoute({ element, name }: { element: React.ReactNode; name: string }) {
   return (
@@ -61,6 +64,7 @@ export default function App() {
         <OnboardingTour />
         <BrowserRouter>
         <ErrorBoundary>
+        <Suspense fallback={<LoadingSpinner />}>
         <Routes>
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
@@ -102,6 +106,7 @@ export default function App() {
             <Route path="tools/translate-pdf" element={<ToolRoute element={<TranslatePdf />} name="Translate PDF" />} />
           </Route>
         </Routes>
+        </Suspense>
         </ErrorBoundary>
       </BrowserRouter>
     </EditorProvider>
