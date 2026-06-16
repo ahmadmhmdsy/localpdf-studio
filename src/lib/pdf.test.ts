@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { parsePageRanges, InvalidPageRangeError } from './pdf';
+import { parsePageRanges, InvalidPageRangeError, reorderPdfPages, addPageNumbers } from './pdf';
+import { generateDummyPdf } from '../tests/fixtures/pdfGenerator';
 
 describe('parsePageRanges', () => {
   it('should parse single pages correctly', () => {
@@ -40,5 +41,36 @@ describe('parsePageRanges', () => {
 
   it('should throw when document has no pages', () => {
     expect(() => parsePageRanges('1', 0)).toThrow(/no pages/);
+  });
+});
+
+describe('reorderPdfPages', () => {
+  it('should reorder pages correctly', async () => {
+    const pdfFile = await generateDummyPdf(3);
+    const result = await reorderPdfPages(pdfFile, [1, 0, 2]);
+    expect(result).toBeInstanceOf(Uint8Array);
+  });
+
+  it('should handle single page', async () => {
+    const pdfFile = await generateDummyPdf(1);
+    const result = await reorderPdfPages(pdfFile, [0]);
+    expect(result).toBeInstanceOf(Uint8Array);
+  });
+
+  it('should throw on invalid reorder map', async () => {
+    const pdfFile = await generateDummyPdf(2);
+    await expect(reorderPdfPages(pdfFile, [0, 1, 2])).rejects.toThrow();
+  });
+});
+
+describe('addPageNumbers', () => {
+  const positions = ['top-left', 'top-center', 'top-right', 'bottom-left', 'bottom-center', 'bottom-right'] as const;
+
+  positions.forEach(position => {
+    it(`should add page numbers at ${position}`, async () => {
+      const pdfFile = await generateDummyPdf(3);
+      const result = await addPageNumbers(pdfFile, position);
+      expect(result).toBeInstanceOf(Uint8Array);
+    });
   });
 });
