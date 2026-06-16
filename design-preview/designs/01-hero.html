@@ -1,0 +1,222 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>01 — Hero · LocalPDF Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT,WONK@9..144,300..900,0..100,0..1&family=Geist+Mono:wght@400;500&family=Geist:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after { box-sizing: border-box; }
+  :root {
+    --ink: #1a1a1a;
+    --paper: #f4f1ea;
+    --paper-2: #ebe6d8;
+    --accent: #d83a25;
+    --accent-deep: #a01a08;
+    --muted: #6b6b6b;
+  }
+  body {
+    margin: 0;
+    font-family: 'Geist', system-ui, sans-serif;
+    background: var(--paper);
+    color: var(--ink);
+    -webkit-font-smoothing: antialiased;
+    overflow-x: hidden;
+  }
+  .grain {
+    position: fixed; inset: 0; pointer-events: none; z-index: 100;
+    opacity: 0.04;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  .nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 24px 48px;
+    border-bottom: 1px solid var(--ink);
+    position: relative; z-index: 10;
+  }
+  .brand {
+    display: flex; align-items: center; gap: 10px;
+    font-family: 'Geist Mono', monospace; font-size: 13px; letter-spacing: 0.02em;
+  }
+  .brand-dot { width: 10px; height: 10px; background: var(--accent); border-radius: 50%; }
+  .nav-links { display: flex; gap: 32px; font-size: 14px; }
+  .nav-links a { color: var(--ink); text-decoration: none; position: relative; }
+  .nav-links a::after {
+    content: ''; position: absolute; left: 0; right: 0; bottom: -4px;
+    height: 1px; background: var(--ink); transform: scaleX(0); transform-origin: left;
+    transition: transform 0.3s ease;
+  }
+  .nav-links a:hover::after { transform: scaleX(1); }
+  .nav-cta {
+    background: var(--ink); color: var(--paper);
+    padding: 10px 20px; border: 0; font-family: inherit; font-size: 13px;
+    cursor: pointer; border-radius: 0;
+  }
+  .issue-tag {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 12px 48px;
+    border-bottom: 1px solid var(--ink);
+    font-family: 'Geist Mono', monospace; font-size: 11px; letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .issue-tag span:last-child { color: var(--accent); }
+  .hero {
+    display: grid; grid-template-columns: 1fr 1fr;
+    min-height: 78vh;
+    border-bottom: 1px solid var(--ink);
+  }
+  .hero-text {
+    padding: 80px 48px 60px;
+    border-right: 1px solid var(--ink);
+    display: flex; flex-direction: column; justify-content: space-between;
+  }
+  h1.title {
+    font-family: 'Fraunces', serif;
+    font-variation-settings: "opsz" 144, "SOFT" 30, "WONK" 1;
+    font-weight: 600;
+    font-size: clamp(72px, 11vw, 168px);
+    line-height: 0.85;
+    letter-spacing: -0.04em;
+    margin: 0;
+  }
+  h1.title em {
+    font-style: italic; font-weight: 300;
+    color: var(--accent);
+    font-variation-settings: "opsz" 144, "SOFT" 100, "WONK" 1;
+  }
+  .hero-meta {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 24px; padding-top: 40px;
+    border-top: 1px solid var(--ink);
+    margin-top: 40px;
+    font-family: 'Geist Mono', monospace; font-size: 11px; line-height: 1.6;
+  }
+  .hero-meta strong { display: block; color: var(--accent); margin-bottom: 4px; }
+  .hero-visual {
+    background: var(--paper-2);
+    position: relative; overflow: hidden;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .pdf-stack {
+    position: relative; width: 420px; height: 520px;
+    transform: rotate(-3deg);
+  }
+  .pdf-card {
+    position: absolute; inset: 0;
+    background: white; border: 1px solid var(--ink);
+    box-shadow: 8px 8px 0 var(--ink);
+    padding: 32px; font-family: 'Geist Mono', monospace; font-size: 11px;
+  }
+  .pdf-card:nth-child(1) { transform: rotate(-8deg) translate(-30px, -20px); background: var(--accent); color: white; }
+  .pdf-card:nth-child(2) { transform: rotate(-4deg) translate(-15px, -10px); }
+  .pdf-card:nth-child(3) { transform: rotate(2deg); }
+  .pdf-card .page-num { position: absolute; top: 16px; right: 24px; font-size: 10px; opacity: 0.6; }
+  .pdf-card h3 { font-family: 'Fraunces', serif; font-size: 32px; margin: 40px 0 16px; line-height: 1.05; font-weight: 600; }
+  .pdf-card p { line-height: 1.7; opacity: 0.7; margin: 8px 0; }
+  .pdf-card .line { height: 1px; background: currentColor; opacity: 0.2; margin: 8px 0; }
+  .pdf-card .line.short { width: 60%; }
+  .pdf-card:nth-child(1) h3 { color: white; }
+  .sticker {
+    position: absolute; bottom: 60px; right: -20px;
+    background: var(--ink); color: var(--paper);
+    width: 120px; height: 120px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Fraunces', serif; font-style: italic; font-size: 18px;
+    text-align: center; line-height: 1.1;
+    transform: rotate(12deg);
+    animation: spin 20s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(372deg); } }
+  .stats {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    border-bottom: 1px solid var(--ink);
+  }
+  .stat { padding: 32px 48px; border-right: 1px solid var(--ink); }
+  .stat:last-child { border-right: 0; }
+  .stat-num {
+    font-family: 'Fraunces', serif; font-size: 64px; line-height: 1; font-weight: 500;
+    letter-spacing: -0.03em;
+  }
+  .stat-num sup { color: var(--accent); font-size: 24px; vertical-align: super; }
+  .stat-label { font-family: 'Geist Mono', monospace; font-size: 11px; text-transform: uppercase; margin-top: 8px; color: var(--muted); letter-spacing: 0.08em; }
+  .ribbon {
+    background: var(--ink); color: var(--paper);
+    padding: 14px 0; overflow: hidden;
+    border-bottom: 1px solid var(--ink);
+  }
+  .ribbon-track {
+    display: flex; gap: 48px; white-space: nowrap;
+    animation: marquee 30s linear infinite;
+    font-family: 'Geist Mono', monospace; font-size: 12px; letter-spacing: 0.1em;
+  }
+  .ribbon-track span::before { content: '◆'; color: var(--accent); margin-right: 16px; }
+  @keyframes marquee { from { transform: translateX(0); } to { transform: translateX(-50%); } }
+</style>
+</head>
+<body>
+<div class="grain"></div>
+<nav class="nav">
+  <div class="brand"><span class="brand-dot"></span> LocalPDF · Studio Edition</div>
+  <div class="nav-links">
+    <a href="#">Tools</a><a href="#">Editor</a><a href="#">Pricing</a><a href="#">Docs</a>
+  </div>
+  <button class="nav-cta">Open Editor →</button>
+</nav>
+<div class="issue-tag">
+  <span>Vol. 31 — Issue No. 04 — June 2026</span>
+  <span>● LOCAL-FIRST · NO UPLOADS · ZERO LOGS</span>
+  <span>100% client-side processing</span>
+</div>
+<section class="hero">
+  <div class="hero-text">
+    <h1 class="title">Your<br>PDFs.<br><em>Yours.</em></h1>
+    <div class="hero-meta">
+      <div><strong>31 TOOLS</strong>Merge, split, OCR, sign, redact — all locally.</div>
+      <div><strong>0 BYTES</strong>Sent to the cloud. Everything runs in your browser.</div>
+      <div><strong>1 ENGINE</strong>pdf-lib + pdfjs working in concert, no server.</div>
+    </div>
+  </div>
+  <div class="hero-visual">
+    <div class="pdf-stack">
+      <div class="pdf-card">
+        <div class="page-num">01 / 03</div>
+        <h3>QUARTERLY<br>REPORT</h3>
+        <div class="line"></div><div class="line short"></div>
+        <p>Revenue grew 28% year-over-year, driven by strong adoption in the European market.</p>
+        <div class="line"></div><div class="line short"></div>
+        <div class="line"></div>
+      </div>
+      <div class="pdf-card">
+        <div class="page-num">02 / 03</div>
+        <h3>QUARTERLY<br>REPORT</h3>
+        <div class="line"></div><div class="line short"></div>
+        <p>Customer satisfaction reached an all-time high of 94%, with NPS up 12 points.</p>
+        <div class="line"></div>
+      </div>
+      <div class="pdf-card">
+        <div class="page-num">03 / 03</div>
+        <h3>QUARTERLY<br>REPORT</h3>
+        <div class="line"></div><div class="line short"></div>
+        <p>Looking ahead, we are well positioned to capture the growing market opportunity.</p>
+        <div class="line"></div><div class="line"></div><div class="line short"></div>
+      </div>
+    </div>
+    <div class="sticker">open<br>source<br>forever</div>
+  </div>
+</section>
+<div class="stats">
+  <div class="stat"><div class="stat-num">31<sup>+</sup></div><div class="stat-label">PDF tools in app</div></div>
+  <div class="stat"><div class="stat-num">0<sup>kb</sup></div><div class="stat-label">data uploaded to servers</div></div>
+  <div class="stat"><div class="stat-num">2.4<sup>ms</sup></div><div class="stat-label">avg processing latency</div></div>
+  <div class="stat"><div class="stat-num">∞</div><div class="stat-label">files you can edit</div></div>
+</div>
+<div class="ribbon">
+  <div class="ribbon-track">
+    <span>MERGE</span><span>SPLIT</span><span>COMPRESS</span><span>ROTATE</span><span>OCR</span><span>SIGN</span><span>WATERMARK</span><span>REDACT</span><span>CONVERT</span><span>REPAIR</span>
+    <span>MERGE</span><span>SPLIT</span><span>COMPRESS</span><span>ROTATE</span><span>OCR</span><span>SIGN</span><span>WATERMARK</span><span>REDACT</span><span>CONVERT</span><span>REPAIR</span>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,458 @@
+
+> localpdf-studio@1.0.0 test:coverage
+> vitest run --coverage
+
+
+[1m[30m[46m RUN [49m[39m[22m [36mv4.1.8 [39m[90mE:/js_projects/localpdf-studio[39m
+      [2mCoverage enabled with [22m[33mv8[39m
+
+stderr | src/pages/tools/JpgToPdf.test.tsx
+Warning: Please use the `legacy` build in Node.js environments.
+
+stderr | src/pages/tools/MergePdf.test.tsx
+Warning: Please use the `legacy` build in Node.js environments.
+
+stderr | src/pages/tools/PdfToWord.test.tsx
+Warning: Please use the `legacy` build in Node.js environments.
+
+stderr | src/pages/tools/WordToPdf.test.tsx
+Warning: Please use the `legacy` build in Node.js environments.
+
+stderr | src/pages/tools/PdfToJpg.test.tsx
+Warning: Please use the `legacy` build in Node.js environments.
+
+stderr | src/pages/tools/SplitPdf.test.tsx
+Warning: Please use the `legacy` build in Node.js environments.
+
+stderr | src/pages/tools/CompressPdf.test.tsx
+Warning: Please use the `legacy` build in Node.js environments.
+
+stderr | src/pages/tools/AiSummarizer.test.tsx
+Warning: Please use the `legacy` build in Node.js environments.
+
+ [32mΓ£ô[39m src/components/editor/SignatureModal.test.tsx [2m([22m[2m15 tests[22m[2m)[22m[33m 1811[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m renders when open [33m 319[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m shows Draw tab as active by default [33m 378[2mms[22m[39m
+ [32mΓ£ô[39m src/components/onboarding/OnboardingTour.test.tsx [2m([22m[2m11 tests[22m[2m)[22m[33m 2390[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m advances through all four steps when Next is clicked [33m 719[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m persists completion to localStorage when finished [33m 644[2mms[22m[39m
+ [32mΓ£ô[39m src/pages/tools/PdfToWord.test.tsx [2m([22m[2m8 tests[22m[2m)[22m[33m 1844[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m displays tool title and description [33m 493[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m transitions to processing after file selection [33m 304[2mms[22m[39m
+ [32mΓ£ô[39m src/pages/tools/AiSummarizer.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 1917[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m displays tool title [33m 423[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m shows AI processing indicator [33m 393[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m displays summary results [33m 634[2mms[22m[39m
+ [32mΓ£ô[39m src/pages/tools/WordToPdf.test.tsx [2m([22m[2m11 tests[22m[2m)[22m[33m 2151[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m displays tool title and description [33m 374[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m allows starting over after conversion [33m 343[2mms[22m[39m
+ [32mΓ£ô[39m src/pages/tools/JpgToPdf.test.tsx [2m([22m[2m10 tests[22m[2m)[22m[33m 3047[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m displays tool title and description [33m 412[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m transitions to configure step after image selection [33m 308[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m shows conversion options in configure step [33m 310[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m shows processing state during conversion [33m 365[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m shows download state after conversion [33m 542[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m allows removing images [33m 359[2mms[22m[39m
+ [32mΓ£ô[39m src/pages/tools/PdfToJpg.test.tsx [2m([22m[2m10 tests[22m[2m)[22m[33m 3391[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m displays tool title and description [33m 496[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m shows processing state during extraction [33m 323[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m shows download state after extraction [33m 492[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m shows zip download option for multiple images [33m 493[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m provides individual image download [33m 522[2mms[22m[39m
+stderr | src/components/editor/Toolbar.test.tsx
+Warning: Please use the `legacy` build in Node.js environments.
+
+stderr | src/pages/tools/SplitPdf.test.tsx > SplitPdf > Error Handling > handles invalid page ranges gracefully
+Error splitting PDF: Error: Invalid page range
+    at E:/js_projects/localpdf-studio/src/pages/tools/SplitPdf.test.tsx:264:53
+    at file:///E:/js_projects/localpdf-studio/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20
+
+ [32mΓ£ô[39m src/pages/tools/MergePdf.test.tsx [2m([22m[2m16 tests[22m[2m)[22m[33m 5378[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m displays tool title and description [33m 417[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m transitions to configure step after file selection [33m 379[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m allows removing individual files [33m 430[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m returns to upload step when all files are removed [33m 351[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m shows processing state during merge [33m 344[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m shows download state after successful merge [33m 577[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m displays download button after merge [33m 562[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m allows starting over from download state [33m 645[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m handles merge errors gracefully [33m 371[2mms[22m[39m
+ [32mΓ£ô[39m src/pages/tools/SplitPdf.test.tsx [2m([22m[2m17 tests[22m[2m)[22m[33m 6316[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m displays tool title and description [33m 433[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m transitions to configure step after file selection [33m 335[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m accepts valid page range input [33m 414[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m enables split button with valid page ranges [33m 356[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m shows processing state during split [33m 435[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m shows download state after successful split [33m 604[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m displays download button after split [33m 627[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m allows starting over from download state [33m 735[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m handles invalid page ranges gracefully [33m 651[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m clears file and ranges when starting over [33m 501[2mms[22m[39m
+ [32mΓ£ô[39m src/pages/tools/CompressPdf.test.tsx [2m([22m[2m13 tests[22m[2m)[22m[33m 6315[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m displays tool title and description [33m 439[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m transitions to configure step after file selection [33m 352[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m allows selecting compression quality [33m 334[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m shows processing state during compression [33m 368[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m shows compression results after processing [33m 1101[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m displays the re-packed size summary [33m 883[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m displays download button with compressed file [33m 537[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m allows starting over after compression [33m 596[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m shows before and after file sizes in the summary [33m 903[2mms[22m[39m
+stderr | src/pages/tools/RemovePages.test.tsx
+Warning: Please use the `legacy` build in Node.js environments.
+
+stderr | src/pages/tools/ExtractPages.test.tsx
+Warning: Please use the `legacy` build in Node.js environments.
+
+stderr | src/pages/tools/AddWatermark.test.tsx
+Warning: Please use the `legacy` build in Node.js environments.
+
+ [32mΓ£ô[39m src/components/editor/Toolbar.test.tsx [2m([22m[2m14 tests[22m[2m)[22m[33m 1675[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m calls setActiveTool when tool button clicked [33m 477[2mms[22m[39m
+stderr | src/pages/tools/RepairPdf.test.tsx
+Warning: Please use the `legacy` build in Node.js environments.
+
+stderr | src/pages/tools/AddPageNumbers.test.tsx
+Warning: Please use the `legacy` build in Node.js environments.
+
+ [32mΓ£ô[39m src/pages/Home.test.tsx [2m([22m[2m15 tests[22m[2m)[22m[33m 9156[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m displays main heading [33m 1780[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m renders all 31 tool cards [33m 588[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m links Merge PDF to /tools/merge-pdf [33m 1376[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m links Remove pages to /editor?tool=remove-pages [33m 1322[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m links Edit PDF to /editor?tool=edit-pdf [33m 1461[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m links Sign PDF to /editor?tool=sign-pdf [33m 1327[2mms[22m[39m
+ [32mΓ£ô[39m src/pages/tools/RemovePages.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[33m 1720[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m displays tool title [33m 501[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m transitions to configure step after file selection [33m 358[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m allows entering page ranges and processes removal [33m 663[2mms[22m[39m
+stderr | src/pages/tools/DecryptPdf.test.tsx
+Warning: Please use the `legacy` build in Node.js environments.
+
+ [32mΓ£ô[39m src/pages/tools/ExtractPages.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[33m 1474[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m displays tool title [33m 351[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m transitions to configure step after file selection [33m 324[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m allows entering page ranges and processes extraction [33m 597[2mms[22m[39m
+ [32mΓ£ô[39m src/pages/tools/AddWatermark.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[33m 1502[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m displays tool title [33m 329[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m transitions to watermark configuration after file upload [33m 319[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m allows entering watermark text [33m 619[2mms[22m[39m
+ [32mΓ£ô[39m src/pages/tools/RepairPdf.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[33m 1442[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m displays tool title [33m 341[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m transitions to processing after file selection [33m 526[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m shows success or error state after repair [33m 372[2mms[22m[39m
+ [32mΓ£ô[39m src/pages/tools/AddPageNumbers.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[33m 1235[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m displays tool title [33m 329[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m transitions to configuration after file upload [33m 448[2mms[22m[39m
+ [32mΓ£ô[39m src/pages/tools/DecryptPdf.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[33m 1362[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m displays the "Decrypt PDF" tool title [33m 336[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m transitions to password input after file upload [33m 312[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m accepts password input [33m 503[2mms[22m[39m
+stderr | src/pages/tools/EditPdf.test.tsx
+Warning: Please use the `legacy` build in Node.js environments.
+
+stderr | src/pages/tools/CropPdf.test.tsx
+Warning: Please use the `legacy` build in Node.js environments.
+
+ [32mΓ£ô[39m src/components/layout/Header.test.tsx [2m([22m[2m6 tests[22m[2m)[22m[33m 1221[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m has a link to the home page [33m 553[2mms[22m[39m
+ [32mΓ£ô[39m src/pages/tools/EditPdf.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[33m 1354[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m displays tool title [33m 351[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m transitions to editor after file upload [33m 427[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m provides annotation tools [33m 371[2mms[22m[39m
+stderr | src/pages/tools/TranslatePdf.test.tsx
+Warning: Please use the `legacy` build in Node.js environments.
+
+ [32mΓ£ô[39m src/pages/tools/CropPdf.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[33m 1491[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m displays tool title [33m 436[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m transitions to crop interface after file upload [33m 648[2mms[22m[39m
+stderr | src/pages/tools/SignPdf.test.tsx
+Warning: Please use the `legacy` build in Node.js environments.
+
+stderr | src/pages/tools/HtmlToPdf.test.tsx
+Warning: Please use the `legacy` build in Node.js environments.
+
+stderr | src/pages/tools/ProtectPdf.test.tsx
+Warning: Please use the `legacy` build in Node.js environments.
+
+ [32mΓ£ô[39m src/pages/tools/TranslatePdf.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[33m 1196[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m displays tool title [33m 402[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m transitions to language selection after file upload [33m 338[2mms[22m[39m
+ [32mΓ£ô[39m src/components/ui/ToastContainer.test.tsx [2m([22m[2m7 tests[22m[2m)[22m[33m 1332[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m renders info toast [33m 424[2mms[22m[39m
+stderr | src/pages/tools/OrganizePdf.test.tsx
+Warning: Please use the `legacy` build in Node.js environments.
+
+ [32mΓ£ô[39m src/pages/tools/HtmlToPdf.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[33m 1272[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m displays tool title [33m 526[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m allows HTML content input [33m 483[2mms[22m[39m
+ [32mΓ£ô[39m src/pages/tools/SignPdf.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[33m 1343[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m displays tool title [33m 414[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m transitions to signature interface after file upload [33m 388[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m provides signature input options [33m 312[2mms[22m[39m
+ [32mΓ£ô[39m src/contexts/ToastContext.test.tsx [2m([22m[2m7 tests[22m[2m)[22m[33m 1312[2mms[22m[39m
+       [33m[2mΓ£ô[22m[39m shows a toast with default settings [33m 550[2mms[22m[39m
+ [32mΓ£ô[39m src/pages/tools/ProtectPdf.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[33m 1080[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m displays tool title [33m 347[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m transitions to protection settings after file upload [33m 324[2mms[22m[39m
+ [32mΓ£ô[39m src/components/ui/ConfirmModal.test.tsx [2m([22m[2m16 tests[22m[2m)[22m[33m 1013[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m calls onConfirm when confirm button clicked [33m 375[2mms[22m[39m
+ [32mΓ£ô[39m src/pages/tools/OrganizePdf.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[33m 1097[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m displays tool title [33m 321[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m transitions to organize step after file selection [33m 342[2mms[22m[39m
+stderr | src/pages/tools/OcrPdf.test.tsx
+Warning: Please use the `legacy` build in Node.js environments.
+
+ [32mΓ£ô[39m src/components/editor/KeyboardShortcutsHelp.test.tsx [2m([22m[2m11 tests[22m[2m)[22m[33m 1131[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m calls onClose when close button clicked [33m 437[2mms[22m[39m
+stderr | src/pages/tools/PdfToExcel.test.tsx
+Warning: Please use the `legacy` build in Node.js environments.
+
+ [32mΓ£ô[39m src/pages/tools/OcrPdf.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[33m 1082[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m displays tool title [33m 329[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m transitions to processing after file upload [33m 349[2mms[22m[39m
+ [32mΓ£ô[39m src/pages/tools/PdfToExcel.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 1022[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m displays tool title [33m 374[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m transitions to processing after file upload [33m 421[2mms[22m[39m
+stderr | src/pages/tools/RotatePdf.test.tsx
+Warning: Please use the `legacy` build in Node.js environments.
+
+stderr | src/pages/tools/ComparePdf.test.tsx
+Warning: Please use the `legacy` build in Node.js environments.
+
+stderr | src/pages/tools/ScanToPdf.test.tsx
+Warning: Please use the `legacy` build in Node.js environments.
+
+stderr | src/pages/tools/PdfToPdfA.test.tsx
+Warning: Please use the `legacy` build in Node.js environments.
+
+stderr | src/pages/tools/BlackoutPdf.test.tsx
+Warning: Please use the `legacy` build in Node.js environments.
+
+ [32mΓ£ô[39m src/pages/tools/ComparePdf.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 907[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m displays tool title [33m 356[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m requires two PDF files for comparison [33m 351[2mms[22m[39m
+ [32mΓ£ô[39m src/components/ToolErrorBoundary.test.tsx [2m([22m[2m7 tests[22m[2m)[22m[33m 1008[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m shows try again button [33m 482[2mms[22m[39m
+ [32mΓ£ô[39m src/pages/tools/RotatePdf.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[33m 1214[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m displays tool title [33m 392[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m transitions to rotate options after file upload [33m 340[2mms[22m[39m
+stderr | src/pages/tools/PdfToPowerpoint.test.tsx
+Warning: Please use the `legacy` build in Node.js environments.
+
+ [32mΓ£ô[39m src/pages/tools/ScanToPdf.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[33m 850[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m renders camera view on initial load [33m 459[2mms[22m[39m
+Not implemented: navigation to another Document
+ [32mΓ£ô[39m src/pages/tools/PdfToPdfA.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 888[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m displays tool title [33m 373[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m allows PDF/A level selection [33m 320[2mms[22m[39m
+ [32mΓ£ô[39m src/components/ErrorBoundary.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 741[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m shows reload button [33m 378[2mms[22m[39m
+ [32mΓ£ô[39m src/pages/tools/BlackoutPdf.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[33m 937[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m displays the "Blackout PDF" tool title [33m 357[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m transitions to blackout interface after file upload [33m 354[2mms[22m[39m
+ [32mΓ£ô[39m src/pages/tools/PdfToPowerpoint.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 881[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m displays tool title [33m 371[2mms[22m[39m
+ [32mΓ£ô[39m src/components/tools/DownloadState.test.tsx [2m([22m[2m5 tests[22m[2m)[22m[33m 802[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m has download link [33m 425[2mms[22m[39m
+stderr | src/pages/tools/PowerpointToPdf.test.tsx
+Warning: Please use the `legacy` build in Node.js environments.
+
+stderr | src/pages/tools/ExcelToPdf.test.tsx
+Warning: Please use the `legacy` build in Node.js environments.
+
+ [32mΓ£ô[39m src/pages/tools/PowerpointToPdf.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 889[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m displays tool title [33m 417[2mms[22m[39m
+ [32mΓ£ô[39m src/components/tools/ToolLayout.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 476[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m renders title and description [33m 456[2mms[22m[39m
+ [32mΓ£ô[39m src/pages/tools/ExcelToPdf.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[33m 938[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m displays tool title [33m 355[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m accepts XLSX file upload [33m 338[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/ai.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 116[2mms[22m[39m
+stderr | src/components/tools/FileUploadZone.test.tsx
+Warning: Please use the `legacy` build in Node.js environments.
+
+ [32mΓ£ô[39m src/components/layout/Footer.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[32m 108[2mms[22m[39m
+stderr | src/components/layout/Layout.test.tsx
+Warning: Please use the `legacy` build in Node.js environments.
+
+ [32mΓ£ô[39m src/components/tools/ProcessingState.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[32m 119[2mms[22m[39m
+ [32mΓ£ô[39m src/components/editor/PropertiesPanel.test.tsx [2m([22m[2m3 tests[22m[2m)[22m[32m 169[2mms[22m[39m
+ [32mΓ£ô[39m src/components/layout/Layout.test.tsx [2m([22m[2m4 tests[22m[2m)[22m[32m 205[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/image.test.ts [2m([22m[2m9 tests[22m[2m)[22m[32m 81[2mms[22m[39m
+ [32mΓ£ô[39m src/components/tools/FileUploadZone.test.tsx [2m([22m[2m7 tests[22m[2m)[22m[33m 733[2mms[22m[39m
+     [33m[2mΓ£ô[22m[39m calls onFilesSelected when files are uploaded [33m 389[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/compress.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 55[2mms[22m[39m
+Not implemented: HTMLCanvasElement's toDataURL() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's toDataURL() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's toDataURL() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's toDataURL() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's toDataURL() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's toDataURL() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's toDataURL() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's toDataURL() method: without installing the canvas npm package
+Not implemented: HTMLCanvasElement's toDataURL() method: without installing the canvas npm package
+stderr | src/lib/ocr.test.ts > ocrPdf > logs but does not throw if worker.terminate() fails
+Failed to terminate OCR worker: Error: terminate failed
+    at E:/js_projects/localpdf-studio/src/lib/ocr.test.ts:187:41
+    at file:///E:/js_projects/localpdf-studio/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11
+    at file:///E:/js_projects/localpdf-studio/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26
+    at file:///E:/js_projects/localpdf-studio/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20
+    at new Promise (<anonymous>)
+    at runWithCancel (file:///E:/js_projects/localpdf-studio/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)
+    at file:///E:/js_projects/localpdf-studio/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20
+    at new Promise (<anonymous>)
+    at runWithTimeout (file:///E:/js_projects/localpdf-studio/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)
+    at file:///E:/js_projects/localpdf-studio/node_modules/@vitest/runner/dist/chunk-artifact.js:2955:64
+
+ [32mΓ£ô[39m src/lib/ocr.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 53[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/pdf.operations.test.ts [2m([22m[2m20 tests[22m[2m)[22m[32m 71[2mms[22m[39m
+ [32mΓ£ô[39m src/store/annotationsStore.test.ts [2m([22m[2m24 tests[22m[2m)[22m[32m 31[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/security.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 30[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/utils.test.ts [2m([22m[2m8 tests[22m[2m)[22m[32m 30[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/office-excel.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 25[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/pdf-to-pptx.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 22[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/office-pptx.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 23[2mms[22m[39m
+ [32mΓ£ô[39m src/tests/unit/lib/pdf.test.ts [2m([22m[2m14 tests[22m[2m)[22m[32m 24[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/office-word.test.ts [2m([22m[2m6 tests[22m[2m)[22m[32m 25[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/pdf-to-excel.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 20[2mms[22m[39m
+stderr | src/store/documentStore.test.ts
+Warning: Please use the `legacy` build in Node.js environments.
+
+ [32mΓ£ô[39m src/store/toolsStore.test.ts [2m([22m[2m13 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/pdf-to-word.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 15[2mms[22m[39m
+ [32mΓ£ô[39m src/store/documentStore.test.ts [2m([22m[2m11 tests[22m[2m)[22m[32m 17[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/logger.test.ts [2m([22m[2m3 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/pdfa.test.ts [2m([22m[2m4 tests[22m[2m)[22m[32m 13[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/edit.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 9[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/encryption.test.ts [2m([22m[2m5 tests[22m[2m)[22m[32m 10[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/repair.test.ts [2m([22m[2m2 tests[22m[2m)[22m[32m 8[2mms[22m[39m
+ [32mΓ£ô[39m src/lib/pdf.test.ts [2m([22m[2m10 tests[22m[2m)[22m[32m 7[2mms[22m[39m
+
+[2m Test Files [22m [1m[32m72 passed[39m[22m[90m (72)[39m
+[2m      Tests [22m [1m[32m508 passed[39m[22m[90m (508)[39m
+[2m   Start at [22m 17:59:59
+[2m   Duration [22m 41.84s[2m (transform 6.56s, setup 23.57s, import 68.00s, tests 83.65s, environment 212.69s)[22m
+
+[34m % [39m[2mCoverage report from [22m[33mv8[39m
+-------------------|---------|----------|---------|---------|-------------------
+File               | % Stmts | % Branch | % Funcs | % Lines | Uncovered Line #s 
+-------------------|---------|----------|---------|---------|-------------------
+All files          |   50.13 |    40.76 |   46.25 |    50.9 |                   
+ src               |       0 |      100 |       0 |       0 |                   
+  App.tsx          |       0 |      100 |       0 |       0 | 49-57             
+  setupTests.ts    |       0 |        0 |       0 |       0 |                   
+ src/components    |   91.66 |      100 |   84.61 |   91.66 |                   
+  ...rBoundary.tsx |    90.9 |      100 |   83.33 |    90.9 | 32                
+  ...rBoundary.tsx |    92.3 |      100 |   85.71 |    92.3 | 33                
+ ...ponents/editor |   15.92 |     15.9 |   17.75 |    15.5 |                   
+  ...tionLayer.tsx |       0 |        0 |       0 |       0 | 19-207            
+  Canvas.tsx       |       0 |        0 |       0 |       0 | 12-224            
+  ...tcutsHelp.tsx |     100 |      100 |     100 |     100 |                   
+  ...tiesPanel.tsx |   36.66 |    27.61 |      10 |   37.03 | 9,16,23,78,91-266 
+  Sidebar.tsx      |       0 |        0 |       0 |       0 | 21-90             
+  ...tureModal.tsx |   43.83 |    35.71 |      60 |    43.9 | ...83,210,274-296 
+  ...Thumbnail.tsx |       0 |        0 |       0 |       0 | 29-157            
+  Toolbar.tsx      |   10.73 |    12.98 |    9.52 |   11.61 | ...32-233,245-301 
+ ...or/annotations |       0 |        0 |       0 |       0 |                   
+  ...ationItem.tsx |       0 |        0 |       0 |       0 | 5-87              
+  ...ationItem.tsx |       0 |        0 |       0 |       0 | 5-22              
+  ...ationItem.tsx |       0 |        0 |       0 |       0 | 5-93              
+  ...ationItem.tsx |       0 |        0 |       0 |       0 | 5-85              
+  ...ationItem.tsx |       0 |        0 |       0 |       0 | 5-76              
+ ...editor/toolbar |   58.33 |    76.47 |   54.54 |   58.33 |                   
+  ...rtButtons.tsx |     100 |       70 |     100 |     100 | 23,35-40          
+  ...yControls.tsx |     100 |      100 |     100 |     100 |                   
+  ToolPicker.tsx   |   44.44 |    85.71 |    37.5 |   44.44 | 23-31,47-79       
+  ZoomControls.tsx |     100 |      100 |     100 |     100 |                   
+ ...ponents/layout |     100 |      100 |     100 |     100 |                   
+  Footer.tsx       |     100 |      100 |     100 |     100 |                   
+  Header.tsx       |     100 |      100 |     100 |     100 |                   
+  Layout.tsx       |     100 |      100 |     100 |     100 |                   
+ ...nts/onboarding |   87.09 |    78.37 |     100 |   90.38 |                   
+  ...rdingTour.tsx |   87.09 |    78.37 |     100 |   90.38 | 61,84-85,87-88    
+ ...mponents/tools |      80 |    85.71 |     100 |   78.57 |                   
+  ...loadState.tsx |     100 |      100 |     100 |     100 |                   
+  ...ploadZone.tsx |   77.77 |    81.81 |     100 |      76 | 40,49-55,60-65    
+  ...singState.tsx |     100 |      100 |     100 |     100 |                   
+  ToolLayout.tsx   |     100 |      100 |     100 |     100 |                   
+ src/components/ui |     100 |      100 |     100 |     100 |                   
+  ConfirmModal.tsx |     100 |      100 |     100 |     100 |                   
+  ...Container.tsx |     100 |      100 |     100 |     100 |                   
+ src/constants     |     100 |      100 |     100 |     100 |                   
+  colors.ts        |     100 |      100 |     100 |     100 |                   
+  limits.ts        |     100 |      100 |     100 |     100 |                   
+  tools.ts         |     100 |      100 |     100 |     100 |                   
+ src/contexts      |   53.84 |    33.33 |   59.25 |      50 |                   
+  ...orContext.tsx |   41.07 |    11.11 |   52.94 |   34.69 | 99-128,147-205    
+  ToastContext.tsx |   86.36 |      100 |      70 |   94.11 | 38                
+ src/hooks         |       0 |        0 |       0 |       0 |                   
+  ...dShortcuts.ts |       0 |        0 |       0 |       0 | 14-55             
+ src/lib           |   83.76 |    64.83 |   79.22 |   84.29 |                   
+  ai.ts            |   18.36 |      8.1 |   22.22 |    19.1 | 12-59,88-215      
+  compress.ts      |     100 |      100 |     100 |     100 |                   
+  edit.ts          |     100 |      100 |     100 |     100 |                   
+  encryption.ts    |     100 |      100 |     100 |     100 |                   
+  image.ts         |   67.64 |    66.66 |   66.66 |   70.96 | 10-45             
+  logger.ts        |     100 |       75 |     100 |     100 | 12                
+  ocr.ts           |     100 |     87.5 |     100 |     100 | 94                
+  office-excel.ts  |   93.82 |    65.38 |     100 |   93.24 | 43,77-79,137      
+  office-pptx.ts   |     100 |    68.18 |     100 |     100 | 48-68,78          
+  office-word.ts   |   88.88 |    66.66 |     100 |   88.88 | 39-40,46          
+  pdf-to-excel.ts  |     100 |    78.57 |     100 |     100 | 36,52-56          
+  pdf-to-pptx.ts   |     100 |      100 |     100 |     100 |                   
+  pdf-to-word.ts   |   96.15 |    83.33 |     100 |   95.83 | 51                
+  pdf.ts           |   95.79 |    84.44 |     100 |   95.32 | 54,63,70,121,182  
+  pdfa.ts          |     100 |      100 |     100 |     100 |                   
+  pdfjs.ts         |     100 |      100 |     100 |     100 |                   
+  repair.ts        |   87.87 |       50 |     100 |    87.5 | 42-43,97-98       
+  security.ts      |   94.87 |       70 |     100 |   94.66 | 86,127-129        
+  utils.ts         |     100 |      100 |     100 |     100 |                   
+ src/pages         |   10.25 |    10.52 |    9.09 |    12.3 |                   
+  Editor.tsx       |       0 |        0 |       0 |       0 | 17-146            
+  Home.tsx         |   72.72 |       50 |      75 |   72.72 | 53-55             
+ src/pages/editor  |       0 |        0 |       0 |       0 |                   
+  ...mptyState.tsx |       0 |        0 |       0 |       0 | 9                 
+  ...Workspace.tsx |       0 |      100 |       0 |       0 | 7                 
+ src/pages/tools   |   49.39 |    46.23 |   44.44 |    50.4 |                   
+  ...geNumbers.tsx |   42.85 |       50 |   57.14 |   44.11 | 30-49,54-60,108   
+  AddWatermark.tsx |   41.17 |    36.36 |      60 |   41.17 | 29-51,56-62       
+  AiSummarizer.tsx |    54.9 |    54.54 |      40 |      56 | ...55,59-68,72-78 
+  BlackoutPdf.tsx  |    35.8 |     31.7 |   13.33 |   37.66 | ...25-133,202-273 
+  ComparePdf.tsx   |   51.06 |       50 |      20 |   51.06 | ...,74-76,120-193 
+  CompressPdf.tsx  |    82.5 |    73.07 |    62.5 |   84.61 | 47-53,124-148     
+  CropPdf.tsx      |      42 |    36.66 |      40 |      42 | ...02,107-113,163 
+  DecryptPdf.tsx   |   45.71 |    38.46 |   57.14 |   47.05 | 27-38,43-46,51-55 
+  EditPdf.tsx      |   38.57 |    41.37 |    12.5 |   40.29 | ...06-114,169-270 
+  ExcelToPdf.tsx   |   54.54 |    44.44 |      60 |   54.54 | ...40,45-48,53-56 
+  ExtractPages.tsx |   52.94 |    54.54 |      80 |   52.94 | 30-31,38-51,56-62 
+  HtmlToPdf.tsx    |   28.57 |    30.76 |      40 |   28.57 | 24-65,70-74       
+  JpgToPdf.tsx     |      66 |     61.9 |      75 |   68.08 | ...62-68,73-78,82 
+  MergePdf.tsx     |   82.35 |    71.42 |   83.33 |   83.67 | 30-36,50-51,86    
+  OcrPdf.tsx       |   52.63 |    38.09 |   42.85 |   54.05 | ...46,51-55,59-66 
+  OrganizePdf.tsx  |   41.66 |    39.28 |      50 |    42.1 | ...97,102-108,175 
+  PdfToExcel.tsx   |   48.48 |    43.75 |      60 |   48.48 | 29-33,38-46,51-54 
+  PdfToJpg.tsx     |   68.96 |       65 |      75 |   71.42 | 40-46,51-56       
+  PdfToPdfA.tsx    |    42.5 |       50 |    37.5 |   43.58 | ...,59-64,134-193 
+  ...owerpoint.tsx |   48.48 |    43.75 |      60 |   48.48 | 29-33,38-46,51-54 
+  PdfToWord.tsx    |   54.54 |       50 |      60 |   54.54 | 32-33,38-46,51-54 
+  ...ointToPdf.tsx |   54.54 |    44.44 |      60 |   54.54 | ...40,45-48,53-56 
+  ProtectPdf.tsx   |    32.2 |     37.5 |    12.5 |   33.33 | ...-84,88,126-240 
+  RemovePages.tsx  |   52.94 |    54.54 |      80 |   52.94 | 30-31,38-51,56-62 
+  RepairPdf.tsx    |    62.5 |    33.33 |      50 |    62.5 | ...5-48,53-56,108 
+  RotatePdf.tsx    |   37.14 |    45.83 |   28.57 |   38.23 | ...,53-59,105-117 
+  ScanToPdf.tsx    |   56.96 |    56.75 |   44.44 |    58.9 | ...21,149-183,197 
+  SignPdf.tsx      |    36.7 |    36.58 |   11.76 |   38.15 | ...18-128,182-302 
+  SplitPdf.tsx     |   94.11 |    81.81 |     100 |   94.11 | 30-31             
+  TranslatePdf.tsx |   21.33 |    25.71 |   33.33 |   22.53 | ...25,130-135,171 
+  WordToPdf.tsx    |   72.72 |       50 |      80 |   72.72 | 21-23,39-40,45-48 
+ src/store         |   79.41 |    92.85 |   85.71 |    80.2 |                   
+  ...tionsStore.ts |     100 |    91.66 |     100 |     100 | 151               
+  documentStore.ts |   53.65 |      100 |   71.42 |   53.84 | 38,43-78          
+  index.ts         |       0 |        0 |       0 |       0 |                   
+  toolsStore.ts    |   83.33 |      100 |      80 |      90 | 42                
+ src/types         |     100 |      100 |     100 |     100 |                   
+  dropzone.ts      |     100 |      100 |     100 |     100 |                   
+-------------------|---------|----------|---------|---------|-------------------
+ERROR: Coverage for functions (79.22%) does not meet "src/lib/**" threshold (80%)
+ERROR: Coverage for branches (64.83%) does not meet "src/lib/**" threshold (70%)

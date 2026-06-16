@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>06 — Merge Tool · LocalPDF Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter+Tight:wght@300;400;500;600;700;800&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after { box-sizing: border-box; }
+  :root {
+    --ink: #0a0a0a;
+    --bg: #f5f5f0;
+    --paper: #ffffff;
+    --line: #d4d4d0;
+    --accent: #ff2200;
+    --gray-1: #f5f5f0;
+    --gray-2: #e8e8e3;
+    --gray-3: #a8a8a3;
+  }
+  body {
+    margin: 0; padding: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter Tight', sans-serif;
+    min-height: 100vh;
+    font-feature-settings: "ss01", "cv11";
+  }
+
+  .top-bar {
+    border-bottom: 1px solid var(--ink);
+    padding: 0 24px;
+    display: grid; grid-template-columns: 200px 1fr auto;
+    align-items: center; height: 56px;
+  }
+  .logo { font-weight: 700; font-size: 18px; letter-spacing: -0.02em; display: flex; align-items: center; gap: 8px; }
+  .logo .mark { width: 24px; height: 24px; background: var(--accent); display: inline-block; }
+  .breadcrumb { font-size: 13px; color: var(--gray-3); padding-left: 24px; border-left: 1px solid var(--line); height: 100%; display: flex; align-items: center; gap: 8px; }
+  .breadcrumb strong { color: var(--ink); font-weight: 500; }
+  .breadcrumb .arrow { color: var(--accent); }
+  .top-actions { display: flex; gap: 12px; align-items: center; font-size: 13px; }
+  .top-actions .save { color: var(--gray-3); }
+  .top-actions .save strong { color: var(--ink); font-weight: 500; }
+
+  .masthead {
+    padding: 48px 24px 32px;
+    border-bottom: 1px solid var(--ink);
+    display: grid; grid-template-columns: 1fr 1fr; gap: 48px;
+  }
+  .masthead-num { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--gray-3); margin-bottom: 8px; }
+  h1 {
+    font-size: 64px; line-height: 0.95; margin: 0;
+    font-weight: 700; letter-spacing: -0.04em;
+  }
+  h1 em { font-style: normal; color: var(--accent); }
+  .lead { font-size: 15px; line-height: 1.5; color: #4a4a45; max-width: 480px; margin: 0; align-self: end; }
+
+  .workspace {
+    display: grid; grid-template-columns: 280px 1fr 320px;
+    height: calc(100vh - 56px - 56px - 180px);
+    min-height: 540px;
+  }
+  .panel { border-right: 1px solid var(--line); padding: 24px; overflow-y: auto; }
+  .panel:last-child { border-right: 0; border-left: 1px solid var(--line); }
+
+  .panel h2 {
+    font-size: 11px; font-weight: 600; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--gray-3);
+    margin: 0 0 16px; display: flex; justify-content: space-between;
+  }
+  .panel h2 .count { color: var(--ink); font-family: 'IBM Plex Mono', monospace; }
+
+  .source-list { display: flex; flex-direction: column; gap: 8px; }
+  .src {
+    border: 1px solid var(--line); padding: 12px;
+    display: flex; gap: 12px; align-items: center; background: var(--paper);
+    cursor: grab; transition: all 0.15s;
+  }
+  .src:hover { border-color: var(--ink); }
+  .src .thumb {
+    width: 32px; height: 40px; background: var(--gray-1);
+    border: 1px solid var(--line); display: flex; align-items: center; justify-content: center;
+    font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: var(--gray-3); flex-shrink: 0;
+  }
+  .src .meta { flex: 1; min-width: 0; }
+  .src .name { font-size: 12px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .src .sub { font-size: 10px; color: var(--gray-3); font-family: 'IBM Plex Mono', monospace; margin-top: 2px; }
+  .src .drag { color: var(--gray-3); }
+
+  .pages-tray {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    padding: 24px;
+    height: 100%;
+    display: flex; flex-direction: column;
+  }
+  .tray-head {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 16px; padding-bottom: 12px; border-bottom: 1px solid var(--line);
+  }
+  .tray-head .label { font-size: 13px; font-weight: 600; }
+  .tray-head .tools { display: flex; gap: 4px; }
+  .tray-btn {
+    width: 28px; height: 28px; border: 1px solid var(--line); background: white;
+    cursor: pointer; display: flex; align-items: center; justify-content: center;
+    color: var(--ink);
+  }
+  .tray-btn:hover { border-color: var(--ink); }
+  .tray-btn.danger:hover { border-color: var(--accent); color: var(--accent); }
+
+  .pages-grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr));
+    gap: 12px; overflow-y: auto; flex: 1;
+  }
+  .page {
+    aspect-ratio: 0.77;
+    background: white;
+    border: 1px solid var(--line);
+    position: relative; cursor: grab;
+    transition: all 0.15s;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'IBM Plex Mono', monospace; font-size: 9px; color: var(--gray-3);
+  }
+  .page:hover { border-color: var(--ink); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.08); }
+  .page.dragging { opacity: 0.4; }
+  .page .pg-num {
+    position: absolute; top: 4px; left: 4px;
+    background: var(--ink); color: white;
+    font-family: 'IBM Plex Mono', monospace; font-size: 9px; font-weight: 600;
+    padding: 2px 6px;
+  }
+  .page .src-tag {
+    position: absolute; bottom: 4px; right: 4px;
+    font-family: 'IBM Plex Mono', monospace; font-size: 8px; color: var(--gray-3);
+    background: rgba(255,255,255,0.9); padding: 1px 4px;
+  }
+  .page .doc-color {
+    position: absolute; top: 0; left: 0; right: 0; height: 3px;
+  }
+  .page.placeholder {
+    background: transparent; border-style: dashed; color: var(--gray-3);
+    flex-direction: column; gap: 4px;
+  }
+
+  .options-form { display: flex; flex-direction: column; gap: 18px; }
+  .field label {
+    display: block; font-size: 11px; font-weight: 600; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--gray-3); margin-bottom: 8px;
+  }
+  .field input[type="text"] {
+    width: 100%; padding: 10px 12px; border: 1px solid var(--line);
+    font-family: inherit; font-size: 13px; background: var(--paper);
+  }
+  .field input[type="text"]:focus { outline: 0; border-color: var(--ink); }
+  .select {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  }
+  .select-opt {
+    border: 1px solid var(--line); padding: 10px 12px;
+    background: var(--paper); cursor: pointer; font-size: 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .select-opt.active { border-color: var(--ink); background: var(--ink); color: white; }
+  .select-opt .swatch { width: 12px; height: 12px; border: 1px solid currentColor; }
+  .toggle-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 8px 0; border-bottom: 1px solid var(--line);
+  }
+  .toggle-row:last-child { border-bottom: 0; }
+  .toggle-row .name { font-size: 13px; }
+  .toggle-row .desc { font-size: 11px; color: var(--gray-3); margin-top: 2px; }
+  .switch {
+    width: 32px; height: 18px; background: var(--line); border-radius: 0;
+    position: relative; cursor: pointer; flex-shrink: 0;
+  }
+  .switch::after {
+    content: ''; position: absolute; top: 2px; left: 2px;
+    width: 14px; height: 14px; background: white; transition: 0.2s;
+  }
+  .switch.on { background: var(--ink); }
+  .switch.on::after { left: 16px; }
+
+  .footer-bar {
+    border-top: 1px solid var(--ink);
+    padding: 16px 24px;
+    display: flex; justify-content: space-between; align-items: center;
+    background: var(--bg);
+  }
+  .summary { font-size: 12px; color: var(--gray-3); font-family: 'IBM Plex Mono', monospace; }
+  .summary strong { color: var(--ink); font-weight: 500; }
+  .footer-actions { display: flex; gap: 8px; }
+  .btn {
+    padding: 12px 24px; border: 0; font-family: inherit; font-weight: 500; font-size: 13px;
+    cursor: pointer; letter-spacing: 0.02em;
+  }
+  .btn-ghost { background: transparent; color: var(--ink); border: 1px solid var(--ink); }
+  .btn-ghost:hover { background: var(--ink); color: white; }
+  .btn-primary { background: var(--ink); color: white; padding: 12px 32px; }
+  .btn-primary:hover { background: var(--accent); }
+  .btn-primary .num { font-family: 'IBM Plex Mono', monospace; opacity: 0.6; margin-right: 8px; }
+</style>
+</head>
+<body>
+<header class="top-bar">
+  <div class="logo"><span class="mark"></span> LocalPDF</div>
+  <div class="breadcrumb"><strong>Tools</strong> <span>›</span> <span>Merge PDF</span> <span class="arrow">→</span> <span>Workspace</span></div>
+  <div class="top-actions"><span class="save">Auto-saved <strong>2s ago</strong></span></div>
+</header>
+<section class="masthead">
+  <div>
+    <div class="masthead-num">§ 01 — TOOL 001 / 031</div>
+    <h1>Merge <em>PDFs</em></h1>
+  </div>
+  <p class="lead">Reorder pages across multiple documents. Drag any page into the canvas, configure the output, and download a single file. Nothing is uploaded — all processing happens in your browser.</p>
+</section>
+<div class="workspace">
+  <aside class="panel">
+    <h2>Source files <span class="count">12</span></h2>
+    <div class="source-list">
+      <div class="src">
+        <div class="thumb">PDF</div>
+        <div class="meta">
+          <div class="name">contract-q3-final.pdf</div>
+          <div class="sub">42 P · 2.1 MB</div>
+        </div>
+        <div class="drag">⋮⋮</div>
+      </div>
+      <div class="src">
+        <div class="thumb">PDF</div>
+        <div class="meta">
+          <div class="name">nda-template-v2.pdf</div>
+          <div class="sub">8 P · 412 KB</div>
+        </div>
+        <div class="drag">⋮⋮</div>
+      </div>
+      <div class="src">
+        <div class="thumb">PDF</div>
+        <div class="meta">
+          <div class="name">schedule-a-2026.pdf</div>
+          <div class="sub">12 P · 884 KB</div>
+        </div>
+        <div class="drag">⋮⋮</div>
+      </div>
+      <div class="src">
+        <div class="thumb">PDF</div>
+        <div class="meta">
+          <div class="name">addendum-pages.pdf</div>
+          <div class="sub">3 P · 184 KB</div>
+        </div>
+        <div class="drag">⋮⋮</div>
+      </div>
+      <div class="src" style="border-style: dashed; color: var(--gray-3); justify-content: center;">
+        <span style="font-size: 11px;">+ Add more files</span>
+      </div>
+    </div>
+  </aside>
+
+  <main class="pages-tray">
+    <div class="tray-head">
+      <div class="label">Output order — 24 pages</div>
+      <div class="tools">
+        <button class="tray-btn" title="Rotate"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9"/><path d="M3 4v5h5"/></svg></button>
+        <button class="tray-btn" title="Delete"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></button>
+        <button class="tray-btn" title="Reverse"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h12M3 18h18M21 9l3-3-3-3M21 15l3 3-3 3"/></svg></button>
+      </div>
+    </div>
+    <div class="pages-grid">
+      <div class="page"><div class="pg-num">01</div><div class="doc-color" style="background:var(--accent)"></div>Page</div>
+      <div class="page"><div class="pg-num">02</div><div class="doc-color" style="background:var(--accent)"></div>Page</div>
+      <div class="page"><div class="pg-num">03</div><div class="doc-color" style="background:var(--accent)"></div>Page</div>
+      <div class="page"><div class="pg-num">04</div><div class="doc-color" style="background:#ffc600"></div>Page</div>
+      <div class="page"><div class="pg-num">05</div><div class="doc-color" style="background:#ffc600"></div>Page</div>
+      <div class="page"><div class="pg-num">06</div><div class="doc-color" style="background:#00a651"></div>Page</div>
+      <div class="page"><div class="pg-num">07</div><div class="doc-color" style="background:#00a651"></div>Page</div>
+      <div class="page"><div class="pg-num">08</div><div class="doc-color" style="background:#8a3ffc"></div>Page</div>
+      <div class="page"><div class="pg-num">09</div><div class="doc-color" style="background:#8a3ffc"></div>Page</div>
+      <div class="page"><div class="pg-num">10</div><div class="doc-color" style="background:#2563eb"></div>Page</div>
+      <div class="page"><div class="pg-num">11</div><div class="doc-color" style="background:#2563eb"></div>Page</div>
+      <div class="page placeholder">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 5v14M5 12h14"/></svg>
+        <span>Add page</span>
+      </div>
+    </div>
+  </main>
+
+  <aside class="panel">
+    <h2>Output settings</h2>
+    <div class="options-form">
+      <div class="field">
+        <label>File name</label>
+        <input type="text" value="merged-2026-q3.pdf">
+      </div>
+      <div class="field">
+        <label>Page size</label>
+        <div class="select">
+          <div class="select-opt active"><span class="swatch"></span> A4</div>
+          <div class="select-opt">Letter</div>
+        </div>
+      </div>
+      <div class="field">
+        <label>Orientation</label>
+        <div class="select">
+          <div class="select-opt active">Portrait</div>
+          <div class="select-opt">Landscape</div>
+        </div>
+      </div>
+      <div class="field" style="margin-top: 8px;">
+        <label>Options</label>
+        <div class="toggle-row">
+          <div><div class="name">Compress output</div><div class="desc">−34% file size</div></div>
+          <div class="switch on"></div>
+        </div>
+        <div class="toggle-row">
+          <div><div class="name">Generate bookmarks</div><div class="desc">One per source file</div></div>
+          <div class="switch on"></div>
+        </div>
+        <div class="toggle-row">
+          <div><div class="name">OCR scanned pages</div><div class="desc">+12s per page</div></div>
+          <div class="switch"></div>
+        </div>
+      </div>
+    </div>
+  </aside>
+</div>
+<footer class="footer-bar">
+  <div class="summary"><strong>24 pages</strong> · ~8.2 MB · <strong>~3s</strong> to process</div>
+  <div class="footer-actions">
+    <button class="btn btn-ghost">Reset</button>
+    <button class="btn btn-primary"><span class="num">⌘ ↵</span> Merge PDF</button>
+  </div>
+</footer>
+</body>
+</html>

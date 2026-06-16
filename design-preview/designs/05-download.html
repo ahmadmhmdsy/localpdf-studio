@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>05 — Download · LocalPDF Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400&family=Manrope:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh;
+    background: #fafaf7;
+    color: #1a1a1a;
+    font-family: 'Manrope', sans-serif;
+    display: flex; align-items: center; justify-content: center;
+    padding: 40px 20px;
+    position: relative;
+  }
+  body::before {
+    content: ''; position: absolute; inset: 0;
+    background-image:
+      radial-gradient(circle at 20% 20%, rgba(0,0,0,0.015) 1px, transparent 1px),
+      radial-gradient(circle at 80% 80%, rgba(0,0,0,0.015) 1px, transparent 1px);
+    background-size: 80px 80px;
+    pointer-events: none;
+  }
+  .card {
+    width: 100%; max-width: 560px;
+    background: white;
+    border: 1px solid #ececec;
+    border-radius: 4px;
+    padding: 64px 56px;
+    position: relative;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.02);
+  }
+  .corner {
+    position: absolute; width: 24px; height: 24px;
+    border: 1px solid #1a1a1a;
+  }
+  .corner.tl { top: 20px; left: 20px; border-right: 0; border-bottom: 0; }
+  .corner.tr { top: 20px; right: 20px; border-left: 0; border-bottom: 0; }
+  .corner.bl { bottom: 20px; left: 20px; border-right: 0; border-top: 0; }
+  .corner.br { bottom: 20px; right: 20px; border-left: 0; border-top: 0; }
+
+  .eyebrow {
+    font-family: 'Manrope', sans-serif;
+    font-size: 11px; letter-spacing: 0.3em; text-transform: uppercase;
+    color: #999; margin-bottom: 24px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .eyebrow::after { content: ''; flex: 1; height: 1px; background: #e0e0e0; }
+
+  .check {
+    width: 64px; height: 64px; margin-bottom: 32px;
+    position: relative;
+    animation: scaleIn 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes scaleIn { from { transform: scale(0); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+  .check-circle {
+    width: 64px; height: 64px; border-radius: 50%;
+    border: 1px solid #1a1a1a;
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .check-circle::before {
+    content: ''; position: absolute; inset: -6px;
+    border: 1px solid rgba(26,26,26,0.1); border-radius: 50%;
+  }
+  .check-circle::after {
+    content: ''; position: absolute; inset: -12px;
+    border: 1px solid rgba(26,26,26,0.04); border-radius: 50%;
+  }
+  .check-circle svg { width: 24px; height: 24px; }
+
+  h1 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 56px; line-height: 1; font-weight: 400;
+    margin: 0 0 16px; letter-spacing: -0.02em;
+  }
+  h1 em { font-style: italic; color: #1a1a1a; }
+
+  .summary {
+    color: #666; font-size: 15px; line-height: 1.6; margin: 0 0 40px;
+    max-width: 380px;
+  }
+  .summary strong { color: #1a1a1a; font-weight: 500; }
+
+  .file-card {
+    background: #fafaf7; border: 1px solid #ececec;
+    border-radius: 4px; padding: 20px 24px;
+    display: flex; align-items: center; gap: 16px;
+    margin-bottom: 32px;
+  }
+  .file-icon {
+    width: 48px; height: 48px; background: #1a1a1a; color: white;
+    border-radius: 2px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Cormorant Garamond', serif; font-style: italic; font-size: 18px;
+    flex-shrink: 0;
+  }
+  .file-info { flex: 1; min-width: 0; }
+  .file-name {
+    font-weight: 500; font-size: 14px; margin-bottom: 2px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .file-meta {
+    color: #999; font-size: 12px;
+    display: flex; gap: 12px; font-feature-settings: "tnum";
+  }
+  .file-meta .saved { color: #1a1a1a; }
+
+  .actions { display: flex; gap: 8px; }
+  .btn {
+    padding: 16px 32px; border-radius: 2px; border: 0;
+    font-family: inherit; font-weight: 500; font-size: 14px;
+    cursor: pointer; transition: all 0.2s;
+    display: inline-flex; align-items: center; gap: 10px;
+    letter-spacing: 0.02em;
+  }
+  .btn-primary {
+    background: #1a1a1a; color: #fafaf7; flex: 1; justify-content: center;
+  }
+  .btn-primary:hover { background: #000; }
+  .btn-secondary {
+    background: transparent; color: #1a1a1a; border: 1px solid #1a1a1a;
+  }
+  .btn-secondary:hover { background: #1a1a1a; color: #fafaf7; }
+  .btn-icon {
+    width: 48px; height: 48px; padding: 0;
+    background: transparent; border: 1px solid #e0e0e0;
+    display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 2px;
+  }
+  .btn-icon:hover { border-color: #1a1a1a; }
+
+  .next-row {
+    margin-top: 40px; padding-top: 24px;
+    border-top: 1px solid #ececec;
+    display: flex; justify-content: space-between; align-items: center;
+    font-size: 13px; color: #999;
+  }
+  .next-row a { color: #1a1a1a; text-decoration: none; border-bottom: 1px solid #1a1a1a; padding-bottom: 1px; }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="corner tl"></div>
+  <div class="corner tr"></div>
+  <div class="corner bl"></div>
+  <div class="corner br"></div>
+
+  <div class="eyebrow">Complete · 2.4 seconds</div>
+
+  <div class="check">
+    <div class="check-circle">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 6 9 17l-5-5"/>
+      </svg>
+    </div>
+  </div>
+
+  <h1>Your file is <em>ready</em>.</h1>
+  <p class="summary">We've merged <strong>12 documents</strong> into a single, optimized PDF. 384 pages, fully searchable, and 34% smaller than the originals.</p>
+
+  <div class="file-card">
+    <div class="file-icon">PDF</div>
+    <div class="file-info">
+      <div class="file-name">q3-contracts-merged-2026.pdf</div>
+      <div class="file-meta">
+        <span>8.2 MB</span>
+        <span>·</span>
+        <span>384 pages</span>
+        <span>·</span>
+        <span class="saved">−34% from originals</span>
+      </div>
+    </div>
+    <button class="btn-icon" aria-label="More options">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.5"/><circle cx="12" cy="12" r="1.5"/><circle cx="12" cy="19" r="1.5"/></svg>
+    </button>
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-primary">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+      Download PDF
+    </button>
+    <button class="btn btn-secondary">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>
+      Save to Drive
+    </button>
+  </div>
+
+  <div class="next-row">
+    <span>What's next?</span>
+    <a href="#">Open in editor →</a>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,668 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>LocalPDF Studio · Design Index</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght,SOFT@9..144,400..700,0..100&family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after { box-sizing: border-box; }
+  :root {
+    --bg: #faf8f3;
+    --paper: #ffffff;
+    --ink: #1a1a1a;
+    --ink-2: #4a4a4a;
+    --ink-3: #8a8a8a;
+    --line: #e8e4d8;
+    --accent: #d83a25;
+    --accent-deep: #a01a08;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-md: 0 8px 24px -8px rgba(0,0,0,0.08);
+    --shadow-lg: 0 24px 60px -16px rgba(0,0,0,0.12);
+  }
+  body {
+    margin: 0; min-height: 100vh;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Geist', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .grain {
+    position: fixed; inset: 0; pointer-events: none; z-index: 1000;
+    opacity: 0.025;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+
+  /* HEADER */
+  .masthead {
+    border-bottom: 1px solid var(--line);
+    padding: 80px 64px 56px;
+    background:
+      radial-gradient(ellipse at 80% 0%, rgba(216,58,37,0.06) 0%, transparent 50%),
+      var(--bg);
+    position: relative;
+  }
+  .masthead-bar {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 64px;
+    font-family: 'Geist Mono', monospace; font-size: 12px;
+    color: var(--ink-3); letter-spacing: 0.05em;
+  }
+  .masthead-bar .brand {
+    display: flex; align-items: center; gap: 12px;
+    color: var(--ink); font-weight: 500;
+  }
+  .brand-dot { width: 10px; height: 10px; background: var(--accent); border-radius: 50%; display: inline-block; }
+  .masthead-bar .right { display: flex; gap: 24px; }
+  .masthead-bar .right a { color: var(--ink-2); text-decoration: none; }
+  .masthead-bar .right a:hover { color: var(--ink); }
+
+  .masthead-grid {
+    display: grid; grid-template-columns: 1.5fr 1fr; gap: 64px; align-items: end;
+  }
+  .kicker {
+    display: inline-block;
+    background: var(--ink); color: var(--bg);
+    padding: 6px 14px; border-radius: 100px;
+    font-family: 'Geist Mono', monospace; font-size: 11px; letter-spacing: 0.1em;
+    text-transform: uppercase; margin-bottom: 24px;
+  }
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-variation-settings: "opsz" 144, "SOFT" 30;
+    font-size: clamp(56px, 9vw, 128px);
+    line-height: 0.9; font-weight: 500;
+    letter-spacing: -0.04em; margin: 0;
+  }
+  h1 em { font-style: italic; color: var(--accent); font-weight: 400; }
+  .deck {
+    font-size: 18px; line-height: 1.5; color: var(--ink-2);
+    max-width: 380px; margin: 0;
+  }
+  .deck strong { color: var(--ink); font-weight: 500; }
+
+  /* STATS */
+  .meta-strip {
+    border-bottom: 1px solid var(--line);
+    display: grid; grid-template-columns: repeat(4, 1fr);
+  }
+  .meta-cell {
+    padding: 24px 32px; border-right: 1px solid var(--line);
+  }
+  .meta-cell:last-child { border-right: 0; }
+  .meta-cell .label {
+    font-family: 'Geist Mono', monospace; font-size: 10px;
+    color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.1em;
+    margin-bottom: 6px;
+  }
+  .meta-cell .val {
+    font-family: 'Fraunces', serif; font-size: 32px; font-weight: 500;
+    letter-spacing: -0.02em;
+  }
+  .meta-cell .val em { font-style: italic; color: var(--accent); }
+
+  /* SECTION TITLE */
+  .section {
+    padding: 80px 64px;
+  }
+  .section-head {
+    display: flex; justify-content: space-between; align-items: end;
+    margin-bottom: 48px; padding-bottom: 24px;
+    border-bottom: 1px solid var(--line);
+  }
+  .section-head .num {
+    font-family: 'Geist Mono', monospace; font-size: 12px;
+    color: var(--ink-3); letter-spacing: 0.1em;
+  }
+  .section-head h2 {
+    font-family: 'Fraunces', serif; font-size: 48px;
+    margin: 0; font-weight: 500; letter-spacing: -0.02em;
+  }
+  .section-head h2 em { font-style: italic; color: var(--accent); }
+
+  /* GRID OF DESIGNS */
+  .grid {
+    display: grid; grid-template-columns: repeat(2, 1fr);
+    gap: 32px;
+  }
+  .design {
+    background: var(--paper);
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    overflow: hidden;
+    transition: transform 0.3s, box-shadow 0.3s;
+    display: flex; flex-direction: column;
+  }
+  .design:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-lg);
+  }
+  .design-frame {
+    aspect-ratio: 16 / 10;
+    background: var(--bg);
+    border-bottom: 1px solid var(--line);
+    overflow: hidden;
+    position: relative;
+  }
+  .design-frame iframe {
+    width: 200%; height: 200%;
+    border: 0;
+    transform: scale(0.5);
+    transform-origin: top left;
+    pointer-events: none;
+  }
+  .design-frame.interactive iframe { pointer-events: auto; }
+  .design-meta { padding: 24px 28px 28px; flex: 1; display: flex; flex-direction: column; }
+  .design-id {
+    font-family: 'Geist Mono', monospace; font-size: 11px;
+    color: var(--ink-3); letter-spacing: 0.08em;
+    margin-bottom: 8px;
+  }
+  .design-meta h3 {
+    font-family: 'Fraunces', serif; font-size: 28px; line-height: 1.05;
+    margin: 0 0 8px; font-weight: 500; letter-spacing: -0.02em;
+  }
+  .design-meta h3 em { font-style: italic; color: var(--accent); font-weight: 400; }
+  .design-meta p { color: var(--ink-2); margin: 0 0 20px; font-size: 14px; line-height: 1.5; }
+  .design-meta .chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 20px; }
+  .chip {
+    font-family: 'Geist Mono', monospace; font-size: 10px;
+    padding: 4px 10px; border: 1px solid var(--line);
+    background: var(--bg); color: var(--ink-2);
+    text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  .design-actions { margin-top: auto; display: flex; gap: 8px; padding-top: 16px; border-top: 1px solid var(--line); }
+  .btn {
+    padding: 10px 16px; border: 1px solid var(--ink);
+    background: transparent; color: var(--ink);
+    font-family: inherit; font-size: 12px; font-weight: 500;
+    text-decoration: none; cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px;
+    transition: all 0.2s;
+  }
+  .btn:hover { background: var(--ink); color: var(--bg); }
+  .btn.primary { background: var(--ink); color: var(--bg); }
+  .btn.primary:hover { background: var(--accent); border-color: var(--accent); }
+  .btn::after { content: '→'; font-family: 'Geist Mono', monospace; }
+
+  /* FEATURED (first) */
+  .design.featured { grid-column: span 2; }
+  .design.featured .design-frame { aspect-ratio: 21 / 9; }
+  .design.featured .design-meta { padding: 40px 48px; }
+  .design.featured .design-meta h3 { font-size: 40px; }
+  .design.featured .design-meta p { font-size: 16px; max-width: 600px; }
+
+  /* MOBILE SPECIAL LAYOUT */
+  .design.mobile .design-frame { aspect-ratio: 3 / 4; }
+
+  /* HYBRID PROTOTYPE */
+  .hybrid-card {
+    display: grid; grid-template-columns: 2fr 1fr;
+    gap: 32px; align-items: stretch;
+    background: linear-gradient(135deg, rgba(120,80,255,0.08), rgba(255,107,203,0.06) 40%, rgba(201,97,58,0.06));
+    border: 1px solid var(--line);
+    border-radius: 24px; padding: 24px;
+    box-shadow: var(--shadow-lg);
+    margin-top: 24px;
+  }
+  .hybrid-frame {
+    border-radius: 16px; overflow: hidden;
+    border: 1px solid var(--line);
+    background: #0f0f12;
+    aspect-ratio: 16 / 11;
+  }
+  .hybrid-frame iframe {
+    width: 100%; height: 100%; border: 0; display: block;
+  }
+  .hybrid-side { display: flex; flex-direction: column; justify-content: center; padding: 16px 8px 16px 24px; }
+  .hybrid-title { font-family: 'Fraunces', serif; font-size: 56px; line-height: 1; margin: 12px 0 16px; font-weight: 500; }
+  .hybrid-title em { font-style: italic; color: var(--accent); }
+  .hybrid-deck { color: var(--ink-2); font-size: 15px; line-height: 1.55; margin: 0 0 24px; max-width: 36ch; }
+  .hybrid-merge { list-style: none; padding: 0; margin: 0 0 28px; display: grid; gap: 6px; }
+  .hybrid-merge li {
+    display: flex; align-items: center; gap: 12px;
+    font-family: 'Geist Mono', monospace; font-size: 12px;
+    color: var(--ink-2);
+    padding: 8px 12px; border: 1px solid var(--line);
+    background: var(--paper); border-radius: 8px;
+  }
+  .hybrid-merge li span {
+    display: inline-block; min-width: 28px; text-align: center;
+    font-weight: 600; color: var(--paper); background: var(--ink);
+    border-radius: 6px; padding: 2px 6px; font-size: 11px;
+  }
+  @media (max-width: 900px) {
+    .hybrid-card { grid-template-columns: 1fr; }
+    .hybrid-title { font-size: 40px; }
+  }
+
+  /* FOOTER */
+  footer {
+    border-top: 1px solid var(--line);
+    padding: 48px 64px;
+    display: flex; justify-content: space-between; align-items: center;
+    background: var(--ink); color: var(--bg);
+  }
+  footer .left { font-family: 'Fraunces', serif; font-style: italic; font-size: 24px; }
+  footer .right {
+    font-family: 'Geist Mono', monospace; font-size: 12px;
+    color: rgba(250,248,243,0.6); display: flex; gap: 24px;
+  }
+
+  /* AESTHETIC GUIDE */
+  .aesthetic-grid {
+    display: grid; grid-template-columns: repeat(5, 1fr);
+    gap: 16px; margin-top: 32px;
+  }
+  .aest {
+    border: 1px solid var(--line);
+    padding: 20px;
+    background: var(--paper);
+  }
+  .aest .num {
+    font-family: 'Geist Mono', monospace; font-size: 10px;
+    color: var(--ink-3); margin-bottom: 8px;
+  }
+  .aest .name {
+    font-family: 'Fraunces', serif; font-size: 18px;
+    font-weight: 500; margin: 0 0 4px; letter-spacing: -0.01em;
+  }
+  .aest .name em { font-style: italic; color: var(--accent); }
+  .aest .font {
+    font-family: 'Geist Mono', monospace; font-size: 10px;
+    color: var(--ink-2); margin-top: 8px; line-height: 1.4;
+  }
+  .swatch-row { display: flex; gap: 4px; margin-top: 12px; }
+  .swatch-row span {
+    width: 16px; height: 16px; border: 1px solid var(--line);
+  }
+</style>
+</head>
+<body>
+<div class="grain"></div>
+
+<header class="masthead">
+  <div class="masthead-bar">
+    <div class="brand"><span class="brand-dot"></span> LocalPDF · Design Index</div>
+    <div class="right">
+      <a href="#hybrid">Hybrid</a>
+      <a href="#designs">Designs</a>
+      <a href="#aesthetics">Aesthetics</a>
+      <a href="https://github.com" target="_blank" rel="noopener">Repo ↗</a>
+    </div>
+  </div>
+  <div class="masthead-grid">
+    <div>
+      <div class="kicker">10 design studies + 1 hybrid prototype · June 2026</div>
+      <h1>Make the PDF<br>tools <em>feel</em><br>deliberate.</h1>
+    </div>
+    <p class="deck">
+      Ten directions, ten different aesthetics — each one a complete UI for a moment in the LocalPDF Studio experience. From editorial to industrial, glass to terminal, every design ships as standalone HTML you can <strong>open, scroll, and click</strong>.
+    </p>
+  </div>
+</header>
+
+<section class="section" id="hybrid">
+  <div class="hybrid-card">
+    <div class="hybrid-frame">
+      <iframe src="prototype-hybrid.html" title="Hybrid Prototype" loading="lazy"></iframe>
+    </div>
+    <div class="hybrid-side">
+      <div class="kicker">§ 00 · Featured · Hybrid</div>
+      <h2 class="hybrid-title">The <em>one</em> prototype.</h2>
+      <p class="hybrid-deck">
+        Combines the strongest elements from <strong>3 · 7 · 8 · 9 · 10</strong> into a single cohesive product view:
+        glass nav, page-strip workspace, organic compress card, industrial editor, aurora comments, iOS tab bar.
+      </p>
+      <ul class="hybrid-merge">
+        <li><span>03</span> Playful upload entrance</li>
+        <li><span>07</span> Warm compress card</li>
+        <li><span>08</span> Dark editor + LED status</li>
+        <li><span>09</span> Glass surfaces + aurora</li>
+        <li><span>10</span> iOS tab bar + mobile inset</li>
+      </ul>
+      <div class="design-actions">
+        <a class="btn primary" href="prototype-hybrid.html" target="_blank">Open full</a>
+        <a class="btn" href="prototype-hybrid.html#mobile" target="_blank">Jump to mobile</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="meta-strip">
+  <div class="meta-cell">
+    <div class="label">Total studies</div>
+    <div class="val">11<em>·</em></div>
+  </div>
+  <div class="meta-cell">
+    <div class="label">Aesthetic directions</div>
+    <div class="val">10<em>·</em></div>
+  </div>
+  <div class="meta-cell">
+    <div class="label">Lines of CSS</div>
+    <div class="val">~2.4<em>k</em></div>
+  </div>
+  <div class="meta-cell">
+    <div class="label">Lines of HTML</div>
+    <div class="val">~1.1<em>k</em></div>
+  </div>
+</div>
+
+<section class="section" id="aesthetics">
+  <div class="section-head">
+    <div class="num">§ 00 · AESTHETIC ATLAS</div>
+    <h2>Ten <em>directions</em></h2>
+  </div>
+  <div class="aesthetic-grid">
+    <div class="aest">
+      <div class="num">01 / 10</div>
+      <div class="name">Editorial <em>Bold</em></div>
+      <div class="font">Fraunces · Geist Mono<br>Red ink · paper grain</div>
+      <div class="swatch-row"><span style="background:#d83a25"></span><span style="background:#f4f1ea"></span><span style="background:#1a1a1a"></span></div>
+    </div>
+    <div class="aest">
+      <div class="num">02 / 10</div>
+      <div class="name">Geometric <em>Brutalist</em></div>
+      <div class="font">Space Grotesk · JetBrains Mono<br>Hard shadows · 6-color grid</div>
+      <div class="swatch-row"><span style="background:#ff3b1f"></span><span style="background:#ffc600"></span><span style="background:#00a651"></span><span style="background:#8a3ffc"></span><span style="background:#2563eb"></span></div>
+    </div>
+    <div class="aest">
+      <div class="num">03 / 10</div>
+      <div class="name">Playful <em>Pastel</em></div>
+      <div class="font">Bricolage Grotesque · DM Mono<br>Floating icons · soft gradients</div>
+      <div class="swatch-row"><span style="background:#ff6b9d"></span><span style="background:#6ee0c7"></span><span style="background:#ffd66b"></span><span style="background:#c5b3ff"></span></div>
+    </div>
+    <div class="aest">
+      <div class="num">04 / 10</div>
+      <div class="name">Terminal <em>Retro</em></div>
+      <div class="font">VT323 · JetBrains Mono<br>CRT scanlines · phosphor green</div>
+      <div class="swatch-row"><span style="background:#00ff88"></span><span style="background:#ffcc00"></span><span style="background:#0a0e0d"></span></div>
+    </div>
+    <div class="aest">
+      <div class="num">05 / 10</div>
+      <div class="name">Minimal <em>Luxury</em></div>
+      <div class="font">Cormorant Garamond · Manrope<br>Serif headers · hairline borders</div>
+      <div class="swatch-row"><span style="background:#fafaf7"></span><span style="background:#1a1a1a"></span><span style="background:#ececec"></span></div>
+    </div>
+    <div class="aest">
+      <div class="num">06 / 10</div>
+      <div class="name">Swiss <em>Design</em></div>
+      <div class="font">Inter Tight · IBM Plex Mono<br>Grid systems · numbered sections</div>
+      <div class="swatch-row"><span style="background:#ff2200"></span><span style="background:#f5f5f0"></span><span style="background:#0a0a0a"></span></div>
+    </div>
+    <div class="aest">
+      <div class="num">07 / 10</div>
+      <div class="name">Organic <em>Warm</em></div>
+      <div class="font">Fraunces · Plus Jakarta Sans<br>Terracotta · moss · cream</div>
+      <div class="swatch-row"><span style="background:#c9613a"></span><span style="background:#6a7a3a"></span><span style="background:#ebdfc4"></span></div>
+    </div>
+    <div class="aest">
+      <div class="num">08 / 10</div>
+      <div class="name">Industrial <em>Utilitarian</em></div>
+      <div class="font">Inter · JetBrains Mono<br>Dark steel · LED status</div>
+      <div class="swatch-row"><span style="background:#ff5722"></span><span style="background:#1a1d21"></span><span style="background:#4ade80"></span></div>
+    </div>
+    <div class="aest">
+      <div class="num">09 / 10</div>
+      <div class="name">Glass<em>morphism</em></div>
+      <div class="font">Geist · Geist Mono<br>Aurora gradients · 24px blur</div>
+      <div class="swatch-row"><span style="background:#7850ff"></span><span style="background:#ff6bcb"></span><span style="background:#5ad2ff"></span></div>
+    </div>
+    <div class="aest">
+      <div class="num">10 / 10</div>
+      <div class="name">Native <em>iOS</em></div>
+      <div class="font">SF Pro Display · SF Mono<br>iOS 18 patterns · bottom sheets</div>
+      <div class="swatch-row"><span style="background:#007aff"></span><span style="background:#5856d6"></span><span style="background:#34c759"></span></div>
+    </div>
+  </div>
+</section>
+
+<section class="section" id="designs">
+  <div class="section-head">
+    <div class="num">§ 01 · THE 10 DESIGNS</div>
+    <h2>Studies in <em>form</em></h2>
+  </div>
+  <div class="grid">
+
+    <article class="design featured">
+      <div class="design-frame">
+        <iframe src="designs/01-hero.html" loading="lazy" title="01 Hero"></iframe>
+      </div>
+      <div class="design-meta">
+        <div class="design-id">01 / 10 · HOMEPAGE HERO</div>
+        <h3>Editorial <em>Bold</em> Magazine</h3>
+        <p>The hero reimagined as a magazine cover. Oversized Fraunces serif headline, three staggered PDF cards, a spinning "open source forever" sticker, and a scrolling marquee ribbon. Designed to make the homepage feel like a publication, not a SaaS landing page.</p>
+        <div class="chips">
+          <span class="chip">Editorial</span>
+          <span class="chip">Fraunces</span>
+          <span class="chip">Marquee</span>
+          <span class="chip">Asymmetric grid</span>
+        </div>
+        <div class="design-actions">
+          <a class="btn primary" href="designs/01-hero.html" target="_blank">Open full</a>
+          <a class="btn" href="designs/01-hero.html" target="_blank">New tab</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="design">
+      <div class="design-frame">
+        <iframe src="designs/02-tools-grid.html" loading="lazy" title="02 Tools Grid"></iframe>
+      </div>
+      <div class="design-meta">
+        <div class="design-id">02 / 10 · TOOLS GRID</div>
+        <h3>Geometric <em>Brutalist</em> Cards</h3>
+        <p>31 tools as numbered, hard-edged blocks with 6px drop shadows. A featured "Merge PDF" card spans two columns. Color-coded by category, monospace numbering, and chunky category filter chips. Built for the Home page grid.</p>
+        <div class="chips">
+          <span class="chip">Brutalist</span>
+          <span class="chip">Hard shadows</span>
+          <span class="chip">Numbered system</span>
+        </div>
+        <div class="design-actions">
+          <a class="btn primary" href="designs/02-tools-grid.html" target="_blank">Open full</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="design">
+      <div class="design-frame">
+        <iframe src="designs/03-upload-zone.html" loading="lazy" title="03 Upload Zone"></iframe>
+      </div>
+      <div class="design-meta">
+        <div class="design-id">03 / 10 · FILE UPLOAD</div>
+        <h3>Playful <em>Pastel</em> Drop Zone</h3>
+        <p>A floating 3D gradient icon, bouncy animation, four quick-pick source chips (Photos, Dropbox, Drive, Recent), and a gradient mesh background. Designed to make the very first interaction feel fun rather than utilitarian.</p>
+        <div class="chips">
+          <span class="chip">Playful</span>
+          <span class="chip">3D micro-interaction</span>
+          <span class="chip">Multi-source</span>
+        </div>
+        <div class="design-actions">
+          <a class="btn primary" href="designs/03-upload-zone.html" target="_blank">Open full</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="design">
+      <div class="design-frame">
+        <iframe src="designs/04-processing.html" loading="lazy" title="04 Processing"></iframe>
+      </div>
+      <div class="design-meta">
+        <div class="design-id">04 / 10 · PROCESSING STATE</div>
+        <h3>Terminal <em>Retro</em> CRT</h3>
+        <p>The processing screen as a phosphor-green terminal. Live step list with `[✓]` / `[●]` / `[ ]` markers, throughput/memory/compression stats, scanline overlay, and a blinking cursor. The tool that "shows its work" the way power users want.</p>
+        <div class="chips">
+          <span class="chip">Retro</span>
+          <span class="chip">CRT effect</span>
+          <span class="chip">Live stats</span>
+        </div>
+        <div class="design-actions">
+          <a class="btn primary" href="designs/04-processing.html" target="_blank">Open full</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="design">
+      <div class="design-frame">
+        <iframe src="designs/05-download.html" loading="lazy" title="05 Download"></iframe>
+      </div>
+      <div class="design-meta">
+        <div class="design-id">05 / 10 · DOWNLOAD STATE</div>
+        <h3>Minimal <em>Luxury</em> Success</h3>
+        <p>Refined serif "Your file is ready." with corner brackets framing the card. A file summary card showing original → new size with the savings in moss green. A single primary CTA + secondary save. The opposite of pop-up chaos.</p>
+        <div class="chips">
+          <span class="chip">Luxury</span>
+          <span class="chip">Serif display</span>
+          <span class="chip">Quiet UI</span>
+        </div>
+        <div class="design-actions">
+          <a class="btn primary" href="designs/05-download.html" target="_blank">Open full</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="design">
+      <div class="design-frame">
+        <iframe src="designs/06-merge-tool.html" loading="lazy" title="06 Merge Tool"></iframe>
+      </div>
+      <div class="design-meta">
+        <div class="design-id">06 / 10 · MERGE TOOL PAGE</div>
+        <h3>Swiss <em>Design</em> Workspace</h3>
+        <p>A three-pane tool page: source list (left), page reorder canvas (center), output settings (right). Numbered masthead, dashed dividers, monospace metadata, color-coded source tags on every page. Maximum information density, zero chrome.</p>
+        <div class="chips">
+          <span class="chip">Swiss</span>
+          <span class="chip">3-pane layout</span>
+          <span class="chip">Drag-and-drop</span>
+        </div>
+        <div class="design-actions">
+          <a class="btn primary" href="designs/06-merge-tool.html" target="_blank">Open full</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="design">
+      <div class="design-frame">
+        <iframe src="designs/07-compress-tool.html" loading="lazy" title="07 Compress Tool"></iframe>
+      </div>
+      <div class="design-meta">
+        <div class="design-id">07 / 10 · COMPRESS TOOL PAGE</div>
+        <h3>Organic <em>Warm</em> Earth Tones</h3>
+        <p>Terracotta + moss + cream palette. Three preset cards (Light / Balanced / Maximum), a single-line file info bar with "14.8 MB → 7.1 MB" comparison, and a collapsible advanced section. Feels like cooking, not configuring.</p>
+        <div class="chips">
+          <span class="chip">Organic</span>
+          <span class="chip">Preset-driven</span>
+          <span class="chip">Soft shadows</span>
+        </div>
+        <div class="design-actions">
+          <a class="btn primary" href="designs/07-compress-tool.html" target="_blank">Open full</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="design">
+      <div class="design-frame">
+        <iframe src="designs/08-editor-toolbar.html" loading="lazy" title="08 Editor Toolbar"></iframe>
+      </div>
+      <div class="design-meta">
+        <div class="design-id">08 / 10 · EDITOR TOOLBAR</div>
+        <h3>Industrial <em>Utilitarian</em></h3>
+        <p>A dark steel editor with sectioned toolbars (FILE / NAVIGATE / ANNOTATE / VIEW), a multi-row status bar with X/Y/zoom/page info, glowing accent on the active tool, and a side properties panel for fine-grained control. Made for serious work.</p>
+        <div class="chips">
+          <span class="chip">Industrial</span>
+          <span class="chip">Dark UI</span>
+          <span class="chip">Multi-section</span>
+        </div>
+        <div class="design-actions">
+          <a class="btn primary" href="designs/08-editor-toolbar.html" target="_blank">Open full</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="design">
+      <div class="design-frame">
+        <iframe src="designs/09-annotation-panel.html" loading="lazy" title="09 Annotation Panel"></iframe>
+      </div>
+      <div class="design-meta">
+        <div class="design-id">09 / 10 · ANNOTATION PANEL</div>
+        <h3>Glass<em>morphism</em> Comments</h3>
+        <p>A two-pane review screen with a real PDF in the main view and a 24px-blur glassmorphic comment panel on the right. Aurora gradient background, numbered comment markers, quoted-text replies, tab filter chips. For review/collaboration.</p>
+        <div class="chips">
+          <span class="chip">Glassmorphism</span>
+          <span class="chip">Blur effects</span>
+          <span class="chip">Threaded comments</span>
+        </div>
+        <div class="design-actions">
+          <a class="btn primary" href="designs/09-annotation-panel.html" target="_blank">Open full</a>
+        </div>
+      </div>
+    </article>
+
+    <article class="design mobile" style="grid-column: span 2;">
+      <div class="design-frame">
+        <iframe src="designs/10-mobile-view.html" loading="lazy" title="10 Mobile"></iframe>
+      </div>
+      <div class="design-meta">
+        <div class="design-id">10 / 10 · MOBILE NATIVE iOS</div>
+        <h3>Native <em>iOS</em> Three-Screen Flow</h3>
+        <p>Three phone mockups in one frame: (1) Home with hero card + 8-tile quick-action grid + recent files list, (2) tool running with bottom-sheet progress + step list, (3) success sheet with circular percentage, file summary, and three share actions. Full iOS 18 patterns: blur nav, rounded sheets, system font stack.</p>
+        <div class="chips">
+          <span class="chip">iOS 18</span>
+          <span class="chip">Bottom sheets</span>
+          <span class="chip">3-phone flow</span>
+          <span class="chip">Tab bar</span>
+        </div>
+        <div class="design-actions">
+          <a class="btn primary" href="designs/10-mobile-view.html" target="_blank">Open full</a>
+        </div>
+      </div>
+    </article>
+
+  </div>
+</section>
+
+<section class="section" id="prototypes">
+  <div class="section-head">
+    <div class="num">§ 02 · PROTOTYPES</div>
+    <h2>Built from <em>inspiration</em></h2>
+  </div>
+  <div class="grid">
+
+    <article class="design featured">
+      <div class="design-frame">
+        <iframe src="prototype-upload-v2.html" loading="lazy" title="Upload Prototype v2 — Dark OLED"></iframe>
+      </div>
+      <div class="design-meta">
+        <div class="design-id">PROTOTYPE · Upload v2</div>
+        <h3>Dark OLED <em>Upload</em></h3>
+        <p>Design 03's playful pastel energy translated into dark OLED: floating coral icon with spring-physics animation, Double-Bezel nested cards, ambient aurora orbs, full 4-state flow (upload → configure → processing → download). Adapted for the actual app's dark palette and Lucide-style SVG icons.</p>
+        <div class="chips">
+          <span class="chip">Dark OLED</span>
+          <span class="chip">Spring physics</span>
+          <span class="chip">Double-Bezel</span>
+          <span class="chip">4-state flow</span>
+          <span class="chip">ARIA labels</span>
+        </div>
+        <div class="design-actions">
+          <a class="btn primary" href="prototype-upload-v2.html" target="_blank">Open full</a>
+        </div>
+      </div>
+    </article>
+
+  </div>
+</section>
+
+<footer>
+  <div class="left">LocalPDF Studio — 10 directions, 1 hybrid.</div>
+  <div class="right">
+    <span>100% client-side</span>
+    <span>·</span>
+    <span>No frameworks in previews</span>
+    <span>·</span>
+    <span>June 2026</span>
+  </div>
+</footer>
+
+</body>
+</html>

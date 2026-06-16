@@ -1,0 +1,25 @@
+node_modules/
+build/
+dist/
+coverage/
+.DS_Store
+*.log
+.env*
+!.env.example
+
+Agent-specific
+.windsurf/
+.opencode/
+opencode.json
+
+Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+Test artifacts
+.vitest-cache/
+playwright-report/
+test-results/
+.gstack/

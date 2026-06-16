@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
-import { File as FileIcon, X, GripVertical, Plus, ArrowLeft } from 'lucide-react';
+import { File as FileIcon, X, GripVertical, Plus, ArrowLeft, ChevronUp, ChevronDown } from 'lucide-react';
 import ToolLayout from '../../components/tools/ToolLayout';
 import FileUploadZone from '../../components/tools/FileUploadZone';
 import ProcessingState from '../../components/tools/ProcessingState';
@@ -46,6 +46,14 @@ export default function MergePdf() {
     if (newFiles.length === 0) {
       setStep('upload');
     }
+  };
+
+  const moveFile = (index: number, newIndex: number) => {
+    if (newIndex < 0 || newIndex >= files.length) return;
+    const items = Array.from(files);
+    const [reorderedItem] = items.splice(index, 1);
+    items.splice(newIndex, 0, reorderedItem);
+    setFiles(items);
   };
 
   const handleMerge = async () => {
@@ -165,6 +173,24 @@ export default function MergePdf() {
                                 <span className="font-medium text-[var(--text)] truncate">{file.name}</span>
                                 <span className="text-xs text-[var(--text-3)]">{(file.size / 1024 / 1024).toFixed(2)} MB</span>
                               </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <button
+                                aria-label="Move file up"
+                                onClick={() => moveFile(index, index - 1)}
+                                disabled={index === 0}
+                                className="p-2 rounded hover:bg-gray-100 disabled:opacity-50"
+                              >
+                                <ChevronUp size={16} />
+                              </button>
+                              <button
+                                aria-label="Move file down"
+                                onClick={() => moveFile(index, index + 1)}
+                                disabled={index === files.length - 1}
+                                className="p-2 rounded hover:bg-gray-100 disabled:opacity-50"
+                              >
+                                <ChevronDown size={16} />
+                              </button>
                             </div>
                             <button
                               onClick={() => removeFile(index)}

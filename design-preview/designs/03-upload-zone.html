@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>03 — File Upload · LocalPDF Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300..800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after { box-sizing: border-box; }
+  :root {
+    --bg: #fff5ec;
+    --card: #ffffff;
+    --primary: #ff6b9d;
+    --mint: #6ee0c7;
+    --lemon: #ffd66b;
+    --lilac: #c5b3ff;
+    --sky: #92c8ff;
+    --ink: #2a1a3a;
+    --muted: #8a7a8a;
+  }
+  body {
+    margin: 0; min-height: 100vh;
+    background:
+      radial-gradient(circle at 10% 20%, rgba(255,107,157,0.15) 0%, transparent 40%),
+      radial-gradient(circle at 90% 80%, rgba(110,224,199,0.18) 0%, transparent 40%),
+      radial-gradient(circle at 50% 50%, rgba(197,179,255,0.12) 0%, transparent 60%),
+      var(--bg);
+    font-family: 'Bricolage Grotesque', sans-serif;
+    color: var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    padding: 40px;
+    position: relative; overflow: hidden;
+  }
+  .blob {
+    position: absolute; border-radius: 50%; filter: blur(60px); opacity: 0.4; pointer-events: none;
+  }
+  .blob.b1 { width: 300px; height: 300px; background: var(--lemon); top: -50px; left: -50px; }
+  .blob.b2 { width: 250px; height: 250px; background: var(--lilac); bottom: -50px; right: 10%; }
+  .blob.b3 { width: 200px; height: 200px; background: var(--mint); top: 40%; right: -50px; }
+
+  .toolbar {
+    position: absolute; top: 24px; left: 24px; right: 24px;
+    display: flex; justify-content: space-between; align-items: center;
+    font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted);
+  }
+  .breadcrumb { display: flex; align-items: center; gap: 8px; }
+  .breadcrumb span:nth-child(1) { color: var(--ink); font-weight: 500; }
+  .step-pill {
+    background: var(--card); padding: 6px 14px; border-radius: 100px;
+    border: 1px solid rgba(42,26,58,0.1);
+  }
+  .step-pill .dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--primary); margin-right: 6px; vertical-align: middle; }
+
+  .stage {
+    width: 100%; max-width: 760px; position: relative; z-index: 1;
+  }
+  .heading {
+    text-align: center; margin-bottom: 32px;
+  }
+  .heading .kicker {
+    display: inline-block;
+    background: var(--ink); color: var(--bg);
+    padding: 6px 14px; border-radius: 100px;
+    font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.1em;
+    margin-bottom: 20px; text-transform: uppercase;
+  }
+  .heading h1 {
+    font-size: 48px; line-height: 1; margin: 0 0 12px;
+    font-weight: 700; letter-spacing: -0.02em;
+  }
+  .heading h1 em { font-style: italic; color: var(--primary); font-weight: 400; }
+  .heading p { color: var(--muted); margin: 0; font-size: 16px; }
+
+  .dropzone {
+    background: var(--card); border-radius: 32px;
+    padding: 56px 48px; position: relative;
+    box-shadow: 0 30px 60px -20px rgba(42,26,58,0.15), 0 8px 24px -8px rgba(42,26,58,0.08);
+    border: 2px dashed rgba(42,26,58,0.15);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+  }
+  .dropzone:hover { transform: translateY(-2px); box-shadow: 0 40px 80px -20px rgba(42,26,58,0.2), 0 12px 28px -8px rgba(42,26,58,0.1); border-color: var(--primary); }
+  .dropzone.hover { border-color: var(--primary); background: linear-gradient(180deg, var(--card) 0%, rgba(255,107,157,0.05) 100%); }
+
+  .icon-3d {
+    width: 96px; height: 96px; margin: 0 auto 24px;
+    background: linear-gradient(135deg, var(--primary) 0%, var(--lilac) 100%);
+    border-radius: 28px; display: flex; align-items: center; justify-content: center;
+    position: relative;
+    box-shadow: 0 12px 24px -6px rgba(255,107,157,0.5), inset 0 1px 0 rgba(255,255,255,0.4);
+    animation: float 3s ease-in-out infinite;
+  }
+  @keyframes float { 0%,100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-8px) rotate(2deg); } }
+  .icon-3d svg { width: 44px; height: 44px; color: white; }
+  .icon-3d::after {
+    content: ''; position: absolute; inset: 0; border-radius: 28px;
+    background: linear-gradient(135deg, rgba(255,255,255,0.4) 0%, transparent 50%);
+    pointer-events: none;
+  }
+
+  .drop-cta { text-align: center; }
+  .drop-cta h2 { font-size: 26px; font-weight: 600; margin: 0 0 8px; letter-spacing: -0.01em; }
+  .drop-cta p { color: var(--muted); margin: 0 0 28px; }
+  .btn-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+  .btn {
+    padding: 14px 24px; border-radius: 100px; border: 0;
+    font-family: inherit; font-weight: 600; font-size: 15px;
+    cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .btn-primary { background: var(--ink); color: var(--bg); }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 16px -4px rgba(42,26,58,0.3); }
+  .btn-ghost { background: transparent; color: var(--ink); border: 1px solid rgba(42,26,58,0.2); }
+
+  .or-row {
+    display: flex; align-items: center; gap: 16px; margin: 32px 0 0;
+    color: var(--muted); font-family: 'DM Mono', monospace; font-size: 12px;
+  }
+  .or-row::before, .or-row::after { content: ''; flex: 1; height: 1px; background: rgba(42,26,58,0.1); }
+
+  .quick-pick {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 24px;
+  }
+  .qp {
+    background: var(--card); border: 1px solid rgba(42,26,58,0.08);
+    border-radius: 18px; padding: 16px 12px; text-align: center;
+    cursor: pointer; transition: all 0.2s;
+    display: flex; flex-direction: column; align-items: center; gap: 8px;
+  }
+  .qp:hover { transform: translateY(-3px); box-shadow: 0 12px 24px -8px rgba(42,26,58,0.15); }
+  .qp .ico {
+    width: 40px; height: 40px; border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .qp:nth-child(1) .ico { background: rgba(255,107,157,0.15); color: var(--primary); }
+  .qp:nth-child(2) .ico { background: rgba(110,224,199,0.2); color: #2a8a72; }
+  .qp:nth-child(3) .ico { background: rgba(255,214,107,0.25); color: #b88a1a; }
+  .qp:nth-child(4) .ico { background: rgba(146,200,255,0.25); color: #2a6a9a; }
+  .qp span { font-size: 12px; font-weight: 500; }
+  .qp .ico svg { width: 20px; height: 20px; }
+
+  .trust {
+    display: flex; gap: 20px; justify-content: center; align-items: center;
+    margin-top: 24px; color: var(--muted); font-size: 12px;
+    font-family: 'DM Mono', monospace;
+  }
+  .trust .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--mint); display: inline-block; margin-right: 6px; }
+</style>
+</head>
+<body>
+<div class="blob b1"></div>
+<div class="blob b2"></div>
+<div class="blob b3"></div>
+<div class="toolbar">
+  <div class="breadcrumb">
+    <span>Merge PDF</span> › <span style="color:var(--muted)">Upload</span>
+  </div>
+  <div class="step-pill"><span class="dot"></span>Step 1 of 3</div>
+</div>
+<div class="stage">
+  <div class="heading">
+    <div class="kicker">Step 01 · Drop &amp; drag</div>
+    <h1>Add your <em>files</em> to begin</h1>
+    <p>Drag PDFs in, or pick from your device, cloud, or a recent file.</p>
+  </div>
+  <div class="dropzone">
+    <div class="icon-3d">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="17 8 12 3 7 8"/>
+        <line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+    </div>
+    <div class="drop-cta">
+      <h2>Drop PDFs here</h2>
+      <p>or browse from your device. Up to 50 files · 100MB each.</p>
+      <div class="btn-row">
+        <button class="btn btn-primary">Choose files</button>
+        <button class="btn btn-ghost">Paste from clipboard</button>
+      </div>
+    </div>
+  </div>
+  <div class="or-row">OR PICK A SOURCE</div>
+  <div class="quick-pick">
+    <div class="qp">
+      <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7M3 7l3-4h12l3 4M3 7h18"/><circle cx="9" cy="13" r="1.5"/><path d="m9 17 3-3 3 3 3-4"/></svg></div>
+      <span>From photos</span>
+    </div>
+    <div class="qp">
+      <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div>
+      <span>Dropbox</span>
+    </div>
+    <div class="qp">
+      <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2 2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg></div>
+      <span>Google Drive</span>
+    </div>
+    <div class="qp">
+      <div class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg></div>
+      <span>Recent</span>
+    </div>
+  </div>
+  <div class="trust">
+    <span><span class="dot"></span>Files never leave your device</span>
+    <span>·</span>
+    <span>End-to-end private</span>
+    <span>·</span>
+    <span>Processed in &lt; 2s</span>
+  </div>
+</div>
+</body>
+</html>

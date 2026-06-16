@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>04 — Processing · LocalPDF Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=VT323&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh;
+    background: #0a0e0d;
+    color: #c8e6c9;
+    font-family: 'JetBrains Mono', monospace;
+    padding: 32px;
+    display: flex; align-items: center; justify-content: center;
+    background-image:
+      repeating-linear-gradient(0deg, rgba(0,255,0,0.02) 0px, rgba(0,255,0,0.02) 1px, transparent 1px, transparent 3px),
+      radial-gradient(ellipse at center, rgba(0,40,20,0.4) 0%, transparent 70%);
+  }
+  .crt {
+    width: 100%; max-width: 880px;
+    background: #0d1411;
+    border: 2px solid #1a2e22;
+    border-radius: 12px;
+    box-shadow:
+      0 0 0 1px rgba(0,255,128,0.1),
+      0 30px 80px -20px rgba(0,255,128,0.15),
+      inset 0 0 80px rgba(0,255,128,0.04);
+    overflow: hidden;
+    position: relative;
+  }
+  .crt::before {
+    content: ''; position: absolute; inset: 0;
+    background: repeating-linear-gradient(0deg, rgba(0,0,0,0.15) 0px, rgba(0,0,0,0.15) 1px, transparent 1px, transparent 2px);
+    pointer-events: none; z-index: 10;
+  }
+  .crt::after {
+    content: ''; position: absolute; inset: 0;
+    background: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.5) 100%);
+    pointer-events: none; z-index: 11;
+  }
+
+  .topbar {
+    background: linear-gradient(180deg, #14201a 0%, #0d1411 100%);
+    border-bottom: 1px solid #1a2e22;
+    padding: 12px 20px;
+    display: flex; align-items: center; justify-content: space-between;
+    font-size: 12px;
+  }
+  .dots { display: flex; gap: 8px; }
+  .dot { width: 12px; height: 12px; border-radius: 50%; }
+  .dot.r { background: #ff5f56; }
+  .dot.y { background: #ffbd2e; }
+  .dot.g { background: #27c93f; }
+  .title { color: #4a8a64; font-weight: 500; }
+  .meta { color: #4a8a64; font-size: 11px; }
+
+  .body { padding: 28px 32px; }
+
+  .header {
+    display: flex; justify-content: space-between; align-items: end;
+    padding-bottom: 20px; border-bottom: 1px dashed #1a2e22;
+  }
+  .prompt { color: #00ff88; font-size: 14px; }
+  .prompt .path { color: #4a8a64; }
+  .prompt .arrow { color: #ffcc00; }
+  .ts { color: #4a8a64; font-size: 11px; }
+  h1 {
+    font-family: 'VT323', monospace;
+    font-size: 56px; line-height: 1; margin: 16px 0 6px;
+    color: #00ff88;
+    text-shadow: 0 0 8px rgba(0,255,136,0.5);
+    letter-spacing: 0.02em;
+  }
+  h1 .accent { color: #ffcc00; text-shadow: 0 0 8px rgba(255,204,0,0.5); }
+  .subline { color: #4a8a64; font-size: 13px; }
+
+  .progress-section { margin: 32px 0; }
+  .progress-label {
+    display: flex; justify-content: space-between; margin-bottom: 12px;
+    font-size: 13px;
+  }
+  .progress-label .pct { color: #00ff88; font-weight: 700; font-size: 18px; }
+  .progress-label .eta { color: #4a8a64; }
+  .bar {
+    height: 12px; background: #0a0e0d; border: 1px solid #1a2e22; border-radius: 0;
+    overflow: hidden; position: relative;
+    box-shadow: inset 0 1px 2px rgba(0,0,0,0.5);
+  }
+  .bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #00ff88 0%, #66ffaa 50%, #00ff88 100%);
+    background-size: 200% 100%;
+    box-shadow: 0 0 12px rgba(0,255,136,0.6);
+    width: 67%;
+    animation: shimmer 1.5s linear infinite;
+    position: relative;
+  }
+  @keyframes shimmer { to { background-position: -200% 0; } }
+  .bar-fill::after {
+    content: ''; position: absolute; inset: 0;
+    background: repeating-linear-gradient(90deg, transparent 0, transparent 3px, rgba(0,0,0,0.3) 3px, rgba(0,0,0,0.3) 4px);
+  }
+
+  .steps {
+    background: #050807; border: 1px solid #1a2e22; border-radius: 6px;
+    padding: 16px 20px; margin-top: 24px;
+    font-size: 13px; line-height: 2;
+  }
+  .step { display: flex; gap: 12px; align-items: center; }
+  .step .marker { width: 18px; text-align: center; font-weight: 700; }
+  .step.done .marker { color: #00ff88; }
+  .step.active .marker { color: #ffcc00; animation: blink 0.8s infinite; }
+  .step.pending .marker { color: #4a8a64; }
+  .step.done { color: #4a8a64; }
+  .step.active { color: #e0ffe5; }
+  .step.pending { color: #2a4a36; }
+  .step .name { flex: 1; }
+  .step .time { font-size: 11px; }
+  .step.done .time { color: #4a8a64; }
+  .step.active .time { color: #ffcc00; }
+  @keyframes blink { 50% { opacity: 0.3; } }
+
+  .stats-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 12px; margin-top: 24px;
+  }
+  .stat-box {
+    border: 1px solid #1a2e22; padding: 14px 16px; background: #050807;
+    border-radius: 6px;
+  }
+  .stat-box .label { font-size: 10px; color: #4a8a64; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 4px; }
+  .stat-box .val { font-size: 20px; color: #00ff88; font-weight: 700; }
+  .stat-box .val .unit { color: #4a8a64; font-size: 12px; font-weight: 400; }
+
+  .cursor {
+    display: inline-block; width: 10px; height: 18px; background: #00ff88;
+    margin-left: 4px; vertical-align: middle;
+    animation: cursor 1s step-end infinite;
+    box-shadow: 0 0 6px rgba(0,255,136,0.6);
+  }
+  @keyframes cursor { 50% { opacity: 0; } }
+</style>
+</head>
+<body>
+<div class="crt">
+  <div class="topbar">
+    <div class="dots"><span class="dot r"></span><span class="dot y"></span><span class="dot g"></span></div>
+    <div class="title">localpdf@studio: ~/merge --compress</div>
+    <div class="meta">PID 4821 · MEM 142MB</div>
+  </div>
+  <div class="body">
+    <div class="header">
+      <div>
+        <div class="prompt"><span class="path">~/projects/contracts</span> <span class="arrow">→</span> merge-pdf --output=q3-merged.pdf</div>
+        <h1>MERGING <span class="accent">12 FILES</span>...</h1>
+        <div class="subline">→ Compressing output · Preserving vector quality · Local execution only</div>
+      </div>
+      <div class="ts">[11:42:08]</div>
+    </div>
+    <div class="progress-section">
+      <div class="progress-label">
+        <span>PROCESSING <span class="pct">67%</span></span>
+        <span class="eta">ETA: 00:00:08</span>
+      </div>
+      <div class="bar"><div class="bar-fill"></div></div>
+    </div>
+    <div class="steps">
+      <div class="step done"><span class="marker">[✓]</span><span class="name">→ parsing 12 PDF documents</span><span class="time">2.1s</span></div>
+      <div class="step done"><span class="marker">[✓]</span><span class="name">→ validating page structure (384 pages)</span><span class="time">0.8s</span></div>
+      <div class="step done"><span class="marker">[✓]</span><span class="name">→ normalizing metadata</span><span class="time">0.4s</span></div>
+      <div class="step active"><span class="marker">[●]</span><span class="name">→ merging streams &amp; cross-ref tables</span><span class="time">...</span></div>
+      <div class="step pending"><span class="marker">[ ]</span><span class="name">→ compressing output with qPDF-compatible</span><span class="time">--</span></div>
+      <div class="step pending"><span class="marker">[ ]</span><span class="name">→ generating preview thumbnail</span><span class="time">--</span></div>
+      <div class="step pending"><span class="marker">[ ]</span><span class="name">→ writing final blob to IndexedDB</span><span class="time">--</span></div>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-box">
+        <div class="label">Throughput</div>
+        <div class="val">28.4<span class="unit"> MB/s</span></div>
+      </div>
+      <div class="stat-box">
+        <div class="label">Memory</div>
+        <div class="val">142<span class="unit"> MB</span></div>
+      </div>
+      <div class="stat-box">
+        <div class="label">Compression</div>
+        <div class="val">-34<span class="unit"> %</span></div>
+      </div>
+    </div>
+    <div class="prompt" style="margin-top:24px; font-size:13px;">
+      $ localpdf status --live<span class="cursor"></span>
+    </div>
+  </div>
+</div>
+</body>
+</html>

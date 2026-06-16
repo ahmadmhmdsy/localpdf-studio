@@ -1,0 +1,1293 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Upload · LocalPDF Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg: #080809;
+    --surface: #111215;
+    --surface-2: #18181d;
+    --border: rgba(255,255,255,0.07);
+    --border-glow: rgba(255,107,157,0.35);
+    --text: #f0ece6;
+    --text-2: #a8a4a0;
+    --text-3: #a09c98;
+    --accent: #ff6b9d;
+    --accent-dim: rgba(255,107,157,0.15);
+    --accent-2: #6ee0c7;
+    --accent-3: #ffd66b;
+    --accent-4: #c5b3ff;
+    --radius-xl: 28px;
+    --radius-lg: 20px;
+    --radius-md: 14px;
+    --radius-sm: 10px;
+    --transition: 250ms cubic-bezier(0.32,0.72,0,1);
+    --transition-slow: 500ms cubic-bezier(0.32,0.72,0,1);
+  }
+
+  [data-theme="light"] {
+    --bg: #fff8f0;
+    --surface: #ffffff;
+    --surface-2: #f5f0e8;
+    --border: rgba(42,26,58,0.13);
+    --border-glow: rgba(255,107,157,0.4);
+    --text: #2a1a3a;
+    --text-2: #4a3a5a;
+    --text-3: #7d7290;
+    --accent: #ff6b9d;
+    --accent-dim: rgba(255,107,157,0.12);
+    --accent-2: #3ab89a;
+    --accent-3: #d4a012;
+    --accent-4: #9b7fd4;
+  }
+
+  html { font-size: 16px; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    min-height: 100dvh;
+    overflow-x: hidden;
+  }
+
+  /* ── AMBIENT ORBS ── */
+  .orbs {
+    position: fixed; inset: 0; pointer-events: none; z-index: 0; overflow: hidden;
+  }
+  .orb {
+    position: absolute; border-radius: 50%; filter: blur(80px);
+  }
+  [data-theme="dark"] .orb { opacity: 0.55; }
+  [data-theme="light"] .orb { opacity: 0.35; }
+  .orb-1 {
+    width: 480px; height: 480px;
+    background: radial-gradient(circle, rgba(255,107,157,0.35) 0%, transparent 70%);
+    top: -120px; left: -100px;
+    animation: drift1 12s ease-in-out infinite alternate;
+  }
+  .orb-2 {
+    width: 380px; height: 380px;
+    background: radial-gradient(circle, rgba(110,224,199,0.25) 0%, transparent 70%);
+    bottom: -80px; right: 5%;
+    animation: drift2 15s ease-in-out infinite alternate;
+  }
+  .orb-3 {
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(197,179,255,0.2) 0%, transparent 70%);
+    top: 40%; right: -60px;
+    animation: drift3 18s ease-in-out infinite alternate;
+  }
+  .orb-4 {
+    width: 240px; height: 240px;
+    background: radial-gradient(circle, rgba(255,214,107,0.18) 0%, transparent 70%);
+    bottom: 20%; left: 30%;
+    animation: drift1 20s ease-in-out infinite alternate-reverse;
+  }
+  @keyframes drift1 {
+    from { transform: translate(0, 0) scale(1); }
+    to   { transform: translate(40px, 30px) scale(1.08); }
+  }
+  @keyframes drift2 {
+    from { transform: translate(0, 0) scale(1); }
+    to   { transform: translate(-30px, -40px) scale(1.05); }
+  }
+  @keyframes drift3 {
+    from { transform: translate(0, 0) scale(1); }
+    to   { transform: translate(-50px, 20px) scale(0.95); }
+  }
+
+  /* ── GRAIN OVERLAY ── */
+  .grain {
+    position: fixed; inset: 0; pointer-events: none; z-index: 200;
+    opacity: 0.03;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  }
+  [data-theme="light"] .grain { opacity: 0.025; }
+
+  /* ── LIGHT MODE SURFACES ── */
+  [data-theme="light"] .dropzone-card::before {
+    background: linear-gradient(180deg, rgba(255,255,255,0.6) 0%, transparent 40%);
+  }
+  [data-theme="light"] .dropzone-shell:focus-within {
+    border-color: rgba(255,107,157,0.5);
+    box-shadow: 0 0 0 1px rgba(255,107,157,0.12), 0 20px 60px -20px rgba(255,107,157,0.2);
+  }
+  [data-theme="light"] .processing-card::before {
+    background: linear-gradient(180deg, rgba(255,255,255,0.7) 0%, transparent 50%);
+  }
+  [data-theme="light"] .download-card {
+    box-shadow: 0 20px 60px -20px rgba(58,184,154,0.2), 0 0 0 1px rgba(58,184,154,0.15);
+  }
+  [data-theme="light"] .download-card::before {
+    background: linear-gradient(180deg, rgba(255,255,255,0.5) 0%, transparent 50%);
+  }
+  [data-theme="light"] .file-list-shell {
+    background: rgba(255,255,255,0.6);
+  }
+  [data-theme="light"] .success-icon {
+    background: rgba(58,184,154,0.1);
+    border-color: rgba(58,184,154,0.2);
+  }
+  [data-theme="light"] .upload-icon-orb {
+    background: radial-gradient(circle, rgba(255,107,157,0.2) 0%, transparent 70%);
+    filter: blur(16px);
+  }
+  [data-theme="light"] .upload-icon-bg {
+    background: rgba(255,255,255,0.8);
+    border-color: rgba(255,107,157,0.2);
+    box-shadow: 0 8px 32px -8px rgba(255,107,157,0.3), inset 0 1px 0 rgba(255,255,255,0.9);
+  }
+  [data-theme="light"] .upload-icon-bg svg { filter: none; }
+
+  /* ── THEME TOGGLE ── */
+  .theme-toggle {
+    display: flex; align-items: center; justify-content: center;
+    width: 36px; height: 36px; border-radius: 50%;
+    background: var(--surface-2); border: 1px solid var(--border);
+    cursor: pointer; color: var(--text-2);
+    transition: background var(--transition), color var(--transition), border-color var(--transition), transform 150ms;
+    flex-shrink: 0;
+  }
+  .theme-toggle:hover {
+    background: var(--surface); color: var(--accent);
+    border-color: rgba(255,107,157,0.3);
+    transform: scale(1.08);
+  }
+  .theme-toggle:active { transform: scale(0.94); }
+  .theme-toggle:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  [data-theme="dark"] .icon-sun { display: block; }
+  [data-theme="dark"] .icon-moon { display: none; }
+  [data-theme="light"] .icon-sun { display: none; }
+  [data-theme="light"] .icon-moon { display: block; }
+
+  /* ── TOPBAR ── */
+  .topbar {
+    position: relative; z-index: 10;
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 20px 32px;
+  }
+  .breadcrumb {
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text-3);
+  }
+  .breadcrumb span { color: var(--text-2); font-weight: 500; }
+  .breadcrumb span:last-child { color: var(--text-3); }
+
+  .step-pill {
+    display: flex; align-items: center; gap: 8px;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    padding: 6px 14px; border-radius: 100px;
+    font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-2);
+    letter-spacing: 0.05em;
+  }
+  .step-pill-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--accent);
+    animation: pulse-dot 2s ease-in-out infinite;
+  }
+  @keyframes pulse-dot {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.6; transform: scale(0.8); }
+  }
+
+  /* ── MAIN STAGE ── */
+  .stage {
+    position: relative; z-index: 1;
+    display: flex; flex-direction: column; align-items: center;
+    padding: 0 24px 80px;
+    min-height: calc(100dvh - 80px);
+    justify-content: center;
+  }
+
+  /* ── SECTION HEADER ── */
+  .section-header {
+    text-align: center; margin-bottom: 40px;
+    animation: fade-up 600ms cubic-bezier(0.32,0.72,0,1) both;
+  }
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(24px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .kicker {
+    display: inline-block;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--accent);
+    padding: 5px 14px; border-radius: 100px;
+    font-family: 'DM Mono', monospace; font-size: 11px; letter-spacing: 0.12em;
+    text-transform: uppercase; margin-bottom: 20px;
+  }
+  .section-header h1 {
+    font-size: clamp(36px, 5vw, 56px);
+    font-weight: 800; line-height: 1.05; letter-spacing: -0.03em;
+    margin-bottom: 12px;
+    color: var(--text);
+  }
+  .section-header h1 em {
+    font-style: italic; font-weight: 600;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-4) 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  .section-header p {
+    color: var(--text-2); font-size: 16px; max-width: 44ch; margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  /* ── DOUBLE-BEZEL DROPZONE CARD ── */
+  .dropzone-shell {
+    width: 100%; max-width: 680px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: 3px;
+    animation: fade-up 600ms 100ms cubic-bezier(0.32,0.72,0,1) both;
+    transition: border-color var(--transition), box-shadow var(--transition);
+  }
+  .dropzone-shell:focus-within {
+    border-color: rgba(255,107,157,0.4);
+    box-shadow: 0 0 0 1px rgba(255,107,157,0.15), 0 20px 60px -20px rgba(255,107,157,0.25);
+  }
+
+  .dropzone-card {
+    background: var(--surface);
+    border-radius: calc(var(--radius-xl) - 3px);
+    padding: 52px 48px;
+    position: relative; overflow: hidden;
+    border: 2px dashed rgba(255,255,255,0.08);
+    cursor: pointer;
+    transition: border-color var(--transition), background var(--transition);
+  }
+  .dropzone-card:hover { border-color: rgba(255,107,157,0.3); }
+  .dropzone-card.drag-over {
+    border-color: var(--accent);
+    background: linear-gradient(180deg, rgba(255,107,157,0.04) 0%, rgba(255,107,157,0.01) 100%);
+  }
+
+  /* inner highlight */
+  .dropzone-card::before {
+    content: '';
+    position: absolute; inset: 0; border-radius: inherit;
+    background: linear-gradient(180deg, rgba(255,255,255,0.04) 0%, transparent 50%);
+    pointer-events: none;
+  }
+
+  /* ── FLOATING UPLOAD ICON ── */
+  .upload-icon {
+    width: 88px; height: 88px;
+    margin: 0 auto 24px;
+    position: relative;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .upload-icon-orb {
+    position: absolute; inset: 0; border-radius: 24px;
+    background: linear-gradient(135deg, rgba(255,107,157,0.25) 0%, rgba(197,179,255,0.2) 100%);
+    filter: blur(12px);
+    animation: icon-float 4s ease-in-out infinite;
+  }
+  @keyframes icon-float {
+    0%, 100% { transform: translateY(0) rotate(-2deg) scale(1); }
+    50%       { transform: translateY(-10px) rotate(3deg) scale(1.04); }
+  }
+  .upload-icon-bg {
+    position: absolute; inset: 0; border-radius: 24px;
+    background: linear-gradient(135deg, rgba(255,107,157,0.2) 0%, rgba(197,179,255,0.15) 100%);
+    border: 1px solid rgba(255,255,255,0.1);
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 8px 32px -8px rgba(255,107,157,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+    transition: transform var(--transition), box-shadow var(--transition);
+  }
+  .dropzone-card:hover .upload-icon-bg {
+    transform: translateY(-2px) rotate(-2deg);
+    box-shadow: 0 16px 48px -12px rgba(255,107,157,0.5), inset 0 1px 0 rgba(255,255,255,0.15);
+  }
+  .upload-icon-bg svg {
+    width: 40px; height: 40px;
+    color: var(--accent);
+    filter: drop-shadow(0 0 8px rgba(255,107,157,0.5));
+  }
+
+  /* ── DROP CTA ── */
+  .drop-cta { text-align: center; }
+  .drop-cta h2 {
+    font-size: 22px; font-weight: 700; letter-spacing: -0.01em;
+    margin-bottom: 6px;
+  }
+  .drop-cta p {
+    color: var(--text-3); font-size: 14px; margin-bottom: 28px;
+  }
+  .btn-row {
+    display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;
+  }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 13px 22px; border-radius: 100px;
+    font-family: inherit; font-weight: 600; font-size: 14px;
+    cursor: pointer; border: none; text-decoration: none;
+    transition: transform 150ms, box-shadow 150ms, background var(--transition);
+    min-height: 44px;
+  }
+  .btn-primary {
+    background: var(--text); color: var(--bg);
+  }
+  .btn-primary:hover { transform: translateY(-1px); box-shadow: 0 8px 24px -8px rgba(255,255,255,0.2); }
+  .btn-primary:active { transform: translateY(0) scale(0.98); }
+  .btn-ghost {
+    background: transparent; color: var(--text-2);
+    border: 1px solid var(--border);
+  }
+  .btn-ghost:hover { background: rgba(255,255,255,0.04); color: var(--text); }
+  .btn-ghost:active { transform: scale(0.98); }
+  .btn:focus-visible {
+    outline: 2px solid var(--accent); outline-offset: 2px;
+  }
+
+  /* ── OR DIVIDER ── */
+  .or-row {
+    display: flex; align-items: center; gap: 16px;
+    margin: 28px 0 0;
+    color: var(--text-3); font-family: 'DM Mono', monospace; font-size: 11px;
+    letter-spacing: 0.1em; text-transform: uppercase;
+  }
+  .or-row::before, .or-row::after {
+    content: ''; flex: 1; height: 1px; background: var(--border);
+  }
+
+  /* ── QUICK-PICK GRID ── */
+  .quick-pick {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-top: 20px;
+  }
+  .qp {
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-md);
+    padding: 16px 10px; text-align: center;
+    cursor: pointer; display: flex; flex-direction: column; align-items: center; gap: 8px;
+    transition: transform 200ms cubic-bezier(0.32,0.72,0,1), box-shadow 200ms, border-color var(--transition), background var(--transition);
+    min-height: 80px; justify-content: center;
+    opacity: 0;
+    animation: qp-enter 400ms cubic-bezier(0.32,0.72,0,1) forwards;
+  }
+  .qp:nth-child(1) { animation-delay: 150ms; }
+  .qp:nth-child(2) { animation-delay: 200ms; }
+  .qp:nth-child(3) { animation-delay: 250ms; }
+  .qp:nth-child(4) { animation-delay: 300ms; }
+  @keyframes qp-enter {
+    from { opacity: 0; transform: translateY(16px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .qp:hover {
+    transform: translateY(-4px) scale(1.03);
+    box-shadow: 0 16px 40px -12px rgba(0,0,0,0.35);
+    border-color: rgba(255,255,255,0.14);
+    background: rgba(255,255,255,0.05);
+  }
+  [data-theme="light"] .qp:hover {
+    box-shadow: 0 16px 40px -12px rgba(42,26,58,0.15);
+    border-color: rgba(42,26,58,0.18);
+  }
+  .qp:active { transform: translateY(0) scale(0.97); }
+  .qp:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .qp-ico {
+    width: 38px; height: 38px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    transition: transform var(--transition);
+  }
+  .qp:hover .qp-ico { transform: scale(1.1); }
+  .qp:nth-child(1) .qp-ico { background: rgba(255,107,157,0.15); color: var(--accent); }
+  .qp:nth-child(2) .qp-ico { background: rgba(110,224,199,0.15); color: var(--accent-2); }
+  .qp:nth-child(3) .qp-ico { background: rgba(255,214,107,0.15); color: var(--accent-3); }
+  .qp:nth-child(4) .qp-ico { background: rgba(197,179,255,0.15); color: var(--accent-4); }
+  .qp-ico svg { width: 18px; height: 18px; }
+  .qp span { font-size: 12px; font-weight: 500; color: var(--text-2); }
+
+  /* ── TRUST ROW ── */
+  .trust {
+    display: flex; gap: 20px; justify-content: center; align-items: center;
+    margin-top: 28px;
+    color: var(--text-3); font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    flex-wrap: wrap;
+  }
+  .trust-dot {
+    width: 5px; height: 5px; border-radius: 50%;
+    background: var(--accent-2); display: inline-block; margin-right: 5px;
+  }
+  .trust span { display: flex; align-items: center; gap: 5px; }
+
+  /* ── STEP INDICATOR ── */
+  .step-track {
+    display: flex; gap: 4px; justify-content: center;
+    margin-bottom: 36px;
+    animation: fade-up 600ms 50ms cubic-bezier(0.32,0.72,0,1) both;
+  }
+  .step-item {
+    display: flex; align-items: center; gap: 6px;
+    font-family: 'DM Mono', monospace; font-size: 11px;
+    color: var(--text-3); padding: 6px 12px;
+    border-radius: 100px; border: 1px solid transparent;
+    transition: all var(--transition);
+  }
+  .step-item.active {
+    background: rgba(255,107,157,0.1);
+    border-color: rgba(255,107,157,0.25);
+    color: var(--accent);
+  }
+  .step-item.done {
+    color: var(--accent-2);
+  }
+  .step-num {
+    width: 18px; height: 18px; border-radius: 50%;
+    background: var(--surface-2); border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 600;
+    transition: all var(--transition);
+  }
+  .step-item.active .step-num {
+    background: var(--accent); color: var(--bg); border-color: var(--accent);
+    box-shadow: 0 0 12px rgba(255,107,157,0.4);
+  }
+  .step-item.done .step-num {
+    background: var(--accent-2); color: var(--bg); border-color: var(--accent-2);
+  }
+
+  /* ── CONFIGURE STATE ── */
+  .configure-state {
+    display: none;
+    width: 100%; max-width: 680px;
+    animation: fade-up 400ms cubic-bezier(0.32,0.72,0,1) both;
+  }
+  .configure-state.visible { display: block; }
+  .upload-state.hidden { display: none; }
+
+  .file-list-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 16px;
+  }
+  .file-list-title {
+    font-size: 15px; font-weight: 600; color: var(--text-2);
+    display: flex; align-items: center; gap: 8px;
+  }
+  .file-count-badge {
+    background: var(--accent-dim); color: var(--accent);
+    font-size: 11px; font-family: 'DM Mono', monospace;
+    padding: 2px 8px; border-radius: 100px;
+  }
+  .btn-remove-all {
+    background: transparent; border: none; cursor: pointer;
+    color: var(--text-3); font-family: inherit; font-size: 13px;
+    padding: 6px 10px; border-radius: var(--radius-sm);
+    transition: all var(--transition);
+  }
+  .btn-remove-all:hover { color: var(--text); background: rgba(255,255,255,0.04); }
+  .btn-remove-all:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  .file-list-shell {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    padding: 3px;
+    margin-bottom: 20px;
+  }
+  .file-list-card {
+    background: var(--surface);
+    border-radius: calc(var(--radius-lg) - 3px);
+    overflow: hidden;
+  }
+  .file-item {
+    display: flex; align-items: center; gap: 14px;
+    padding: 14px 16px;
+    border-bottom: 1px solid var(--border);
+    transition: background var(--transition);
+    cursor: grab;
+  }
+  .file-item:last-child { border-bottom: none; }
+  .file-item:hover { background: rgba(255,255,255,0.02); }
+  .file-item:active { cursor: grabbing; }
+  .file-grip {
+    color: var(--text-3); flex-shrink: 0;
+    display: flex; align-items: center;
+  }
+  .file-icon-wrap {
+    width: 40px; height: 40px; border-radius: 10px;
+    background: rgba(255,107,157,0.1);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .file-icon-wrap svg { width: 20px; height: 20px; color: var(--accent); }
+  .file-info { flex: 1; min-width: 0; }
+  .file-name {
+    font-size: 14px; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .file-meta {
+    font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-3);
+    display: flex; gap: 12px; margin-top: 3px;
+  }
+  .file-remove {
+    background: transparent; border: none; cursor: pointer;
+    color: var(--text-3); padding: 6px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    transition: all var(--transition); opacity: 0;
+    flex-shrink: 0;
+  }
+  .file-item:hover .file-remove { opacity: 1; }
+  .file-remove:hover { color: #ff4d4d; background: rgba(255,77,77,0.1); }
+  .file-remove:focus-visible { outline: 2px solid #ff4d4d; outline-offset: 2px; opacity: 1; }
+  .file-remove svg { width: 14px; height: 14px; }
+
+  /* ── ACTION ROW ── */
+  .action-row {
+    display: flex; justify-content: flex-end; gap: 10px;
+    animation: fade-up 400ms 100ms cubic-bezier(0.32,0.72,0,1) both;
+  }
+  .btn-merge {
+    background: var(--text); color: var(--bg);
+    padding: 14px 32px; border-radius: 100px;
+    font-weight: 700; font-size: 15px;
+    border: none; cursor: pointer; font-family: inherit;
+    display: inline-flex; align-items: center; gap: 8px;
+    transition: transform 150ms, box-shadow 150ms;
+    min-height: 48px;
+    box-shadow: 0 4px 20px -4px rgba(255,255,255,0.15);
+  }
+  .btn-merge:hover { transform: translateY(-2px); box-shadow: 0 8px 32px -8px rgba(255,255,255,0.2); }
+  .btn-merge:active { transform: translateY(0) scale(0.98); }
+  .btn-merge:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+  .btn-merge:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .btn-merge svg { width: 18px; height: 18px; }
+  .btn-back {
+    background: transparent; border: 1px solid var(--border);
+    color: var(--text-2); padding: 14px 20px;
+    border-radius: 100px; cursor: pointer; font-family: inherit; font-size: 14px;
+    display: inline-flex; align-items: center; gap: 8px;
+    transition: all var(--transition); min-height: 48px;
+  }
+  .btn-back:hover { background: rgba(255,255,255,0.04); color: var(--text); }
+  .btn-back:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .btn-back svg { width: 16px; height: 16px; }
+
+  /* ── PROCESSING STATE ── */
+  .processing-state {
+    display: none;
+    width: 100%; max-width: 680px;
+    animation: fade-up 400ms cubic-bezier(0.32,0.72,0,1) both;
+  }
+  .processing-state.visible { display: block; }
+  .upload-state.processing-hidden { display: none; }
+
+  .processing-card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    padding: 56px 48px;
+    text-align: center;
+    position: relative; overflow: hidden;
+    animation: processing-enter 450ms cubic-bezier(0.32,0.72,0,1) both;
+  }
+  @keyframes processing-enter {
+    from { opacity: 0; transform: scale(0.96) translateY(12px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  .processing-card::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(255,107,157,0.03) 0%, transparent 50%);
+    pointer-events: none;
+  }
+  .processing-ring {
+    width: 100px; height: 100px; margin: 0 auto 32px;
+    position: relative;
+  }
+  .processing-ring svg {
+    width: 100px; height: 100px; transform: rotate(-90deg);
+  }
+  .processing-ring-bg {
+    fill: none; stroke: var(--surface-2); stroke-width: 6;
+  }
+  .processing-ring-fill {
+    fill: none; stroke: var(--accent); stroke-width: 6;
+    stroke-linecap: round;
+    stroke-dasharray: 251;
+    stroke-dashoffset: 251;
+    filter: drop-shadow(0 0 8px rgba(255,107,157,0.5));
+    transition: stroke-dashoffset 0.15s ease-out;
+  }
+  .processing-ring-label {
+    position: absolute; inset: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'DM Mono', monospace; font-size: 20px; font-weight: 500;
+    color: var(--accent);
+  }
+  .processing-title {
+    font-size: 20px; font-weight: 700; margin-bottom: 8px;
+  }
+  .processing-sub {
+    color: var(--text-3); font-size: 14px; margin-bottom: 28px;
+  }
+  .processing-steps {
+    display: flex; flex-direction: column; gap: 12px; max-width: 300px; margin: 0 auto;
+  }
+  .proc-step {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 13px; color: var(--text-3);
+    transition: color var(--transition);
+  }
+  .proc-step.active { color: var(--text-2); }
+  .proc-step.done { color: var(--accent-2); }
+  .proc-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--surface-2); border: 1px solid var(--border);
+    flex-shrink: 0; transition: all var(--transition);
+  }
+  .proc-step.active .proc-dot {
+    background: var(--accent); border-color: var(--accent);
+    box-shadow: 0 0 8px rgba(255,107,157,0.5);
+    animation: pulse-dot 1s ease-in-out infinite;
+  }
+  .proc-step.done .proc-dot { background: var(--accent-2); border-color: var(--accent-2); }
+
+  /* ── DOWNLOAD STATE ── */
+  .download-state {
+    display: none;
+    width: 100%; max-width: 680px;
+    animation: fade-up 400ms cubic-bezier(0.32,0.72,0,1) both;
+  }
+  .download-state.visible { display: block; }
+  .processing-state.visible + .download-state,
+  .upload-state.processing-hidden + .download-state { display: none; }
+
+  .download-card {
+    background: var(--surface);
+    border: 1px solid rgba(110,224,199,0.2);
+    border-radius: var(--radius-xl);
+    padding: 56px 48px;
+    text-align: center;
+    position: relative; overflow: hidden;
+    box-shadow: 0 0 60px -20px rgba(110,224,199,0.15);
+    animation: download-enter 450ms cubic-bezier(0.32,0.72,0,1) both;
+  }
+  @keyframes download-enter {
+    from { opacity: 0; transform: scale(0.95) translateY(16px); }
+    to   { opacity: 1; transform: scale(1) translateY(0); }
+  }
+  .download-card::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: linear-gradient(180deg, rgba(110,224,199,0.04) 0%, transparent 50%);
+    pointer-events: none;
+  }
+  .success-icon {
+    width: 80px; height: 80px; border-radius: 50%;
+    background: rgba(110,224,199,0.12);
+    border: 1px solid rgba(110,224,199,0.25);
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 28px;
+    animation: success-pop 400ms cubic-bezier(0.32,0.72,0,1) both;
+  }
+  @keyframes success-pop {
+    from { transform: scale(0.6) rotate(-10deg); opacity: 0; }
+    to   { transform: scale(1) rotate(0deg); opacity: 1; }
+  }
+  .success-icon svg { width: 36px; height: 36px; color: var(--accent-2); overflow: visible; }
+  .check-path {
+    stroke-dasharray: 30;
+    stroke-dashoffset: 30;
+    animation: check-draw 500ms 350ms cubic-bezier(0.32,0.72,0,1) forwards;
+  }
+  @keyframes check-draw {
+    to { stroke-dashoffset: 0; }
+  }
+  .download-title { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+  .download-sub { color: var(--text-3); font-size: 14px; margin-bottom: 6px; }
+  .download-size {
+    font-family: 'DM Mono', monospace; font-size: 13px;
+    color: var(--accent-2); margin-bottom: 32px;
+  }
+  .btn-download {
+    background: var(--accent-2); color: #0a1a16;
+    padding: 15px 36px; border-radius: 100px;
+    font-weight: 700; font-size: 15px; border: none; cursor: pointer;
+    font-family: inherit; display: inline-flex; align-items: center; gap: 8px;
+    transition: transform 150ms, box-shadow 150ms;
+    min-height: 48px;
+    box-shadow: 0 4px 20px -4px rgba(110,224,199,0.4);
+  }
+  .btn-download:hover { transform: translateY(-2px); box-shadow: 0 8px 32px -8px rgba(110,224,199,0.5); }
+  .btn-download:active { transform: scale(0.98); }
+  .btn-download:focus-visible { outline: 2px solid var(--accent-2); outline-offset: 2px; }
+  .btn-download svg { width: 18px; height: 18px; }
+  .btn-new {
+    background: transparent; border: 1px solid var(--border);
+    color: var(--text-2); padding: 14px 20px;
+    border-radius: 100px; cursor: pointer; font-family: inherit; font-size: 14px;
+    display: inline-flex; align-items: center; gap: 8px;
+    transition: all var(--transition); min-height: 48px;
+    margin-left: 10px;
+  }
+  .btn-new:hover { background: rgba(255,255,255,0.04); color: var(--text); }
+  .btn-new:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  .btn-new svg { width: 16px; height: 16px; }
+
+  /* ── RESPONSIVE ── */
+  @media (max-width: 640px) {
+    .stage { padding: 0 16px 60px; }
+    .dropzone-card { padding: 40px 24px; }
+    .quick-pick { grid-template-columns: repeat(2, 1fr); }
+    .topbar { padding: 16px 20px; }
+    .trust { gap: 12px; }
+    .step-track { gap: 2px; }
+    .step-item span { display: none; }
+    .step-item { padding: 6px 8px; }
+    .action-row { flex-direction: column; }
+    .btn-merge, .btn-back { width: 100%; justify-content: center; }
+    .btn-new { margin-left: 0; margin-top: 8px; }
+    .download-card, .processing-card { padding: 40px 24px; }
+  }
+
+  /* ── REDUCED MOTION ── */
+  @media (prefers-reduced-motion: reduce) {
+    *,*::before,*::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+    .orb { animation: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<div class="orbs" aria-hidden="true">
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+  <div class="orb orb-3"></div>
+  <div class="orb orb-4"></div>
+</div>
+<div class="grain" aria-hidden="true"></div>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <nav class="breadcrumb" aria-label="Breadcrumb">
+    <a href="#" style="color:var(--text-2);text-decoration:none;">Merge PDF</a>
+    <span>›</span>
+    <span>Upload</span>
+  </nav>
+  <div class="step-pill" role="status" aria-label="Current step">
+    <span class="step-pill-dot"></span>
+    Step 1 of 3
+  </div>
+  <button class="theme-toggle" id="themeToggle" type="button" aria-label="Switch to light mode" title="Toggle theme">
+    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="16" height="16"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="16" height="16"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+  </button>
+</header>
+
+<!-- MAIN STAGE -->
+<main class="stage" id="main-content">
+
+  <!-- STEP TRACK -->
+  <div class="step-track" role="list" aria-label="Steps">
+    <div class="step-item active" role="listitem" aria-current="step">
+      <div class="step-num" aria-hidden="true">1</div>
+      <span>Upload</span>
+    </div>
+    <div class="step-item" role="listitem">
+      <div class="step-num" aria-hidden="true">2</div>
+      <span>Configure</span>
+    </div>
+    <div class="step-item" role="listitem">
+      <div class="step-num" aria-hidden="true">3</div>
+      <span>Download</span>
+    </div>
+  </div>
+
+  <!-- UPLOAD STATE -->
+  <div class="upload-state" id="uploadState">
+    <div class="section-header">
+      <div class="kicker">Step 01 · Drop &amp; drag</div>
+      <h1>Add your <em>files</em> to begin</h1>
+      <p>Drag PDFs in, or pick from your device, cloud, or a recent file.</p>
+    </div>
+
+    <div class="dropzone-shell">
+      <div class="dropzone-card"
+           id="dropzone"
+           role="button"
+           tabindex="0"
+           aria-label="Drop PDF files here, or click to browse"
+           aria-describedby="drop-hint">
+        <div class="upload-icon" aria-hidden="true">
+          <div class="upload-icon-orb"></div>
+          <div class="upload-icon-bg">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="17 8 12 3 7 8"/>
+              <line x1="12" y1="3" x2="12" y2="15"/>
+            </svg>
+          </div>
+        </div>
+        <div class="drop-cta" id="drop-hint">
+          <h2>Drop PDFs here</h2>
+          <p>or browse from your device · up to 50 files · 100 MB each</p>
+          <div class="btn-row">
+            <button class="btn btn-primary" id="chooseFilesBtn" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="16" height="16"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              Choose files
+            </button>
+            <button class="btn btn-ghost" type="button">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="16" height="16"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Paste from clipboard
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="or-row" aria-hidden="true">or pick a source</div>
+
+    <div class="quick-pick" role="list" aria-label="Quick sources">
+      <button class="qp" role="listitem" type="button" aria-label="From Photos">
+        <div class="qp-ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7M3 7l3-4h12l3 4M3 7h18"/></svg>
+        </div>
+        <span>From Photos</span>
+      </button>
+      <button class="qp" role="listitem" type="button" aria-label="Dropbox">
+        <div class="qp-ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+        </div>
+        <span>Dropbox</span>
+      </button>
+      <button class="qp" role="listitem" type="button" aria-label="Google Drive">
+        <div class="qp-ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <span>Google Drive</span>
+      </button>
+      <button class="qp" role="listitem" type="button" aria-label="Recent files">
+        <div class="qp-ico" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+        </div>
+        <span>Recent</span>
+      </button>
+    </div>
+
+    <div class="trust" role="list" aria-label="Privacy guarantees">
+      <span role="listitem"><span class="trust-dot" aria-hidden="true"></span>Files never leave your device</span>
+      <span role="listitem">·</span>
+      <span role="listitem">End-to-end private</span>
+      <span role="listitem">·</span>
+      <span role="listitem">Processed in &lt; 2s</span>
+    </div>
+  </div>
+
+  <!-- CONFIGURE STATE -->
+  <div class="configure-state" id="configureState" aria-live="polite">
+    <div class="section-header">
+      <div class="kicker">Step 02 · Arrange order</div>
+      <h1>Drag to <em>reorder</em></h1>
+      <p>Your files will merge in the order shown below. Drag to rearrange.</p>
+    </div>
+
+    <div class="file-list-header">
+      <div class="file-list-title">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="16" height="16"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg>
+        <span>Source files</span>
+        <span class="file-count-badge" id="fileCountBadge">0 files</span>
+      </div>
+      <button class="btn-remove-all" id="removeAllBtn" type="button" aria-label="Remove all files">Remove all</button>
+    </div>
+
+    <div class="file-list-shell">
+      <div class="file-list-card" id="fileList" role="list" aria-label="Selected files">
+
+        <!-- Files injected by JS -->
+
+      </div>
+    </div>
+
+    <div class="action-row">
+      <button class="btn-back" id="backToUploadBtn" type="button">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="15 18 9 12 15 6"/></svg>
+        Back
+      </button>
+      <button class="btn-merge" id="mergeBtn" type="button" disabled aria-label="Merge PDFs — add at least 2 files to continue">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 3a2.828 2.828 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5L17 3z"/></svg>
+        Merge PDFs
+      </button>
+    </div>
+  </div>
+
+  <!-- PROCESSING STATE -->
+  <div class="processing-state" id="processingState" aria-live="assertive" role="status">
+    <div class="processing-card">
+      <div class="processing-ring" aria-hidden="true">
+        <svg viewBox="0 0 100 100">
+          <circle class="processing-ring-bg" cx="50" cy="50" r="40"/>
+          <circle class="processing-ring-fill" cx="50" cy="50" r="40"/>
+        </svg>
+        <div class="processing-ring-label" id="processingPercent">0%</div>
+      </div>
+      <h2 class="processing-title">Merging your PDFs</h2>
+      <p class="processing-sub">This usually takes less than 2 seconds</p>
+      <div class="processing-steps" role="list" aria-label="Progress steps">
+        <div class="proc-step done" id="ps1" role="listitem">
+          <div class="proc-dot" aria-hidden="true"></div>
+          Validating files
+        </div>
+        <div class="proc-step active" id="ps2" role="listitem">
+          <div class="proc-dot" aria-hidden="true"></div>
+          <span id="ps2-label">Processing pages…</span>
+        </div>
+        <div class="proc-step" id="ps3" role="listitem">
+          <div class="proc-dot" aria-hidden="true"></div>
+          Finalizing
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DOWNLOAD STATE -->
+  <div class="download-state" id="downloadState" aria-live="polite" role="status">
+    <div class="download-card">
+      <div class="success-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" class="success-check">
+          <polyline points="20 6 9 17 4 12" class="check-path"/>
+        </svg>
+      </div>
+      <h2 class="download-title">Merged successfully</h2>
+      <p class="download-sub">Your PDFs have been combined into one file</p>
+      <p class="download-size" id="resultSize">2.4 MB</p>
+      <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
+        <button class="btn-download" id="downloadBtn" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Download merged.pdf
+        </button>
+        <button class="btn-new" id="startOverBtn" type="button">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 .49-3.5"/></svg>
+          Start over
+        </button>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<!-- Hidden file input -->
+<input type="file" id="fileInput" accept=".pdf,application/pdf" multiple hidden aria-hidden="true">
+
+<script>
+(function() {
+  'use strict';
+
+  // ── STATE ──
+  let state = 'upload'; // upload | configure | processing | download
+  let files = [];
+
+  // ── DOM REFS ──
+  const dropzone        = document.getElementById('dropzone');
+  const fileInput       = document.getElementById('fileInput');
+  const chooseFilesBtn  = document.getElementById('chooseFilesBtn');
+  const uploadState     = document.getElementById('uploadState');
+  const configureState  = document.getElementById('configureState');
+  const processingState = document.getElementById('processingState');
+  const downloadState   = document.getElementById('downloadState');
+  const fileList        = document.getElementById('fileList');
+  const fileCountBadge  = document.getElementById('fileCountBadge');
+  const removeAllBtn    = document.getElementById('removeAllBtn');
+  const backToUploadBtn = document.getElementById('backToUploadBtn');
+  const mergeBtn        = document.getElementById('mergeBtn');
+  const startOverBtn    = document.getElementById('startOverBtn');
+  const downloadBtn     = document.getElementById('downloadBtn');
+  const processingPercent = document.getElementById('processingPercent');
+  const resultSizeEl    = document.getElementById('resultSize');
+  const themeToggle     = document.getElementById('themeToggle');
+
+  // ── THEME TOGGLE ──
+  function applyTheme(theme) {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('localpdf-theme', theme);
+    themeToggle.setAttribute('aria-label', theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+    themeToggle.setAttribute('title', theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode');
+  }
+
+  function toggleTheme() {
+    const current = document.documentElement.getAttribute('data-theme') || 'dark';
+    applyTheme(current === 'dark' ? 'light' : 'dark');
+  }
+
+  // Restore saved theme or default to system preference, fallback dark
+  const saved = localStorage.getItem('localpdf-theme');
+  if (saved) {
+    applyTheme(saved);
+  } else {
+    const sysDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    applyTheme(sysDark ? 'dark' : 'light');
+  }
+
+  themeToggle.addEventListener('click', toggleTheme);
+
+  // ── HELPERS ──
+  function formatSize(bytes) {
+    if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+    return (bytes / 1024 / 1024).toFixed(2) + ' MB';
+  }
+
+  function makeFileItem(file, index) {
+    const li = document.createElement('div');
+    li.className = 'file-item';
+    li.setAttribute('role', 'listitem');
+    li.setAttribute('draggable', 'true');
+    li.setAttribute('data-index', index);
+    li.innerHTML = `
+      <div class="file-grip" aria-hidden="true">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="9" cy="5" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="9" cy="19" r="1"/>
+          <circle cx="15" cy="5" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="15" cy="19" r="1"/>
+        </svg>
+      </div>
+      <div class="file-icon-wrap" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+          <path d="M14 2v6h6"/>
+        </svg>
+      </div>
+      <div class="file-info">
+        <div class="file-name" title="${file.name}">${file.name}</div>
+        <div class="file-meta">
+          <span>PDF</span><span>${formatSize(file.size)}</span>
+        </div>
+      </div>
+      <button class="file-remove" type="button" aria-label="Remove ${file.name}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    `;
+
+    const removeBtn = li.querySelector('.file-remove');
+    removeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const idx = parseInt(li.getAttribute('data-index'));
+      files.splice(idx, 1);
+      renderFileList();
+      if (files.length < 2) mergeBtn.disabled = true;
+      if (files.length === 0) goTo('upload');
+    });
+
+    // Drag to reorder
+    li.addEventListener('dragstart', (e) => {
+      e.dataTransfer.setData('text/plain', li.getAttribute('data-index'));
+      li.style.opacity = '0.4';
+    });
+    li.addEventListener('dragend', () => { li.style.opacity = '1'; });
+    li.addEventListener('dragover', (e) => { e.preventDefault(); li.style.background = 'rgba(255,107,157,0.04)'; });
+    li.addEventListener('dragleave', () => { li.style.background = ''; });
+    li.addEventListener('drop', (e) => {
+      e.preventDefault();
+      li.style.background = '';
+      const fromIdx = parseInt(e.dataTransfer.getData('text/plain'));
+      const toIdx = parseInt(li.getAttribute('data-index'));
+      if (fromIdx !== toIdx) {
+        const [moved] = files.splice(fromIdx, 1);
+        files.splice(toIdx, 0, moved);
+        renderFileList();
+      }
+    });
+
+    return li;
+  }
+
+  function renderFileList() {
+    fileList.innerHTML = '';
+    files.forEach((file, i) => {
+      fileList.appendChild(makeFileItem(file, i));
+    });
+    fileCountBadge.textContent = files.length + (files.length === 1 ? ' file' : ' files');
+  }
+
+  // ── NAVIGATION ──
+  function goTo(next) {
+    state = next;
+
+    // Update step track
+    const steps = document.querySelectorAll('.step-item');
+    const stepMap = { upload: 0, configure: 1, processing: 2, download: 2 };
+    steps.forEach((s, i) => {
+      s.classList.remove('active', 'done');
+      if (i < stepMap[next]) s.classList.add('done');
+      else if (i === stepMap[next]) s.classList.add('active');
+    });
+
+    uploadState.classList.remove('hidden');
+    configureState.classList.remove('visible');
+    processingState.classList.remove('visible');
+    downloadState.classList.remove('visible');
+
+    if (next === 'upload') {
+      uploadState.classList.remove('processing-hidden');
+    } else if (next === 'configure') {
+      uploadState.classList.add('processing-hidden');
+      configureState.classList.add('visible');
+    } else if (next === 'processing') {
+      uploadState.classList.add('processing-hidden');
+      processingState.classList.add('visible');
+    } else if (next === 'download') {
+      uploadState.classList.add('processing-hidden');
+      downloadState.classList.add('visible');
+    }
+
+    // Focus management for accessibility
+    const focusTarget = document.querySelector('.step-item.active') || document.getElementById('main-content');
+    setTimeout(() => focusTarget && focusTarget.focus(), 100);
+  }
+
+  // ── FILE HANDLING ──
+  function addFiles(newFiles) {
+    const pdfs = Array.from(newFiles).filter(f => f.type === 'application/pdf' || f.name.endsWith('.pdf'));
+    if (pdfs.length === 0) return;
+    files = [...files, ...pdfs];
+    renderFileList();
+    mergeBtn.disabled = files.length < 2;
+    mergeBtn.setAttribute('aria-label', files.length < 2
+      ? 'Merge PDFs — add at least 2 files to continue'
+      : `Merge ${files.length} PDFs`);
+    goTo('configure');
+  }
+
+  // ── DROPZONE ──
+  dropzone.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    dropzone.classList.add('drag-over');
+  });
+  dropzone.addEventListener('dragleave', () => {
+    dropzone.classList.remove('drag-over');
+  });
+  dropzone.addEventListener('drop', (e) => {
+    e.preventDefault();
+    dropzone.classList.remove('drag-over');
+    if (e.dataTransfer.files) addFiles(e.dataTransfer.files);
+  });
+  dropzone.addEventListener('click', () => fileInput.click());
+  dropzone.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      fileInput.click();
+    }
+  });
+  chooseFilesBtn.addEventListener('click', (e) => {
+    e.stopPropagation();
+    fileInput.click();
+  });
+  fileInput.addEventListener('change', () => {
+    if (fileInput.files) addFiles(fileInput.files);
+    fileInput.value = '';
+  });
+
+  // ── BUTTONS ──
+  removeAllBtn.addEventListener('click', () => {
+    files = [];
+    goTo('upload');
+    mergeBtn.disabled = true;
+  });
+
+  backToUploadBtn.addEventListener('click', () => goTo('upload'));
+
+  mergeBtn.addEventListener('click', async () => {
+    if (files.length < 2) return;
+    goTo('processing');
+    simulateProcessing();
+  });
+
+  startOverBtn.addEventListener('click', () => {
+    files = [];
+    mergeBtn.disabled = true;
+    goTo('upload');
+  });
+
+  downloadBtn.addEventListener('click', () => {
+    // Simulate download
+    downloadBtn.textContent = 'Downloaded!';
+    downloadBtn.style.background = 'var(--accent-2)';
+    setTimeout(() => {
+      downloadBtn.innerHTML = `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" width="18" height="18"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>Download merged.pdf`;
+      downloadBtn.style.background = '';
+    }, 2000);
+  });
+
+  // ── PROCESSING ANIMATION ──
+  function simulateProcessing() {
+    const ringEl = document.querySelector('.processing-ring-fill');
+    const stepEls = [document.getElementById('ps1'), document.getElementById('ps2'), document.getElementById('ps3')];
+    const ps2Label = document.getElementById('ps2-label');
+
+    const TOTAL_DURATION = 2200;
+    const CIRCUMFERENCE = 251;
+    const startTime = performance.now();
+    let lastPercent = 0;
+
+    function easeOut(t) { return 1 - Math.pow(1 - t, 3); }
+
+    function animate(now) {
+      const elapsed = now - startTime;
+      const raw = Math.min(elapsed / TOTAL_DURATION, 1);
+      const eased = easeOut(raw);
+      const percent = Math.round(eased * 100);
+
+      // Sync ring SVG
+      if (ringEl) {
+        const offset = CIRCUMFERENCE - (CIRCUMFERENCE * eased);
+        ringEl.style.strokeDashoffset = offset;
+      }
+
+      // Update percent label every 5%
+      if (percent !== lastPercent) {
+        processingPercent.textContent = percent + '%';
+        lastPercent = percent;
+      }
+
+      // Step 1: validating (done at 20%)
+      if (raw >= 0.2 && !stepEls[0].classList.contains('done')) {
+        stepEls[0].classList.remove('active');
+        stepEls[0].classList.add('done');
+        stepEls[1].classList.add('active');
+      }
+
+      // Step 2: processing → optimizing (at 55%)
+      if (raw >= 0.55) {
+        stepEls[1].classList.remove('active');
+        stepEls[1].classList.add('done');
+        stepEls[2].classList.add('active');
+        ps2Label.textContent = 'Optimizing…';
+      }
+
+      if (raw < 1) {
+        requestAnimationFrame(animate);
+      } else {
+        stepEls[1].classList.remove('active');
+        stepEls[1].classList.add('done');
+        stepEls[2].classList.remove('active');
+        stepEls[2].classList.add('done');
+        ps2Label.textContent = 'Finalizing…';
+        resultSizeEl.textContent = (Math.random() * 5 + 0.5).toFixed(1) + ' MB';
+        setTimeout(() => goTo('download'), 500);
+      }
+    }
+
+    requestAnimationFrame(animate);
+  }
+
+})();
+</script>
+</body>
+</html>

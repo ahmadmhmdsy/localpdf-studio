@@ -1,0 +1,262 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>02 — Tools Grid · LocalPDF Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after { box-sizing: border-box; }
+  :root {
+    --bg: #f5f3ee;
+    --ink: #0a0a0a;
+    --red: #ff3b1f;
+    --green: #00a651;
+    --yellow: #ffc600;
+    --purple: #8a3ffc;
+    --blue: #2563eb;
+    --paper: #ffffff;
+  }
+  body {
+    margin: 0; padding: 48px 56px 96px;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Space Grotesk', sans-serif;
+    min-height: 100vh;
+  }
+  .header {
+    display: grid; grid-template-columns: 1fr auto; align-items: end;
+    border-bottom: 2px solid var(--ink); padding-bottom: 24px; margin-bottom: 48px;
+    gap: 24px;
+  }
+  .title { font-size: 56px; line-height: 0.9; font-weight: 700; letter-spacing: -0.03em; margin: 0; }
+  .title em { font-style: normal; color: var(--red); }
+  .search {
+    display: flex; align-items: center; gap: 12px;
+    border: 2px solid var(--ink); padding: 12px 18px;
+    background: var(--paper); min-width: 360px;
+    box-shadow: 6px 6px 0 var(--ink);
+  }
+  .search input { border: 0; outline: 0; font-family: inherit; font-size: 15px; flex: 1; background: transparent; }
+  .search .kbd {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    border: 1px solid var(--ink); padding: 2px 6px; background: var(--bg);
+  }
+  .cats { display: flex; gap: 8px; margin-bottom: 40px; flex-wrap: wrap; }
+  .chip {
+    border: 2px solid var(--ink); padding: 10px 18px;
+    font-weight: 600; font-size: 14px; background: var(--paper);
+    cursor: pointer; box-shadow: 4px 4px 0 var(--ink);
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .chip:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--ink); }
+  .chip.active { background: var(--ink); color: var(--paper); }
+  .chip .num { font-family: 'JetBrains Mono', monospace; font-size: 11px; opacity: 0.6; margin-left: 6px; }
+  .grid {
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 24px;
+  }
+  .tool {
+    background: var(--paper); border: 2px solid var(--ink);
+    padding: 24px; min-height: 220px;
+    display: flex; flex-direction: column; justify-content: space-between;
+    position: relative; cursor: pointer;
+    box-shadow: 6px 6px 0 var(--ink);
+    transition: transform 0.2s, box-shadow 0.2s;
+    text-decoration: none; color: inherit;
+  }
+  .tool:hover { transform: translate(-4px, -4px); box-shadow: 10px 10px 0 var(--ink); }
+  .tool:hover .arrow { transform: translate(4px, -4px); }
+  .tool-head { display: flex; justify-content: space-between; align-items: start; }
+  .tool-id {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    letter-spacing: 0.05em; opacity: 0.6;
+  }
+  .icon-box {
+    width: 56px; height: 56px; display: flex; align-items: center; justify-content: center;
+    border: 2px solid var(--ink);
+  }
+  .icon-box svg { width: 28px; height: 28px; }
+  .icon-box.red { background: var(--red); color: white; }
+  .icon-box.green { background: var(--green); color: white; }
+  .icon-box.yellow { background: var(--yellow); }
+  .icon-box.purple { background: var(--purple); color: white; }
+  .icon-box.blue { background: var(--blue); color: white; }
+  .tool h3 { font-size: 22px; font-weight: 700; margin: 16px 0 6px; letter-spacing: -0.01em; }
+  .tool p { font-size: 13px; line-height: 1.5; opacity: 0.7; margin: 0; }
+  .tool-foot { display: flex; justify-content: space-between; align-items: center; padding-top: 16px; border-top: 1px dashed var(--ink); margin-top: 16px; }
+  .badge { font-family: 'JetBrains Mono', monospace; font-size: 10px; padding: 3px 8px; border: 1px solid var(--ink); text-transform: uppercase; }
+  .badge.mvp { background: var(--red); color: white; border-color: var(--ink); }
+  .arrow { font-family: 'JetBrains Mono', monospace; font-size: 18px; transition: transform 0.2s; }
+  .tool.featured { grid-column: span 2; background: var(--ink); color: var(--paper); }
+  .tool.featured .icon-box { background: var(--red); }
+  .tool.featured .tool-id, .tool.featured p { color: var(--paper); opacity: 0.7; }
+  .tool.featured .badge { background: var(--red); color: white; }
+  .tool.featured .tool-foot { border-top-color: rgba(245,243,238,0.3); }
+</style>
+</head>
+<body>
+<header class="header">
+  <h1 class="title">Pick a tool.<br><em>Get it done.</em></h1>
+  <div class="search">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+    <input placeholder="Search 31 tools…" />
+    <span class="kbd">⌘K</span>
+  </div>
+</header>
+<div class="cats">
+  <div class="chip active">All <span class="num">31</span></div>
+  <div class="chip">Organize <span class="num">06</span></div>
+  <div class="chip">Optimize <span class="num">03</span></div>
+  <div class="chip">Convert to <span class="num">05</span></div>
+  <div class="chip">Convert from <span class="num">05</span></div>
+  <div class="chip">Edit <span class="num">05</span></div>
+  <div class="chip">Security <span class="num">05</span></div>
+  <div class="chip">AI tools <span class="num">02</span></div>
+</div>
+<div class="grid">
+  <a class="tool featured">
+    <div class="tool-head">
+      <div class="tool-id">/ 01 / TOOL 001</div>
+      <div class="icon-box"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 3v18M16 3v18M3 8h18M3 16h18"/></svg></div>
+    </div>
+    <div>
+      <h3>Merge PDF</h3>
+      <p>Drag pages from multiple documents into one perfectly ordered file. The most-used tool in the studio.</p>
+    </div>
+    <div class="tool-foot">
+      <span class="badge mvp">MVP · MOST USED</span>
+      <span class="arrow">→</span>
+    </div>
+  </a>
+  <a class="tool">
+    <div class="tool-head">
+      <div class="tool-id">/ 02 / TOOL 002</div>
+      <div class="icon-box red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12H3M12 3v18"/></svg></div>
+    </div>
+    <div>
+      <h3>Split PDF</h3>
+      <p>Separate one page or a whole set into independent files.</p>
+    </div>
+    <div class="tool-foot">
+      <span class="badge mvp">MVP</span>
+      <span class="arrow">→</span>
+    </div>
+  </a>
+  <a class="tool">
+    <div class="tool-head">
+      <div class="tool-id">/ 03 / TOOL 003</div>
+      <div class="icon-box green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v10a4 4 0 0 0 4 4h10a4 4 0 0 0 4-4V7M3 7l4-4h10l4 4M3 7h18M9 12h6"/></svg></div>
+    </div>
+    <div>
+      <h3>Compress PDF</h3>
+      <p>Reduce file size while preserving maximum quality.</p>
+    </div>
+    <div class="tool-foot">
+      <span class="badge mvp">MVP</span>
+      <span class="arrow">→</span>
+    </div>
+  </a>
+  <a class="tool">
+    <div class="tool-head">
+      <div class="tool-id">/ 04 / TOOL 004</div>
+      <div class="icon-box yellow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg></div>
+    </div>
+    <div>
+      <h3>OCR PDF</h3>
+      <p>Make scanned PDFs searchable with AI text recognition.</p>
+    </div>
+    <div class="tool-foot">
+      <span class="badge mvp">MVP · AI</span>
+      <span class="arrow">→</span>
+    </div>
+  </a>
+  <a class="tool">
+    <div class="tool-head">
+      <div class="tool-id">/ 05 / TOOL 005</div>
+      <div class="icon-box purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9"/><path d="M3 4v5h5"/></svg></div>
+    </div>
+    <div>
+      <h3>Rotate PDF</h3>
+      <p>Rotate pages the way you need them. Batch-friendly.</p>
+    </div>
+    <div class="tool-foot">
+      <span class="badge mvp">MVP</span>
+      <span class="arrow">→</span>
+    </div>
+  </a>
+  <a class="tool">
+    <div class="tool-head">
+      <div class="tool-id">/ 06 / TOOL 006</div>
+      <div class="icon-box blue"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 11h6a2 2 0 0 0 2-2V5h-8M2 11h6m0 0a2 2 0 1 0 4 0 2 2 0 1 0-4 0M16 19a2 2 0 1 0 4 0 2 2 0 1 0-4 0M2 19h6m0 0a2 2 0 1 0 4 0 2 2 0 1 0-4 0M2 19V5h10v14M22 19V9h-6v10"/></svg></div>
+    </div>
+    <div>
+      <h3>Sign PDF</h3>
+      <p>Draw, type, or upload your signature. No email loops.</p>
+    </div>
+    <div class="tool-foot">
+      <span class="badge mvp">MVP</span>
+      <span class="arrow">→</span>
+    </div>
+  </a>
+  <a class="tool">
+    <div class="tool-head">
+      <div class="tool-id">/ 07 / TOOL 007</div>
+      <div class="icon-box red"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg></div>
+    </div>
+    <div>
+      <h3>Extract pages</h3>
+      <p>Get a new document containing only the pages you need.</p>
+    </div>
+    <div class="tool-foot">
+      <span class="badge mvp">MVP</span>
+      <span class="arrow">→</span>
+    </div>
+  </a>
+  <a class="tool">
+    <div class="tool-head">
+      <div class="tool-id">/ 08 / TOOL 008</div>
+      <div class="icon-box green"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h4"/></svg></div>
+    </div>
+    <div>
+      <h3>Repair PDF</h3>
+      <p>Recover content from corrupted files when possible.</p>
+    </div>
+    <div class="tool-foot">
+      <span class="badge mvp">MVP</span>
+      <span class="arrow">→</span>
+    </div>
+  </a>
+  <a class="tool">
+    <div class="tool-head">
+      <div class="tool-id">/ 09 / TOOL 009</div>
+      <div class="icon-box yellow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7M3 7l3-4h12l3 4M3 7h18"/><circle cx="9" cy="13" r="1.5"/><path d="m9 17 3-3 3 3 3-4"/></svg></div>
+    </div>
+    <div>
+      <h3>JPG to PDF</h3>
+      <p>Convert images to a clean PDF in seconds.</p>
+    </div>
+    <div class="tool-foot">
+      <span class="badge mvp">MVP</span>
+      <span class="arrow">→</span>
+    </div>
+  </a>
+  <a class="tool">
+    <div class="tool-head">
+      <div class="tool-id">/ 10 / TOOL 010</div>
+      <div class="icon-box purple"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M3 15h18M9 3v18M15 3v18"/></svg></div>
+    </div>
+    <div>
+      <h3>Add watermark</h3>
+      <p>Stamp an image or text over your PDF in seconds.</p>
+    </div>
+    <div class="tool-foot">
+      <span class="badge mvp">MVP</span>
+      <span class="arrow">→</span>
+    </div>
+  </a>
+</div>
+</body>
+</html>

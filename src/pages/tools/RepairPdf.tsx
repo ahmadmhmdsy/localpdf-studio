@@ -1,0 +1,158 @@
+import React, { useState } from 'react';
+import { Wrench, FileCheck, CheckCircle, AlertCircle, Download } from 'lucide-react';
+import ToolLayout from '../../components/tools/ToolLayout';
+import FileUploadZone from '../../components/tools/FileUploadZone';
+import ProcessingState from '../../components/tools/ProcessingState';
+import { repairPdf, RepairResult } from '../../lib/repair';
+import { saveAs } from 'file-saver';
+
+type Step = 'upload' | 'processing' | 'done' | 'error';
+
+export default function RepairPdf() {
+  const [step, setStep] = useState<Step>('upload');
+  const [file, setFile] = useState<File | null>(null);
+  const [result, setResult] = useState<RepairResult | null>(null);
+  const [error, setError] = useState<string | null>(null);
+
+  const handleFilesSelected = (files: File[]) => {
+    if (files.length === 1) {
+      setFile(files[0]);
+      handleRepair(files[0]);
+    }
+  };
+
+  const handleRepair = async (selectedFile: File) => {
+    setStep('processing');
+    setError(null);
+
+    try {
+      const repairResult = await repairPdf(selectedFile);
+      setResult(repairResult);
+      
+      if (repairResult.success || repairResult.data) {
+        setStep('done');
+      } else {
+        setError(repairResult.message);
+        setStep('error');
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to repair PDF');
+      setStep('error');
+    }
+  };
+
+  const handleDownload = () => {
+    if (result?.data && file) {
+      const blob = new Blob([result.data], { type: 'application/pdf' });
+      const newName = file.name.replace(/\.pdf$/i, '_repaired.pdf');
+      saveAs(blob, newName);
+    }
+  };
+
+  const reset = () => {
+    setStep('upload');
+    setFile(null);
+    setResult(null);
+    setError(null);
+  };
+
+  return (
+    <ToolLayout
+      title="Repair PDF"
+      description="Attempt to fix corrupted or damaged PDF files."
+    >
+      {step === 'upload' && (
+        <FileUploadZone
+          
+          ariaLabel="Select PDF file" onFilesSelected={handleFilesSelected}
+          accept={{ 'application/pdf': ['.pdf'] }}
+          maxFiles={1}
+          title="Select a corrupted PDF"
+          subtitle="or drop PDF file here"
+        />
+      )}
+
+      {step === 'processing' && (
+        <ProcessingState
+          title="Attempting repair..."
+          description="Analyzing and fixing PDF structure issues."
+        />
+      )}
+
+      {step === 'done' && result && (
+        <div className="flex flex-col items-center gap-6 py-8">
+          <div className={`w-20 h-20 rounded-full flex items-center justify-center ${
+            result.success ? 'bg-green-100' : 'bg-yellow-100'
+          }`}>
+            {result.success ? (
+              <CheckCircle className="w-10 h-10 text-green-600" />
+            ) : (
+              <AlertCircle className="w-10 h-10 text-yellow-600" />
+            )}
+          </div>
+
+          <div className="text-center max-w-md">
+            <h3 className="text-xl font-semibold text-gray-900">
+              {result.success ? 'Repair Successful!' : 'Partial Repair'}
+            </h3>
+            <p className={`mt-2 ${result.success ? 'text-gray-500' : 'text-yellow-600'}`}>
+              {result.message}
+            </p>
+          </div>
+
+          {result.issuesFixed.length > 0 && (
+            <div className="w-full max-w-lg bg-gray-50 rounded-xl p-4">
+              <h4 className="font-medium text-gray-900 mb-3">Issues Fixed:</h4>
+              <ul className="space-y-2">
+                {result.issuesFixed.map((issue, idx) => (
+                  <li key={idx} className="flex items-center gap-2 text-sm text-gray-600">
+                    <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
+                    {issue}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {result.data && (
+            <button
+              onClick={handleDownload}
+              className="flex items-center gap-2 px-8 py-4 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors"
+            >
+              <Download className="w-5 h-5" />
+              Download Repaired PDF
+            </button>
+          )}
+
+          <button
+            onClick={reset}
+            className="text-blue-600 hover:text-blue-700 font-medium"
+          >
+            Repair Another PDF
+          </button>
+        </div>
+      )}
+
+      {step === 'error' && (
+        <div className="flex flex-col items-center gap-6 py-12">
+          <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center">
+            <AlertCircle className="w-10 h-10 text-red-600" />
+          </div>
+          <div className="text-center max-w-md">
+            <h3 className="text-xl font-semibold text-gray-900">Repair Failed</h3>
+            <p className="text-red-500 mt-2">{error}</p>
+            <p className="text-gray-500 mt-4 text-sm">
+              The PDF may be too corrupted for client-side repair. Consider using a server-based PDF repair service for severely damaged files.
+            </p>
+          </div>
+          <button
+            onClick={reset}
+            className="text-blue-600 hover:text-blue-700 font-medium"
+          >
+            Try Again
+          </button>
+        </div>
+      )}
+    </ToolLayout>
+  );
+}

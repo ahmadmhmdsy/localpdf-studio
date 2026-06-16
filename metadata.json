@@ -1,0 +1,5 @@
+{
+  "name": "LocalPDF Studio",
+  "description": "A comprehensive suite of local PDF tools to merge, split, convert, and edit PDF files directly in your browser without server uploads.",
+  "requestFramePermissions": ["camera"]
+}

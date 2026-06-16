@@ -1,0 +1,462 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>08 — Editor Toolbar · LocalPDF Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after { box-sizing: border-box; }
+  :root {
+    --bg: #1a1d21;
+    --bg-2: #22262b;
+    --bg-3: #2a2f35;
+    --line: #353a41;
+    --line-soft: #2a2f35;
+    --ink: #e8e8e6;
+    --ink-2: #b8b8b5;
+    --ink-3: #7a7a77;
+    --accent: #ff5722;
+    --accent-glow: rgba(255,87,34,0.4);
+    --grid: rgba(255,255,255,0.04);
+  }
+  body {
+    margin: 0; min-height: 100vh;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    background-image:
+      linear-gradient(var(--grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+    background-size: 24px 24px;
+    display: flex; flex-direction: column;
+  }
+
+  /* TOP NAV — industrial steel */
+  .navbar {
+    height: 48px;
+    background: var(--bg-2);
+    border-bottom: 1px solid var(--line);
+    display: flex; align-items: center;
+    padding: 0 16px;
+    gap: 16px;
+  }
+  .nav-brand {
+    display: flex; align-items: center; gap: 8px;
+    padding-right: 16px; border-right: 1px solid var(--line);
+    height: 100%;
+  }
+  .nav-brand .logo-mark {
+    width: 22px; height: 22px;
+    background: var(--accent);
+    position: relative;
+  }
+  .nav-brand .logo-mark::before {
+    content: ''; position: absolute; inset: 4px;
+    background: var(--bg-2);
+  }
+  .nav-brand .name {
+    font-weight: 700; font-size: 13px; letter-spacing: 0.02em;
+  }
+  .nav-brand .ver {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    color: var(--ink-3); background: var(--bg-3); padding: 2px 5px;
+  }
+  .nav-doc {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 12px; color: var(--ink-2);
+  }
+  .nav-doc .name { color: var(--ink); font-weight: 500; }
+  .nav-doc .status {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    color: #4ade80; display: flex; align-items: center; gap: 4px;
+  }
+  .nav-doc .status::before {
+    content: ''; width: 6px; height: 6px; border-radius: 50%;
+    background: #4ade80; box-shadow: 0 0 8px #4ade80;
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse { 50% { opacity: 0.4; } }
+  .nav-spacer { flex: 1; }
+  .nav-meta {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    color: var(--ink-3); display: flex; gap: 16px; align-items: center;
+  }
+  .nav-meta .k {
+    color: var(--ink-2); background: var(--bg-3);
+    padding: 2px 6px; border: 1px solid var(--line); border-radius: 3px;
+    font-size: 10px; margin-right: 4px;
+  }
+  .nav-export {
+    background: var(--accent); color: white; border: 0;
+    padding: 8px 16px; font-family: inherit; font-weight: 600; font-size: 12px;
+    cursor: pointer; display: flex; align-items: center; gap: 6px;
+    text-transform: uppercase; letter-spacing: 0.05em;
+  }
+  .nav-export:hover { background: #ff6b3d; }
+  .nav-export::before {
+    content: '↓'; font-size: 14px; font-weight: 700;
+  }
+
+  /* TOOLBAR — multi-row with sections */
+  .toolbar {
+    background: var(--bg-2);
+    border-bottom: 1px solid var(--line);
+    display: flex; align-items: stretch;
+  }
+  .tool-section {
+    display: flex; align-items: center;
+    padding: 0 12px;
+    border-right: 1px solid var(--line);
+    height: 56px;
+  }
+  .tool-section.group {
+    background: var(--bg-3);
+  }
+  .section-label {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    color: var(--ink-3); letter-spacing: 0.1em; text-transform: uppercase;
+    margin-right: 12px; writing-mode: vertical-rl; transform: rotate(180deg);
+    align-self: center;
+  }
+  .tool-btn {
+    background: transparent; border: 0; color: var(--ink-2);
+    width: 40px; height: 40px; cursor: pointer;
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 2px; position: relative;
+    border-radius: 2px;
+  }
+  .tool-btn:hover { background: var(--bg-3); color: var(--ink); }
+  .tool-btn.active {
+    background: var(--accent); color: white;
+    box-shadow: 0 0 0 1px var(--accent), 0 0 12px var(--accent-glow);
+  }
+  .tool-btn svg { width: 18px; height: 18px; }
+  .tool-btn .shortcut {
+    position: absolute; top: 2px; right: 4px;
+    font-family: 'JetBrains Mono', monospace; font-size: 8px;
+    color: var(--ink-3);
+  }
+  .tool-btn.active .shortcut { color: rgba(255,255,255,0.7); }
+  .divider-v {
+    width: 1px; background: var(--line); margin: 8px 0;
+  }
+
+  .color-swatches {
+    display: flex; gap: 4px; padding: 0 8px;
+  }
+  .swatch {
+    width: 20px; height: 20px; border-radius: 50%;
+    cursor: pointer; border: 2px solid transparent;
+    position: relative;
+  }
+  .swatch:hover { transform: scale(1.15); }
+  .swatch.active { border-color: var(--ink); box-shadow: 0 0 0 1px var(--bg-2); }
+
+  .weight-picker {
+    display: flex; align-items: center; gap: 8px;
+    padding: 0 12px;
+    color: var(--ink-2); font-size: 11px;
+  }
+  .weight-picker select {
+    background: var(--bg-3); color: var(--ink);
+    border: 1px solid var(--line); padding: 6px 8px;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+  }
+
+  .zoom-cluster {
+    display: flex; align-items: center; gap: 4px;
+    padding: 0 12px;
+  }
+  .zoom-btn {
+    width: 28px; height: 28px; background: var(--bg-3); border: 1px solid var(--line);
+    color: var(--ink-2); cursor: pointer; display: flex; align-items: center; justify-content: center;
+  }
+  .zoom-btn:hover { color: var(--ink); border-color: var(--ink-2); }
+  .zoom-val {
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    color: var(--ink); min-width: 50px; text-align: center;
+  }
+
+  /* CANVAS AREA */
+  .workspace {
+    flex: 1; display: flex; min-height: 540px;
+  }
+  .page-strip {
+    width: 180px; background: var(--bg-2); border-right: 1px solid var(--line);
+    padding: 16px 12px; overflow-y: auto;
+  }
+  .strip-head {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.1em;
+    margin-bottom: 12px; display: flex; justify-content: space-between;
+  }
+  .thumb {
+    aspect-ratio: 0.77; background: #f5f5f0; border: 1px solid var(--line);
+    margin-bottom: 12px; position: relative; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    color: #888; font-size: 10px; font-family: 'JetBrains Mono', monospace;
+    transition: all 0.15s;
+  }
+  .thumb:hover { border-color: var(--ink-2); }
+  .thumb.active { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent), 0 0 12px var(--accent-glow); }
+  .thumb .label {
+    position: absolute; top: 4px; left: 4px;
+    background: var(--bg-3); color: var(--ink-2);
+    padding: 2px 6px; font-size: 9px; font-family: 'JetBrains Mono', monospace;
+    border: 1px solid var(--line);
+  }
+  .thumb.active .label { background: var(--accent); color: white; border-color: var(--accent); }
+  .thumb .lines {
+    width: 70%; display: flex; flex-direction: column; gap: 3px;
+  }
+  .thumb .line { height: 2px; background: #d4d4d0; }
+  .thumb .line.short { width: 60%; }
+
+  .canvas-area {
+    flex: 1; padding: 32px; overflow: auto;
+    display: flex; align-items: flex-start; justify-content: center;
+    background: radial-gradient(circle at center, rgba(255,87,34,0.03) 0%, transparent 50%);
+  }
+  .page {
+    width: 600px; min-height: 770px; background: #f8f8f3;
+    box-shadow: 0 30px 60px -10px rgba(0,0,0,0.5), 0 0 0 1px var(--line);
+    position: relative;
+    padding: 60px;
+    color: #2a2a28;
+    font-size: 14px; line-height: 1.6;
+  }
+  .page-content h1 { font-size: 32px; margin: 0 0 24px; font-weight: 700; }
+  .page-content p { margin: 0 0 16px; }
+  .annotation {
+    position: absolute; border: 2px solid var(--accent);
+    background: rgba(255,87,34,0.1);
+  }
+  .annotation.text {
+    background: rgba(255,87,34,0.1); border: 0;
+    border-bottom: 2px solid var(--accent);
+    color: var(--accent); font-weight: 600; font-style: italic;
+    padding: 2px 4px;
+  }
+  .pen-stroke {
+    position: absolute; pointer-events: none;
+  }
+  .measure-tag {
+    position: absolute; background: var(--ink); color: var(--bg);
+    padding: 4px 8px; font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    font-weight: 600;
+  }
+
+  /* RIGHT PANEL — properties */
+  .props {
+    width: 280px; background: var(--bg-2); border-left: 1px solid var(--line);
+    padding: 16px;
+    overflow-y: auto;
+  }
+  .props-head {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    color: var(--ink-3); text-transform: uppercase; letter-spacing: 0.1em;
+    margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid var(--line);
+  }
+  .field {
+    margin-bottom: 12px;
+  }
+  .field label {
+    display: block; font-size: 10px; color: var(--ink-3);
+    font-family: 'JetBrains Mono', monospace; text-transform: uppercase;
+    letter-spacing: 0.08em; margin-bottom: 4px;
+  }
+  .field input, .field select, .field textarea {
+    width: 100%; background: var(--bg); border: 1px solid var(--line);
+    color: var(--ink); padding: 8px 10px; font-family: inherit; font-size: 12px;
+  }
+  .field input:focus, .field select:focus, .field textarea:focus { outline: 0; border-color: var(--accent); }
+  .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+
+  /* STATUS BAR */
+  .statusbar {
+    height: 24px; background: var(--bg-3); border-top: 1px solid var(--line);
+    display: flex; align-items: center; padding: 0 12px;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    color: var(--ink-3); gap: 16px;
+  }
+  .statusbar .item { display: flex; align-items: center; gap: 6px; }
+  .statusbar .item strong { color: var(--ink-2); }
+  .statusbar .right { margin-left: auto; display: flex; gap: 16px; }
+  .statusbar .led { width: 6px; height: 6px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 6px #4ade80; }
+</style>
+</head>
+<body>
+<nav class="navbar">
+  <div class="nav-brand">
+    <div class="logo-mark"></div>
+    <span class="name">LOCALPDF</span>
+    <span class="ver">v0.4.2</span>
+  </div>
+  <div class="nav-doc">
+    <span class="name">contract-q3-final.pdf</span>
+    <span>·</span>
+    <span class="status">Auto-saved</span>
+  </div>
+  <div class="nav-spacer"></div>
+  <div class="nav-meta">
+    <span><span class="k">⌘</span>Open</span>
+    <span><span class="k">⌘</span>S</span>
+  </div>
+  <button class="nav-export">Export</button>
+</nav>
+
+<div class="toolbar">
+  <div class="tool-section">
+    <span class="section-label">FILE</span>
+    <button class="tool-btn" title="Open">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-7l-2-2H5a2 2 0 0 0-2 2z"/></svg>
+    </button>
+    <button class="tool-btn" title="Save">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+    </button>
+    <button class="tool-btn" title="Print">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+    </button>
+  </div>
+  <div class="tool-section group">
+    <span class="section-label">NAVIGATE</span>
+    <button class="tool-btn" title="Undo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v6h6M3 13a9 9 0 1 0 3-7"/></svg>
+      <span class="shortcut">⌘Z</span>
+    </button>
+    <button class="tool-btn" title="Redo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 7v6h-6M21 13a9 9 0 1 1-3-7"/></svg>
+      <span class="shortcut">⌘⇧Z</span>
+    </button>
+  </div>
+  <div class="tool-section">
+    <span class="section-label">ANNOTATE</span>
+    <button class="tool-btn" title="Select">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 3 7 17 2-7 7-2L3 3z"/></svg>
+      <span class="shortcut">V</span>
+    </button>
+    <button class="tool-btn active" title="Highlight">
+      <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6" fill="white"/></svg>
+      <span class="shortcut">H</span>
+    </button>
+    <button class="tool-btn" title="Draw">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
+      <span class="shortcut">P</span>
+    </button>
+    <button class="tool-btn" title="Text">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
+      <span class="shortcut">T</span>
+    </button>
+    <button class="tool-btn" title="Shape">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="0"/></svg>
+      <span class="shortcut">R</span>
+    </button>
+    <button class="tool-btn" title="Stamp">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7l3-4h12l3 4v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/><circle cx="12" cy="13" r="3"/></svg>
+      <span class="shortcut">S</span>
+    </button>
+    <div class="divider-v"></div>
+    <div class="color-swatches">
+      <div class="swatch active" style="background:#ff5722"></div>
+      <div class="swatch" style="background:#ffc107"></div>
+      <div class="swatch" style="background:#4caf50"></div>
+      <div class="swatch" style="background:#2196f3"></div>
+      <div class="swatch" style="background:#9c27b0"></div>
+      <div class="swatch" style="background:#f5f5f0; border: 1px solid #555"></div>
+    </div>
+    <div class="weight-picker">
+      <select>
+        <option>1.0 pt</option>
+        <option>2.5 pt</option>
+        <option>4.0 pt</option>
+        <option>6.0 pt</option>
+      </select>
+    </div>
+  </div>
+  <div class="tool-section">
+    <span class="section-label">VIEW</span>
+    <div class="zoom-cluster">
+      <button class="zoom-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/></svg></button>
+      <span class="zoom-val">142%</span>
+      <button class="zoom-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></button>
+    </div>
+  </div>
+</div>
+
+<div class="workspace">
+  <aside class="page-strip">
+    <div class="strip-head"><span>Pages · 24</span><span>04 / 24</span></div>
+    <div class="thumb"><div class="label">01</div><div class="lines"><div class="line"></div><div class="line short"></div><div class="line"></div><div class="line short"></div></div></div>
+    <div class="thumb"><div class="label">02</div><div class="lines"><div class="line"></div><div class="line"></div><div class="line short"></div></div></div>
+    <div class="thumb"><div class="label">03</div><div class="lines"><div class="line"></div><div class="line short"></div><div class="line"></div><div class="line"></div></div></div>
+    <div class="thumb active"><div class="label">04</div><div class="lines"><div class="line"></div><div class="line short"></div><div class="line"></div><div class="line short"></div><div class="line"></div></div></div>
+    <div class="thumb"><div class="label">05</div><div class="lines"><div class="line"></div><div class="line"></div><div class="line"></div></div></div>
+    <div class="thumb"><div class="label">06</div><div class="lines"><div class="line short"></div><div class="line"></div><div class="line short"></div></div></div>
+  </aside>
+
+  <div class="canvas-area">
+    <div class="page">
+      <div class="page-content">
+        <h1>Service Agreement</h1>
+        <p>This Service Agreement ("Agreement") is entered into as of January 15, 2026 ("Effective Date") by and between Acme Corporation, a Delaware corporation ("Provider"), and the customer identified on the signature page ("Customer").</p>
+        <p>WHEREAS, Provider operates a software-as-a-service platform; and WHEREAS, Customer desires to engage Provider to provide such services subject to the terms set forth herein.</p>
+        <p><strong>1. SERVICES.</strong> Provider shall provide the services described in one or more order forms executed by the parties (each, an "Order Form"). Each Order Form shall be incorporated into and form part of this Agreement.</p>
+        <p><strong>2. FEES.</strong> Customer shall pay all fees set forth in the applicable Order Form. Unless otherwise specified, fees are payable within thirty (30) days of invoice date.</p>
+      </div>
+      <div class="annotation" style="left: 60px; top: 215px; width: 380px; height: 22px;"></div>
+      <div class="annotation text" style="left: 60px; top: 340px;">subject to the terms set forth</div>
+      <div class="measure-tag" style="left: 250px; top: 200px;">380 × 22</div>
+    </div>
+  </div>
+
+  <aside class="props">
+    <div class="props-head">Highlight properties</div>
+    <div class="field">
+      <label>Color</label>
+      <div class="color-swatches" style="padding: 0;">
+        <div class="swatch active" style="background:#ff5722"></div>
+        <div class="swatch" style="background:#ffc107"></div>
+        <div class="swatch" style="background:#4caf50"></div>
+        <div class="swatch" style="background:#2196f3"></div>
+        <div class="swatch" style="background:#9c27b0"></div>
+      </div>
+    </div>
+    <div class="field">
+      <label>Opacity</label>
+      <input type="range" min="0" max="100" value="35" style="width:100%; accent-color: var(--accent);">
+    </div>
+    <div class="row-2">
+      <div class="field"><label>X</label><input value="60"></div>
+      <div class="field"><label>Y</label><input value="215"></div>
+    </div>
+    <div class="row-2">
+      <div class="field"><label>W</label><input value="380"></div>
+      <div class="field"><label>H</label><input value="22"></div>
+    </div>
+    <div class="field">
+      <label>Author</label>
+      <input value="A. Mahmoud">
+    </div>
+    <div class="field">
+      <label>Note</label>
+      <textarea rows="3" placeholder="Add a comment..."></textarea>
+    </div>
+  </aside>
+</div>
+
+<div class="statusbar">
+  <div class="item"><span class="led"></span><span>Ready</span></div>
+  <div class="item">Page <strong>04 / 24</strong></div>
+  <div class="item">Selection <strong>1 highlight</strong></div>
+  <div class="right">
+    <div class="item">Zoom <strong>142%</strong></div>
+    <div class="item">X <strong>60</strong> · Y <strong>215</strong></div>
+    <div class="item">A4 · 595 × 842 pt</div>
+    <div class="item">UTF-8</div>
+  </div>
+</div>
+</body>
+</html>

@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>07 — Compress Tool · LocalPDF Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after { box-sizing: border-box; }
+  :root {
+    --bg: #f6f1e8;
+    --paper: #fdfaf3;
+    --ink: #2d2418;
+    --ink-soft: #5a4a36;
+    --terracotta: #c9613a;
+    --terracotta-deep: #8b3e21;
+    --moss: #6a7a3a;
+    --cream: #ebdfc4;
+    --line: #d9cdb5;
+  }
+  body {
+    margin: 0; min-height: 100vh;
+    background:
+      radial-gradient(ellipse at top right, rgba(201,97,58,0.10) 0%, transparent 50%),
+      radial-gradient(ellipse at bottom left, rgba(106,122,58,0.08) 0%, transparent 50%),
+      var(--bg);
+    color: var(--ink);
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    padding: 24px 40px 80px;
+  }
+
+  .top {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 40px;
+  }
+  .crumb { font-size: 13px; color: var(--ink-soft); display: flex; align-items: center; gap: 10px; }
+  .crumb .pill { background: var(--paper); border: 1px solid var(--line); padding: 6px 14px; border-radius: 100px; }
+  .crumb .pill strong { color: var(--ink); }
+  .back { color: var(--ink-soft); text-decoration: none; font-size: 13px; }
+
+  .hero {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 48px;
+    align-items: center; margin-bottom: 48px;
+  }
+  .hero-num { font-family: 'Fraunces', serif; font-size: 14px; color: var(--terracotta); margin-bottom: 8px; }
+  h1 {
+    font-family: 'Fraunces', serif;
+    font-size: 72px; line-height: 0.95; margin: 0 0 20px;
+    font-weight: 500; letter-spacing: -0.03em;
+    color: var(--ink);
+  }
+  h1 em { font-style: italic; color: var(--terracotta); font-weight: 400; }
+  .hero p { font-size: 16px; line-height: 1.6; color: var(--ink-soft); max-width: 440px; margin: 0; }
+
+  .hero-visual {
+    position: relative; height: 280px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .blob {
+    position: absolute; border-radius: 50%;
+    filter: blur(0px);
+  }
+  .blob.b1 { width: 220px; height: 220px; background: var(--cream); top: 0; right: 40px; }
+  .blob.b2 { width: 140px; height: 140px; background: rgba(201,97,58,0.2); bottom: 20px; right: 120px; }
+  .blob.b3 { width: 80px; height: 80px; background: rgba(106,122,58,0.25); top: 60px; right: 0; }
+
+  .pdf-illust {
+    position: relative; z-index: 1;
+    width: 180px; height: 220px; background: white;
+    border-radius: 4px;
+    box-shadow:
+      0 1px 0 var(--line),
+      0 20px 40px -10px rgba(45,36,24,0.15),
+      0 4px 12px -4px rgba(45,36,24,0.1);
+    transform: rotate(-4deg);
+    padding: 20px;
+  }
+  .pdf-illust::before {
+    content: ''; position: absolute; top: 16px; left: 20px; right: 20px; height: 4px; background: var(--terracotta);
+  }
+  .pdf-illust .lines { position: absolute; top: 40px; left: 20px; right: 20px; bottom: 20px; }
+  .pdf-illust .line { height: 2px; background: var(--cream); margin-bottom: 8px; border-radius: 2px; }
+  .pdf-illust .line:nth-child(2) { width: 80%; }
+  .pdf-illust .line:nth-child(3) { width: 90%; }
+  .pdf-illust .line:nth-child(4) { width: 60%; }
+  .pdf-illust .line:nth-child(6) { width: 70%; }
+  .arrow-flow {
+    position: absolute; right: 0; top: 50%;
+    font-family: 'Fraunces', serif; font-style: italic;
+    font-size: 24px; color: var(--terracotta);
+  }
+
+  .upload-area {
+    background: var(--paper);
+    border: 2px dashed var(--line);
+    border-radius: 16px;
+    padding: 40px;
+    text-align: center;
+    transition: all 0.3s;
+    cursor: pointer;
+  }
+  .upload-area:hover { border-color: var(--terracotta); background: rgba(201,97,58,0.03); }
+  .upload-icon {
+    width: 56px; height: 56px; margin: 0 auto 16px;
+    background: var(--cream); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--terracotta);
+  }
+  .upload-area h3 { margin: 0 0 4px; font-size: 18px; font-weight: 600; }
+  .upload-area p { margin: 0 0 16px; color: var(--ink-soft); font-size: 14px; }
+  .upload-area .browse {
+    color: var(--terracotta); font-weight: 600; border-bottom: 1px solid var(--terracotta);
+    padding-bottom: 1px; cursor: pointer;
+  }
+
+  .preset-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px;
+    margin-top: 24px;
+  }
+  .preset {
+    background: var(--paper); border: 1px solid var(--line);
+    border-radius: 12px; padding: 24px;
+    cursor: pointer; transition: all 0.2s; position: relative;
+  }
+  .preset:hover { transform: translateY(-2px); border-color: var(--terracotta); }
+  .preset.active { border-color: var(--terracotta); background: rgba(201,97,58,0.05); }
+  .preset.active::before {
+    content: '✓'; position: absolute; top: 16px; right: 16px;
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--terracotta); color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+  }
+  .preset-icon {
+    width: 40px; height: 40px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 16px;
+  }
+  .preset:nth-child(1) .preset-icon { background: rgba(106,122,58,0.15); color: var(--moss); }
+  .preset:nth-child(2) .preset-icon { background: rgba(201,97,58,0.15); color: var(--terracotta); }
+  .preset:nth-child(3) .preset-icon { background: rgba(45,36,24,0.1); color: var(--ink); }
+  .preset h4 { margin: 0 0 4px; font-size: 15px; font-weight: 600; }
+  .preset p { margin: 0 0 16px; font-size: 12px; color: var(--ink-soft); line-height: 1.5; }
+  .preset-stat { display: flex; align-items: baseline; gap: 6px; }
+  .preset-stat .num { font-family: 'Fraunces', serif; font-size: 28px; font-weight: 500; color: var(--ink); }
+  .preset-stat .lbl { font-size: 11px; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.08em; }
+  .preset-stat .arrow { color: var(--moss); font-size: 14px; margin-left: 4px; }
+
+  .file-info-bar {
+    margin-top: 32px;
+    background: var(--paper); border: 1px solid var(--line); border-radius: 16px;
+    padding: 24px 32px;
+    display: grid; grid-template-columns: auto 1fr auto auto; gap: 32px;
+    align-items: center;
+  }
+  .file-thumb {
+    width: 56px; height: 72px; background: white;
+    border: 1px solid var(--line); border-radius: 4px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Fraunces', serif; font-style: italic; font-size: 14px; color: var(--terracotta);
+    box-shadow: 0 4px 12px -4px rgba(0,0,0,0.08);
+  }
+  .file-name-block .name { font-weight: 600; font-size: 15px; margin-bottom: 4px; }
+  .file-name-block .meta { font-size: 12px; color: var(--ink-soft); display: flex; gap: 8px; }
+  .file-name-block .meta .dot { width: 3px; height: 3px; border-radius: 50%; background: var(--ink-soft); align-self: center; }
+  .size-comparison {
+    display: flex; align-items: center; gap: 16px;
+    font-family: 'Fraunces', serif;
+  }
+  .size-old { font-size: 24px; color: var(--ink-soft); text-decoration: line-through; }
+  .size-arrow { color: var(--moss); font-size: 20px; }
+  .size-new { font-size: 32px; font-weight: 500; color: var(--terracotta); }
+  .savings {
+    background: var(--moss); color: white;
+    padding: 8px 16px; border-radius: 100px;
+    font-size: 13px; font-weight: 600;
+    font-family: 'Plus Jakarta Sans', sans-serif;
+  }
+
+  .advanced {
+    margin-top: 16px; background: var(--paper);
+    border: 1px solid var(--line); border-radius: 12px;
+    overflow: hidden;
+  }
+  .advanced summary {
+    padding: 16px 24px; cursor: pointer; font-weight: 600; font-size: 14px;
+    display: flex; justify-content: space-between; align-items: center;
+    list-style: none;
+  }
+  .advanced summary::-webkit-details-marker { display: none; }
+  .advanced summary::after { content: '↓'; transition: transform 0.2s; }
+  .advanced[open] summary::after { transform: rotate(180deg); }
+  .advanced-body { padding: 0 24px 24px; border-top: 1px solid var(--line); padding-top: 16px; }
+  .slider-row { margin-bottom: 16px; }
+  .slider-row label { display: block; font-size: 12px; color: var(--ink-soft); margin-bottom: 8px; }
+  .slider-row .val { color: var(--ink); font-weight: 600; }
+  .slider {
+    width: 100%; height: 4px; background: var(--cream); border-radius: 2px;
+    position: relative;
+  }
+  .slider::before {
+    content: ''; position: absolute; left: 0; top: 0; height: 100%; width: 60%;
+    background: var(--terracotta); border-radius: 2px;
+  }
+  .slider::after {
+    content: ''; position: absolute; left: 60%; top: 50%; transform: translate(-50%, -50%);
+    width: 16px; height: 16px; background: white;
+    border: 2px solid var(--terracotta); border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  }
+  .checkbox-row { display: flex; gap: 8px; align-items: center; padding: 8px 0; font-size: 13px; cursor: pointer; }
+  .checkbox { width: 18px; height: 18px; border: 1.5px solid var(--line); border-radius: 3px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .checkbox.on { background: var(--terracotta); border-color: var(--terracotta); color: white; font-size: 12px; }
+
+  .actions { display: flex; gap: 12px; margin-top: 24px; justify-content: flex-end; }
+  .btn {
+    padding: 14px 28px; border: 0; border-radius: 100px;
+    font-family: inherit; font-weight: 600; font-size: 14px;
+    cursor: pointer; display: inline-flex; align-items: center; gap: 8px;
+    transition: all 0.2s;
+  }
+  .btn-ghost { background: transparent; color: var(--ink-soft); }
+  .btn-ghost:hover { color: var(--ink); }
+  .btn-primary { background: var(--terracotta); color: white; box-shadow: 0 8px 24px -6px rgba(201,97,58,0.4); }
+  .btn-primary:hover { background: var(--terracotta-deep); transform: translateY(-1px); }
+</style>
+</head>
+<body>
+<div class="top">
+  <div class="crumb">
+    <span class="pill">Optimize <strong>›</strong> Compress</span>
+  </div>
+  <a class="back" href="#">← All tools</a>
+</div>
+
+<div class="hero">
+  <div>
+    <div class="hero-num">§ 02 — TOOL 007 / 031</div>
+    <h1>Shrink your <em>PDFs</em>, keep them sharp.</h1>
+    <p>Our smart compressor re-encodes images, deduplicates fonts, and trims metadata — without visibly hurting quality. Pick a preset or fine-tune manually.</p>
+  </div>
+  <div class="hero-visual">
+    <div class="blob b1"></div>
+    <div class="blob b2"></div>
+    <div class="blob b3"></div>
+    <div class="pdf-illust"><div class="lines"><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div><div class="line"></div></div></div>
+  </div>
+</div>
+
+<div class="upload-area">
+  <div class="upload-icon">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"/></svg>
+  </div>
+  <h3>Drop a PDF to compress</h3>
+  <p>or <span class="browse">browse from device</span> · max 500 MB</p>
+</div>
+
+<div class="preset-grid">
+  <div class="preset">
+    <div class="preset-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7"/><path d="M8 12h8M8 16h5"/></svg></div>
+    <h4>Light</h4>
+    <p>Subtle compression for archival-quality originals.</p>
+    <div class="preset-stat"><span class="num">−22%</span><span class="lbl">size</span></div>
+  </div>
+  <div class="preset active">
+    <div class="preset-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+    <h4>Balanced</h4>
+    <p>Smart default. Visually identical, significantly smaller.</p>
+    <div class="preset-stat"><span class="num">−52%</span><span class="lbl">size</span><span class="arrow">recommended</span></div>
+  </div>
+  <div class="preset">
+    <div class="preset-icon"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+    <h4>Maximum</h4>
+    <p>Aggressive. Great for email attachments and web upload.</p>
+    <div class="preset-stat"><span class="num">−78%</span><span class="lbl">size</span></div>
+  </div>
+</div>
+
+<div class="file-info-bar">
+  <div class="file-thumb">PDF</div>
+  <div class="file-name-block">
+    <div class="name">annual-report-2026-final.pdf</div>
+    <div class="meta">
+      <span>184 pages</span><span class="dot"></span>
+      <span>2,847 embedded images</span><span class="dot"></span>
+      <span>21 fonts</span>
+    </div>
+  </div>
+  <div class="size-comparison">
+    <span class="size-old">14.8 MB</span>
+    <span class="size-arrow">→</span>
+    <span class="size-new">7.1 MB</span>
+  </div>
+  <div class="savings">−52% saved</div>
+</div>
+
+<details class="advanced" open>
+  <summary>Fine-tune compression</summary>
+  <div class="advanced-body">
+    <div class="slider-row">
+      <label>Image quality <span class="val">— 78 / 100</span></label>
+      <div class="slider"></div>
+    </div>
+    <div class="slider-row">
+      <label>DPI downsample threshold <span class="val">— 150 dpi</span></label>
+      <div class="slider" style="--w: 40%;"><span style="left:40%"></span></div>
+    </div>
+    <div class="checkbox-row"><div class="checkbox on">✓</div><span>Remove duplicate fonts</span></div>
+    <div class="checkbox-row"><div class="checkbox on">✓</div><span>Strip XMP metadata</span></div>
+    <div class="checkbox-row"><div class="checkbox"></div><span>Convert CMYK to RGB (smaller for screen)</span></div>
+    <div class="checkbox-row"><div class="checkbox on">✓</div><span>Recompress with Object Streams</span></div>
+  </div>
+</details>
+
+<div class="actions">
+  <button class="btn btn-ghost">Cancel</button>
+  <button class="btn btn-primary">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    Compress PDF
+  </button>
+</div>
+</body>
+</html>

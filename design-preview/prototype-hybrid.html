@@ -1,0 +1,1054 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>LocalPDF Studio · Hybrid v2</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,400;1,9..144,500&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after { box-sizing: border-box; }
+
+  /* ============================================================
+     UNIFIED DESIGN TOKENS
+     ============================================================ */
+  :root {
+    /* aurora atmosphere */
+    --aurora-1: rgba(120,80,255,0.55);
+    --aurora-2: rgba(255,100,180,0.5);
+    --aurora-3: rgba(80,200,255,0.45);
+    --aurora-4: rgba(255,200,100,0.4);
+
+    /* glass surfaces */
+    --glass-bg: rgba(255,255,255,0.06);
+    --glass-bg-hover: rgba(255,255,255,0.1);
+    --glass-border: rgba(255,255,255,0.12);
+    --glass-border-hover: rgba(255,255,255,0.2);
+    --glass-shadow: 0 8px 32px rgba(0,0,0,0.2);
+    --glass-blur: blur(28px) saturate(180%);
+
+    /* accent: terracotta (warmth from 07) */
+    --accent: #c9613a;
+    --accent-deep: #8b3e21;
+    --accent-glow: rgba(201,97,58,0.4);
+
+    /* interactive: iOS blue (from 10) */
+    --interactive: #007aff;
+    --interactive-glow: rgba(0,122,255,0.3);
+    --success: #34c759;
+    --warning: #ff9500;
+
+    /* editor surface (softened from 08) */
+    --editor-bg: rgba(20,22,26,0.85);
+    --editor-bg-2: rgba(30,34,40,0.85);
+    --editor-bg-3: rgba(40,46,54,0.85);
+    --editor-line: rgba(255,255,255,0.08);
+    --editor-ink: #e8e8e6;
+    --editor-ink-2: #b8b8b5;
+    --editor-ink-3: #7a7a77;
+    --editor-grid: rgba(255,255,255,0.03);
+
+    /* document */
+    --paper: #faf8f3;
+    --paper-ink: #1a1a2e;
+    --paper-ink-2: #3a3a48;
+    --paper-line: #e5e5e0;
+  }
+
+  body {
+    margin: 0; min-height: 100vh;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: white;
+    overflow-x: hidden;
+    position: relative;
+    background:
+      radial-gradient(ellipse 80% 60% at 15% 10%, var(--aurora-1) 0%, transparent 50%),
+      radial-gradient(ellipse 70% 60% at 85% 25%, var(--aurora-2) 0%, transparent 50%),
+      radial-gradient(ellipse 60% 50% at 30% 80%, var(--aurora-3) 0%, transparent 50%),
+      radial-gradient(ellipse 70% 60% at 90% 90%, var(--aurora-4) 0%, transparent 50%),
+      linear-gradient(135deg, #1a0a3a 0%, #2a1a5a 50%, #0a1a3a 100%);
+  }
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+    opacity: 0.04; pointer-events: none; mix-blend-mode: overlay; z-index: 1;
+  }
+  body::after {
+    content: ''; position: fixed; inset: -10%;
+    background:
+      radial-gradient(circle 400px at 20% 30%, rgba(255,107,203,0.15), transparent 40%),
+      radial-gradient(circle 500px at 80% 60%, rgba(90,210,255,0.15), transparent 40%);
+    pointer-events: none; z-index: 0;
+    animation: aurora 25s ease-in-out infinite alternate;
+  }
+  @keyframes aurora {
+    0%   { transform: translate(0, 0) rotate(0); }
+    100% { transform: translate(-2%, 1.5%) rotate(1.5deg); }
+  }
+
+  .page-wrap { position: relative; z-index: 2; min-height: 100vh; padding-bottom: 32px; }
+
+  /* ============================================================
+     GLASS NAV — design 09 refined
+     ============================================================ */
+  .topnav {
+    position: sticky; top: 16px;
+    margin: 16px 24px 0;
+    z-index: 50;
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-radius: 18px;
+    padding: 10px 16px;
+    display: flex; align-items: center; gap: 16px;
+    box-shadow: var(--glass-shadow);
+  }
+  .brand {
+    display: flex; align-items: center; gap: 10px;
+    font-weight: 600; font-size: 14px; letter-spacing: -0.01em;
+    white-space: nowrap;
+  }
+  .brand-mark {
+    width: 28px; height: 28px;
+    background: linear-gradient(135deg, var(--accent) 0%, var(--accent-deep) 100%);
+    border-radius: 8px;
+    position: relative; overflow: hidden;
+    box-shadow: 0 4px 12px -2px var(--accent-glow);
+  }
+  .brand-mark::before {
+    content: ''; position: absolute; inset: 5px;
+    background: rgba(255,255,255,0.25); border-radius: 3px;
+  }
+  .nav-crumbs {
+    display: flex; align-items: center; gap: 6px;
+    font-size: 13px; color: rgba(255,255,255,0.5);
+    padding: 0 12px; border-left: 1px solid var(--glass-border); height: 28px;
+  }
+  .nav-crumbs strong { color: white; font-weight: 500; }
+  .nav-crumbs .sep { opacity: 0.3; }
+  .nav-crumbs .here { color: var(--accent); font-weight: 500; }
+
+  .search-glass {
+    flex: 1; max-width: 400px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid var(--glass-border);
+    border-radius: 10px;
+    padding: 7px 12px;
+    display: flex; align-items: center; gap: 8px;
+    color: rgba(255,255,255,0.4);
+    transition: all 0.2s;
+  }
+  .search-glass:hover { background: rgba(255,255,255,0.08); border-color: var(--glass-border-hover); }
+  .search-glass input {
+    background: transparent; border: 0; outline: 0; flex: 1;
+    color: white; font-family: inherit; font-size: 13px;
+  }
+  .search-glass input::placeholder { color: rgba(255,255,255,0.35); }
+  .kbd {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.08);
+    padding: 2px 5px; border-radius: 4px; color: rgba(255,255,255,0.5);
+  }
+  .nav-right { display: flex; align-items: center; gap: 8px; }
+  .nav-icon {
+    width: 34px; height: 34px; border-radius: 9px;
+    background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border);
+    color: rgba(255,255,255,0.6); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    position: relative; transition: all 0.2s;
+  }
+  .nav-icon:hover { background: rgba(255,255,255,0.1); color: white; }
+  .nav-icon .dot {
+    position: absolute; top: 5px; right: 5px;
+    width: 7px; height: 7px; background: var(--accent);
+    border-radius: 50%; border: 2px solid rgba(26,10,58,0.9);
+  }
+  .avatar-btn {
+    width: 34px; height: 34px; border-radius: 50%;
+    background: linear-gradient(135deg, #c8a4ff 0%, #7e3aff 100%);
+    border: 2px solid rgba(255,255,255,0.15);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 600;
+  }
+  .export-btn {
+    background: var(--accent);
+    color: white; border: 0; border-radius: 10px;
+    padding: 8px 16px; font-family: inherit; font-weight: 600; font-size: 13px;
+    cursor: pointer; display: flex; align-items: center; gap: 6px;
+    box-shadow: 0 4px 12px -2px var(--accent-glow);
+    transition: all 0.2s;
+  }
+  .export-btn:hover { background: var(--accent-deep); transform: translateY(-1px); }
+
+  /* ============================================================
+     HERO — minimal, lets the workspace breathe
+     ============================================================ */
+  .hero {
+    padding: 32px 24px 16px;
+    max-width: 1600px; margin: 0 auto;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 24px;
+  }
+  .hero-left { display: flex; align-items: center; gap: 16px; }
+  .hero-kicker {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(255,255,255,0.08); border: 1px solid var(--glass-border);
+    padding: 5px 12px; border-radius: 100px;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    letter-spacing: 0.08em; text-transform: uppercase;
+    color: rgba(255,255,255,0.7);
+  }
+  .hero-kicker .pulse {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--success);
+    box-shadow: 0 0 6px var(--success);
+    animation: pulse 2s infinite;
+  }
+  @keyframes pulse { 50% { opacity: 0.4; } }
+  .hero h1 {
+    font-family: 'Fraunces', serif;
+    font-size: 28px; line-height: 1.1; margin: 0;
+    font-weight: 500; letter-spacing: -0.02em;
+  }
+  .hero h1 em { font-style: italic; color: var(--accent); font-weight: 400; }
+  .hero-stats {
+    display: flex; gap: 20px;
+    font-family: 'JetBrains Mono', monospace; font-size: 11px;
+    color: rgba(255,255,255,0.5);
+  }
+  .hero-stats strong {
+    color: white; font-family: 'Fraunces', serif; font-size: 18px;
+    font-weight: 500; display: block; margin-bottom: 1px;
+  }
+  .hero-stats strong em { color: var(--accent); font-style: italic; }
+
+  /* ============================================================
+     WORKSPACE — 3-column: pages | editor | sidebar
+     ============================================================ */
+  .workspace {
+    max-width: 1600px;
+    margin: 0 auto;
+    padding: 0 24px;
+    display: grid;
+    grid-template-columns: 200px 1fr 340px;
+    gap: 16px;
+    min-height: calc(100vh - 200px);
+  }
+
+  /* LEFT: page thumbnails */
+  .page-strip {
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-radius: 18px;
+    padding: 14px;
+    align-self: start;
+    position: sticky; top: 90px;
+  }
+  .strip-head {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 0.08em;
+    display: flex; justify-content: space-between; padding: 0 4px 10px;
+  }
+  .strip-head strong { color: white; font-weight: 500; }
+  .thumb {
+    aspect-ratio: 0.77;
+    background: var(--paper);
+    border: 1.5px solid transparent;
+    border-radius: 6px;
+    margin-bottom: 8px;
+    padding: 6px;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.15s;
+    box-shadow: 0 2px 8px -2px rgba(0,0,0,0.3);
+  }
+  .thumb:hover { transform: translateY(-1px); }
+  .thumb.active {
+    border-color: var(--accent);
+    box-shadow: 0 2px 8px -2px rgba(0,0,0,0.3), 0 0 0 2px var(--accent-glow);
+  }
+  .thumb .label {
+    position: absolute; top: -6px; left: -6px;
+    background: var(--accent); color: white;
+    font-family: 'JetBrains Mono', monospace; font-size: 8px; font-weight: 600;
+    padding: 1px 5px; border-radius: 3px;
+    opacity: 0; transition: opacity 0.15s;
+  }
+  .thumb.active .label { opacity: 1; }
+  .thumb .lines { display: flex; flex-direction: column; gap: 2px; height: 100%; justify-content: flex-start; padding-top: 6px; }
+  .thumb .line { height: 1.5px; background: #d4d4d0; border-radius: 1px; }
+  .thumb .line.short { width: 60%; }
+  .thumb .annot {
+    position: absolute; width: 8px; height: 8px; border-radius: 50%;
+    background: var(--accent); border: 1.5px solid white;
+  }
+  .add-thumb {
+    aspect-ratio: 0.77; border: 1.5px dashed rgba(255,255,255,0.12);
+    border-radius: 6px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    gap: 3px; color: rgba(255,255,255,0.3); font-size: 9px; cursor: pointer;
+    transition: all 0.2s;
+  }
+  .add-thumb:hover { border-color: rgba(255,255,255,0.25); color: rgba(255,255,255,0.6); }
+
+  /* CENTER: editor */
+  .editor-col {
+    display: flex; flex-direction: column; gap: 12px;
+  }
+
+  /* toolbar: dark but translucent */
+  .toolbar {
+    background: var(--editor-bg);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 14px;
+    padding: 6px 10px;
+    display: flex; align-items: center;
+    box-shadow: 0 4px 16px -4px rgba(0,0,0,0.3);
+    overflow-x: auto;
+  }
+  .tool-group {
+    display: flex; align-items: center;
+    padding: 0 6px;
+    border-right: 1px solid var(--editor-line);
+  }
+  .tool-group:last-child { border-right: 0; }
+  .tool-group .label {
+    font-family: 'JetBrains Mono', monospace; font-size: 8px;
+    color: var(--editor-ink-3); letter-spacing: 0.08em; text-transform: uppercase;
+    margin-right: 6px; writing-mode: vertical-rl; transform: rotate(180deg);
+  }
+  .tool-btn {
+    background: transparent; border: 0; color: var(--editor-ink-2);
+    width: 34px; height: 34px; cursor: pointer; border-radius: 7px;
+    display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px;
+    position: relative; transition: all 0.15s;
+  }
+  .tool-btn:hover { background: var(--editor-bg-3); color: var(--editor-ink); }
+  .tool-btn.active {
+    background: var(--accent); color: white;
+    box-shadow: 0 0 0 1px var(--accent), 0 0 10px var(--accent-glow);
+  }
+  .tool-btn svg { width: 15px; height: 15px; }
+  .tool-btn .k {
+    position: absolute; top: 2px; right: 3px;
+    font-family: 'JetBrains Mono', monospace; font-size: 7px;
+    color: var(--editor-ink-3);
+  }
+  .tool-btn.active .k { color: rgba(255,255,255,0.6); }
+
+  .tool-divider { width: 1px; height: 18px; background: var(--editor-line); margin: 0 3px; }
+
+  .swatches { display: flex; gap: 3px; padding: 0 3px; align-items: center; }
+  .sw {
+    width: 16px; height: 16px; border-radius: 50%; cursor: pointer;
+    border: 2px solid transparent; transition: all 0.15s;
+  }
+  .sw:hover { transform: scale(1.15); }
+  .sw.on { border-color: var(--editor-ink); box-shadow: 0 0 0 1px var(--editor-bg-2); }
+  .sw.accent { background: var(--accent); }
+  .sw.gold { background: #ffc107; }
+  .sw.moss { background: #6a7a3a; }
+  .sw.sky { background: #2196f3; }
+  .sw.lilac { background: #9c27b0; }
+  .sw.white { background: white; border: 1px solid var(--editor-line); }
+
+  .weight-control {
+    display: flex; align-items: center; gap: 4px;
+    padding: 0 3px; color: var(--editor-ink-2); font-size: 10px;
+  }
+  .weight-control select {
+    background: var(--editor-bg-3); color: var(--editor-ink);
+    border: 1px solid var(--editor-line); padding: 3px 5px;
+    font-family: 'JetBrains Mono', monospace; font-size: 9px; border-radius: 3px;
+  }
+
+  .zoom-block {
+    margin-left: auto; display: flex; align-items: center; gap: 3px;
+    background: var(--editor-bg-3); border: 1px solid var(--editor-line);
+    border-radius: 6px; padding: 3px;
+  }
+  .zoom-btn {
+    width: 24px; height: 24px; background: transparent; border: 0;
+    color: var(--editor-ink-2); cursor: pointer; border-radius: 3px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .zoom-btn:hover { background: var(--editor-bg-2); color: var(--editor-ink); }
+  .zoom-val {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    color: var(--editor-ink); min-width: 38px; text-align: center;
+  }
+
+  /* canvas */
+  .canvas-stage {
+    flex: 1;
+    background: rgba(0,0,0,0.15);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 18px;
+    padding: 28px;
+    display: flex; align-items: flex-start; justify-content: center;
+    min-height: 600px;
+    position: relative;
+    background-image:
+      linear-gradient(var(--editor-grid) 1px, transparent 1px),
+      linear-gradient(90deg, var(--editor-grid) 1px, transparent 1px);
+    background-size: 20px 20px;
+  }
+  .pdf {
+    width: 520px; min-height: 660px;
+    background: var(--paper);
+    border-radius: 3px;
+    padding: 48px 56px;
+    color: var(--paper-ink);
+    position: relative;
+    box-shadow:
+      0 40px 80px -16px rgba(0,0,0,0.5),
+      0 0 0 1px rgba(255,255,255,0.08);
+  }
+  .pdf::before {
+    content: 'DRAFT v3 · COMMENTS PENDING';
+    position: absolute; top: 16px; right: 16px;
+    background: rgba(201,97,58,0.1); color: var(--accent);
+    padding: 3px 8px; border-radius: 3px;
+    font-family: 'JetBrains Mono', monospace; font-size: 8px;
+    font-weight: 600; letter-spacing: 0.05em;
+  }
+  .pdf h1 {
+    font-family: 'Fraunces', serif; font-size: 26px;
+    margin: 0 0 16px; font-weight: 600; letter-spacing: -0.02em;
+    line-height: 1.1;
+  }
+  .pdf .meta {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    color: #888; margin-bottom: 20px; padding-bottom: 10px;
+    border-bottom: 1px solid var(--paper-line);
+    display: flex; gap: 12px;
+  }
+  .pdf p {
+    font-size: 12px; line-height: 1.7; color: var(--paper-ink-2); margin: 0 0 12px;
+  }
+  .pdf .h { color: var(--paper-ink); font-weight: 600; }
+  .pdf .signature-block {
+    margin-top: 48px; padding-top: 20px;
+    border-top: 1px solid var(--paper-line);
+    display: grid; grid-template-columns: 1fr 1fr; gap: 24px;
+  }
+  .sig-line { padding-top: 6px; border-top: 1px solid var(--paper-ink); }
+  .sig-line .name { font-weight: 600; font-size: 11px; }
+  .sig-line .role { font-size: 10px; color: #888; }
+
+  /* annotation overlays */
+  .marker {
+    position: absolute;
+    width: 24px; height: 24px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 700; font-size: 11px;
+    cursor: pointer;
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2);
+    border: 2px solid white;
+    transition: transform 0.2s;
+  }
+  .marker:hover { transform: scale(1.15); }
+  .marker.a { background: var(--accent); }
+  .marker.b { background: var(--interactive); }
+  .marker.c { background: var(--success); }
+  .marker.active {
+    box-shadow: 0 3px 10px rgba(0,0,0,0.2), 0 0 0 3px var(--accent-glow);
+  }
+  .hl {
+    position: absolute; height: 16px;
+    background: linear-gradient(180deg, rgba(255,200,80,0.3) 0%, rgba(255,150,80,0.3) 100%);
+    border-bottom: 2px solid rgba(255,150,80,0.6);
+    border-radius: 2px;
+    pointer-events: none;
+  }
+  .handwritten {
+    position: absolute; color: var(--accent);
+    font-family: 'Fraunces', serif; font-style: italic; font-weight: 500;
+    font-size: 14px; transform: rotate(-2deg);
+  }
+  .textbox {
+    position: absolute; background: white;
+    border: 1px solid #d4d4d0; border-radius: 3px;
+    padding: 5px 8px; font-size: 11px; color: var(--paper-ink);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  }
+  .textbox::before {
+    content: 'AM'; position: absolute; top: -7px; right: 6px;
+    background: var(--accent); color: white;
+    font-size: 8px; font-weight: 700; padding: 1px 4px; border-radius: 2px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  /* status bar */
+  .status-strip {
+    background: var(--editor-bg);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 10px;
+    padding: 6px 12px;
+    display: flex; align-items: center; gap: 12px;
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    color: var(--editor-ink-3);
+  }
+  .status-strip .led {
+    width: 5px; height: 5px; border-radius: 50%;
+    background: var(--success); box-shadow: 0 0 5px var(--success);
+  }
+  .status-strip strong { color: var(--editor-ink-2); }
+  .status-strip .right { margin-left: auto; display: flex; gap: 12px; }
+
+  /* RIGHT: sidebar — comments + compress integrated */
+  .sidebar {
+    display: flex; flex-direction: column; gap: 12px;
+    align-self: start;
+    position: sticky; top: 90px;
+    max-height: calc(100vh - 110px);
+  }
+
+  /* comments panel */
+  .comments {
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-radius: 18px;
+    padding: 14px;
+    display: flex; flex-direction: column;
+    box-shadow: var(--glass-shadow);
+    flex: 1; min-height: 0;
+    overflow: hidden;
+  }
+  .comments-head {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 0 4px 12px;
+  }
+  .comments-head .title {
+    font-weight: 600; font-size: 14px;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .comments-head .count {
+    background: var(--accent);
+    color: white; padding: 1px 7px; border-radius: 100px;
+    font-size: 10px; font-weight: 600;
+  }
+  .filter-pills {
+    display: flex; gap: 3px; margin-bottom: 10px;
+    background: rgba(0,0,0,0.12); padding: 3px; border-radius: 8px;
+  }
+  .fp {
+    flex: 1; padding: 5px; border-radius: 6px;
+    background: transparent; border: 0; color: rgba(255,255,255,0.5);
+    font-size: 10px; cursor: pointer; font-family: inherit; font-weight: 500;
+    transition: all 0.15s;
+  }
+  .fp.on { background: rgba(255,255,255,0.12); color: white; }
+  .fp .num { display: block; font-size: 13px; font-weight: 600; font-family: 'Fraunces', serif; }
+
+  .comments-list {
+    flex: 1; overflow-y: auto; padding-right: 3px;
+    display: flex; flex-direction: column; gap: 6px;
+  }
+  .comments-list::-webkit-scrollbar { width: 3px; }
+  .comments-list::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.15); border-radius: 2px; }
+
+  .comment {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px;
+    padding: 10px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .comment:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.12); }
+  .comment.active { border-color: var(--accent); border-left-width: 2px; }
+  .comment-head {
+    display: flex; align-items: center; gap: 6px; margin-bottom: 6px;
+  }
+  .avatar {
+    width: 22px; height: 22px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; font-weight: 700;
+    flex-shrink: 0;
+  }
+  .avatar.am { background: linear-gradient(135deg, var(--accent) 0%, #e88a5a 100%); }
+  .avatar.jk { background: linear-gradient(135deg, var(--interactive) 0%, #5ac8fa 100%); }
+  .avatar.sr { background: linear-gradient(135deg, var(--success) 0%, #6ee0c7 100%); }
+  .avatar.dl { background: linear-gradient(135deg, #c8a4ff 0%, #7e3aff 100%); }
+  .name { font-size: 11px; font-weight: 600; flex: 1; }
+  .ref {
+    font-family: 'JetBrains Mono', monospace; font-size: 8px;
+    color: var(--accent); background: rgba(201,97,58,0.15);
+    padding: 1px 5px; border-radius: 3px; font-weight: 600;
+  }
+  .quote {
+    font-size: 10px; line-height: 1.4; color: rgba(255,255,255,0.6);
+    background: rgba(0,0,0,0.15); border-left: 2px solid var(--accent);
+    padding: 4px 6px; border-radius: 0 4px 4px 0;
+    margin-bottom: 6px; font-style: italic;
+  }
+  .comment-body { font-size: 11px; line-height: 1.4; margin-bottom: 8px; }
+  .comment-actions { display: flex; gap: 3px; }
+  .ca {
+    background: rgba(255,255,255,0.04); border: 0;
+    color: rgba(255,255,255,0.4); padding: 3px 6px; border-radius: 5px;
+    font-size: 9px; cursor: pointer; font-family: inherit;
+    transition: all 0.15s;
+    display: flex; align-items: center; gap: 3px;
+  }
+  .ca:hover { background: rgba(255,255,255,0.1); color: white; }
+  .ca.resolve { color: var(--success); }
+  .ca.resolve:hover { background: rgba(52,199,89,0.15); }
+  .ca svg { width: 10px; height: 10px; }
+
+  /* compress card — integrated into sidebar */
+  .compress-card {
+    background: var(--glass-bg);
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    border: 1px solid var(--glass-border);
+    border-radius: 18px;
+    padding: 14px;
+    box-shadow: var(--glass-shadow);
+  }
+  .compress-head {
+    display: flex; justify-content: space-between; align-items: end;
+    margin-bottom: 12px;
+  }
+  .compress-head .left .kicker {
+    font-family: 'JetBrains Mono', monospace; font-size: 9px;
+    color: var(--accent); letter-spacing: 0.08em;
+    text-transform: uppercase; margin-bottom: 2px;
+  }
+  .compress-head .left h3 {
+    font-family: 'Fraunces', serif; font-size: 18px;
+    margin: 0; font-weight: 500; letter-spacing: -0.01em;
+  }
+  .compress-head .left h3 em { font-style: italic; color: var(--accent); }
+  .compress-head .right {
+    font-family: 'JetBrains Mono', monospace; font-size: 10px;
+    color: rgba(255,255,255,0.4);
+  }
+  .compress-head .right strong {
+    color: var(--success); font-family: 'Fraunces', serif;
+    font-size: 20px; display: block; font-weight: 500;
+  }
+  .preset-row {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+  }
+  .preset {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 10px; padding: 10px;
+    cursor: pointer; transition: all 0.2s;
+    position: relative;
+  }
+  .preset:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.15); }
+  .preset.on {
+    border-color: var(--accent);
+    background: rgba(201,97,58,0.08);
+  }
+  .preset.on::before {
+    content: '✓'; position: absolute; top: 6px; right: 6px;
+    width: 16px; height: 16px; border-radius: 50%;
+    background: var(--accent); color: white;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; font-weight: 700;
+  }
+  .preset-icon {
+    width: 28px; height: 28px; border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 8px;
+    background: rgba(255,255,255,0.06);
+    color: rgba(255,255,255,0.6);
+  }
+  .preset.on .preset-icon { background: rgba(201,97,58,0.15); color: var(--accent); }
+  .preset h4 { margin: 0 0 2px; font-size: 12px; font-weight: 600; }
+  .preset p { margin: 0 0 6px; font-size: 9px; color: rgba(255,255,255,0.4); line-height: 1.3; }
+  .preset-stat { display: flex; align-items: baseline; gap: 3px; }
+  .preset-stat .num { font-family: 'Fraunces', serif; font-size: 16px; font-weight: 500; }
+  .preset-stat .lbl { font-size: 8px; color: rgba(255,255,255,0.3); text-transform: uppercase; letter-spacing: 0.05em; }
+
+  /* responsive */
+  @media (max-width: 1280px) {
+    .workspace { grid-template-columns: 180px 1fr 300px; }
+  }
+  @media (max-width: 1024px) {
+    .workspace { grid-template-columns: 1fr; }
+    .page-strip { position: static; }
+    .sidebar { position: static; max-height: none; }
+    .hero { flex-direction: column; align-items: flex-start; }
+  }
+</style>
+</head>
+<body>
+<div class="page-wrap">
+
+  <!-- GLASS TOP NAV -->
+  <nav class="topnav">
+    <div class="brand">
+      <div class="brand-mark"></div>
+      <span>LocalPDF</span>
+    </div>
+    <div class="nav-crumbs">
+      <span>Library</span>
+      <span class="sep">/</span>
+      <strong>Q3 Contracts</strong>
+      <span class="sep">/</span>
+      <span class="here">Reviewing</span>
+    </div>
+    <div class="search-glass">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+      <input placeholder="Search tools, files, comments...">
+      <span class="kbd">/</span>
+    </div>
+    <div class="nav-right">
+      <button class="nav-icon" aria-label="Notifications">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg>
+        <span class="dot"></span>
+      </button>
+      <button class="nav-icon" aria-label="Share">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="m8.59 13.51 6.83 3.98M15.41 6.51 8.59 10.49"/></svg>
+      </button>
+      <button class="avatar-btn" aria-label="Account">AM</button>
+      <button class="export-btn">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"/></svg>
+        Export
+      </button>
+    </div>
+  </nav>
+
+  <!-- HERO — compact -->
+  <section class="hero">
+    <div class="hero-left">
+      <div class="hero-kicker">
+        <span class="pulse"></span>
+        3 collaborators
+      </div>
+      <h1>Reviewing <em>Q3 contracts</em></h1>
+    </div>
+    <div class="hero-stats">
+      <div><strong>24<em>/</em>184</strong>Pages</div>
+      <div><strong>8</strong>Comments</div>
+      <div><strong>3</strong>Open</div>
+      <div><strong>52<em>%</em></strong>Smaller</div>
+    </div>
+  </section>
+
+  <!-- WORKSPACE -->
+  <div class="workspace">
+
+    <!-- LEFT: page strip -->
+    <aside class="page-strip">
+      <div class="strip-head"><span>Pages</span><strong>04 / 24</strong></div>
+      <div class="thumb">
+        <div class="label">01</div>
+        <div class="lines">
+          <div class="line"></div><div class="line short"></div>
+          <div class="line"></div><div class="line"></div>
+        </div>
+      </div>
+      <div class="thumb">
+        <div class="label">02</div>
+        <div class="lines">
+          <div class="line"></div><div class="line"></div>
+          <div class="line short"></div><div class="line"></div>
+        </div>
+      </div>
+      <div class="thumb">
+        <div class="label">03</div>
+        <div class="lines">
+          <div class="line"></div><div class="line short"></div>
+          <div class="line"></div>
+        </div>
+        <div class="annot" style="top: 18px; right: 6px;"></div>
+      </div>
+      <div class="thumb active">
+        <div class="label">04</div>
+        <div class="lines">
+          <div class="line"></div><div class="line short"></div>
+          <div class="line"></div><div class="line"></div>
+          <div class="line short"></div>
+        </div>
+        <div class="annot" style="top: 26px; right: 5px;"></div>
+        <div class="annot" style="bottom: 18px; left: 6px; background: var(--interactive);"></div>
+      </div>
+      <div class="thumb">
+        <div class="label">05</div>
+        <div class="lines">
+          <div class="line"></div><div class="line"></div>
+          <div class="line short"></div>
+        </div>
+      </div>
+      <div class="thumb">
+        <div class="label">06</div>
+        <div class="lines">
+          <div class="line short"></div><div class="line"></div>
+        </div>
+        <div class="annot" style="top: 50%; right: 6px; background: var(--success);"></div>
+      </div>
+      <div class="add-thumb">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+        <span>Add</span>
+      </div>
+    </aside>
+
+    <!-- CENTER: editor -->
+    <div class="editor-col">
+
+      <!-- toolbar -->
+      <div class="toolbar">
+        <div class="tool-group">
+          <span class="label">FILE</span>
+          <button class="tool-btn" title="Open">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-7l-2-2H5a2 2 0 0 0-2 2z"/></svg>
+          </button>
+          <button class="tool-btn" title="Save"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/></svg></button>
+        </div>
+
+        <div class="tool-group">
+          <span class="label">EDIT</span>
+          <button class="tool-btn" title="Undo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v6h6M3 13a9 9 0 1 0 3-7"/></svg>
+            <span class="k">Z</span>
+          </button>
+          <button class="tool-btn" title="Redo">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 7v6h-6M21 13a9 9 0 1 1-3-7"/></svg>
+            <span class="k">Z</span>
+          </button>
+        </div>
+
+        <div class="tool-group">
+          <span class="label">ANNOTATE</span>
+          <button class="tool-btn" title="Select">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m3 3 7 17 2-7 7-2L3 3z"/></svg>
+            <span class="k">V</span>
+          </button>
+          <button class="tool-btn active" title="Highlight">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg>
+            <span class="k">H</span>
+          </button>
+          <button class="tool-btn" title="Draw">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/></svg>
+            <span class="k">P</span>
+          </button>
+          <button class="tool-btn" title="Text">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="4 7 4 4 20 4 20 7"/><line x1="9" y1="20" x2="15" y2="20"/><line x1="12" y1="4" x2="12" y2="20"/></svg>
+            <span class="k">T</span>
+          </button>
+          <button class="tool-btn" title="Shape">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="0"/></svg>
+            <span class="k">R</span>
+          </button>
+          <div class="tool-divider"></div>
+          <div class="swatches">
+            <div class="sw on accent" title="Accent"></div>
+            <div class="sw gold"></div>
+            <div class="sw moss"></div>
+            <div class="sw sky"></div>
+            <div class="sw lilac"></div>
+            <div class="sw white"></div>
+          </div>
+          <div class="weight-control">
+            <select><option>1.0</option><option>2.5</option><option>4.0</option><option>6.0</option></select>
+            <span>pt</span>
+          </div>
+        </div>
+
+        <div class="tool-group">
+          <span class="label">VIEW</span>
+          <div class="zoom-block">
+            <button class="zoom-btn"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14"/></svg></button>
+            <span class="zoom-val">142%</span>
+            <button class="zoom-btn"><svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg></button>
+          </div>
+        </div>
+      </div>
+
+      <!-- canvas -->
+      <div class="canvas-stage">
+        <div class="pdf">
+          <h1>Service Agreement</h1>
+          <div class="meta">
+            <span>Effective 15 Jan 2026</span>
+            <span>/</span>
+            <span>Page 4 of 24</span>
+          </div>
+          <p><span class="h">WHEREAS</span>, Provider operates a software-as-a-service platform; and WHEREAS, Customer desires to engage Provider to provide such services subject to the terms set forth herein.</p>
+          <p><span class="h">1. SERVICES.</span> Provider shall provide the services described in one or more order forms executed by the parties (each, an "Order Form"). Each Order Form shall be incorporated into and form part of this Agreement upon execution.</p>
+          <p><span class="h">2. FEES.</span> Customer shall pay all fees set forth in the applicable Order Form. Unless otherwise specified, fees are payable within thirty (30) days of invoice date.</p>
+          <p><span class="h">3. TERM AND TERMINATION.</span> This Agreement shall commence on the Effective Date and continue for a period of twelve (12) months unless earlier terminated in accordance with this Section 3.</p>
+          <p><span class="h">4. CONFIDENTIALITY.</span> Each party agrees to hold in confidence all non-public information disclosed by the other party and to use such information solely for the purposes of performing under this Agreement.</p>
+
+          <div class="signature-block">
+            <div class="sig-line">
+              <div class="name">Acme Corporation</div>
+              <div class="role">Provider / Authorized Signatory</div>
+            </div>
+            <div class="sig-line">
+              <div class="name">Customer</div>
+              <div class="role">By: ____________________ / Date: __________</div>
+            </div>
+          </div>
+
+          <!-- annotations -->
+          <div class="hl" style="left: 48px; width: 180px; top: 82px;"></div>
+          <div class="hl" style="left: 48px; width: 320px; top: 216px;"></div>
+          <div class="handwritten" style="right: 48px; top: 178px;">negotiate!</div>
+          <div class="textbox" style="left: 48px; top: 340px; max-width: 200px;">Move to Net 15 for year 1.</div>
+          <div class="marker a active" style="right: -12px; top: 85px;">1</div>
+          <div class="marker b" style="right: -12px; top: 212px;">2</div>
+          <div class="marker c" style="right: -12px; top: 336px;">3</div>
+        </div>
+      </div>
+
+      <!-- status bar -->
+      <div class="status-strip">
+        <span class="led"></span>
+        <span>Ready</span>
+        <span style="opacity:0.3">/</span>
+        <span>Page <strong>04 / 24</strong></span>
+        <span style="opacity:0.3">/</span>
+        <span>1 highlight selected</span>
+        <div class="right">
+          <span>Zoom <strong>142%</strong></span>
+          <span>A4 / 595 x 842 pt</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT: sidebar -->
+    <aside class="sidebar">
+
+      <!-- comments -->
+      <div class="comments">
+        <div class="comments-head">
+          <div class="title">Comments <span class="count">8</span></div>
+          <button class="nav-icon" style="width:26px; height:26px;" aria-label="Filter">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+          </button>
+        </div>
+        <div class="filter-pills">
+          <button class="fp on">All<span class="num">8</span></button>
+          <button class="fp">Open<span class="num">3</span></button>
+          <button class="fp">Done<span class="num">5</span></button>
+        </div>
+        <div class="comments-list">
+
+          <div class="comment active">
+            <div class="comment-head">
+              <div class="avatar am">AM</div>
+              <div class="name">A. Mahmoud</div>
+              <span class="ref">P4</span>
+            </div>
+            <div class="quote">"fees are payable within thirty (30) days"</div>
+            <div class="comment-body">Net 30 feels long for enterprise. Can we move to Net 15 for the first year?</div>
+            <div class="comment-actions">
+              <button class="ca">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8v.5z"/></svg>
+                Reply
+              </button>
+              <button class="ca resolve">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>
+                Resolve
+              </button>
+            </div>
+          </div>
+
+          <div class="comment">
+            <div class="comment-head">
+              <div class="avatar jk">JK</div>
+              <div class="name">J. Klein</div>
+              <span class="ref">P4</span>
+            </div>
+            <div class="quote">"Provider operates a software-as-a-service platform"</div>
+            <div class="comment-body">Should we add a specific definition of the platform?</div>
+            <div class="comment-actions">
+              <button class="ca">Reply</button>
+              <button class="ca resolve">Resolve</button>
+            </div>
+          </div>
+
+          <div class="comment">
+            <div class="comment-head">
+              <div class="avatar sr">SR</div>
+              <div class="name">S. Rivera</div>
+              <span class="ref">P4</span>
+            </div>
+            <div class="comment-body">Looks good overall. Approved by legal.</div>
+            <div class="comment-actions">
+              <button class="ca">Reply</button>
+            </div>
+          </div>
+
+          <div class="comment">
+            <div class="comment-head">
+              <div class="avatar dl">DL</div>
+              <div class="name">D. Lee</div>
+              <span class="ref">P6</span>
+            </div>
+            <div class="quote">"twelve (12) months"</div>
+            <div class="comment-body">Suggest auto-renewal with 60-day notice clause.</div>
+            <div class="comment-actions">
+              <button class="ca">Reply</button>
+              <button class="ca resolve">Resolve</button>
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- compress — integrated -->
+      <div class="compress-card">
+        <div class="compress-head">
+          <div class="left">
+            <div class="kicker">Smart compress</div>
+            <h3>Shrink <em>final</em>.</h3>
+          </div>
+          <div class="right">
+            <strong>-52%</strong>
+            saved
+          </div>
+        </div>
+        <div class="preset-row">
+          <div class="preset light">
+            <div class="preset-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7"/></svg></div>
+            <h4>Light</h4>
+            <p>Archival</p>
+            <div class="preset-stat">
+              <span class="num">-22%</span>
+              <span class="lbl">size</span>
+            </div>
+          </div>
+          <div class="preset balanced on">
+            <div class="preset-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></div>
+            <h4>Balanced</h4>
+            <p>Default</p>
+            <div class="preset-stat">
+              <span class="num">-52%</span>
+              <span class="lbl">size</span>
+            </div>
+          </div>
+          <div class="preset max">
+            <div class="preset-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/></svg></div>
+            <h4>Max</h4>
+            <p>Aggressive</p>
+            <div class="preset-stat">
+              <span class="num">-78%</span>
+              <span class="lbl">size</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </aside>
+  </div>
+
+</div>
+</body>
+</html>

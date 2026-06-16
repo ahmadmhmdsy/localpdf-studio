@@ -1,0 +1,376 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>09 — Annotations · LocalPDF Studio</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@300;400;500;600;700&family=Geist+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *,*::before,*::after { box-sizing: border-box; }
+  body {
+    margin: 0; min-height: 100vh;
+    font-family: 'Geist', sans-serif;
+    color: white;
+    overflow: hidden;
+    position: relative;
+    background:
+      radial-gradient(ellipse at 20% 30%, rgba(120,80,255,0.6) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, rgba(255,100,180,0.5) 0%, transparent 50%),
+      radial-gradient(ellipse at 50% 80%, rgba(80,200,255,0.5) 0%, transparent 50%),
+      radial-gradient(ellipse at 90% 90%, rgba(255,200,100,0.4) 0%, transparent 50%),
+      linear-gradient(135deg, #1a0a3a 0%, #2a1a5a 50%, #0a1a3a 100%);
+  }
+  body::before {
+    content: ''; position: fixed; inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.5'/%3E%3C/svg%3E");
+    opacity: 0.05; pointer-events: none; mix-blend-mode: overlay;
+  }
+
+  .layout {
+    display: grid; grid-template-columns: 1fr 380px;
+    height: 100vh; padding: 20px; gap: 20px;
+  }
+
+  .doc-stage {
+    position: relative;
+    border-radius: 24px; overflow: hidden;
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 20px 60px -10px rgba(0,0,0,0.5);
+    display: flex; flex-direction: column;
+  }
+  .stage-head {
+    padding: 16px 24px;
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid rgba(255,255,255,0.08);
+  }
+  .stage-title { display: flex; align-items: center; gap: 12px; }
+  .stage-title .badge {
+    background: rgba(255,255,255,0.1);
+    padding: 4px 10px; border-radius: 100px;
+    font-size: 11px; font-family: 'Geist Mono', monospace;
+    border: 1px solid rgba(255,255,255,0.15);
+  }
+  .stage-title .name { font-weight: 500; font-size: 14px; }
+  .stage-title .meta { font-size: 12px; opacity: 0.5; }
+  .stage-tools { display: flex; gap: 6px; }
+  .stage-btn {
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1);
+    color: white; padding: 6px 10px; border-radius: 8px; cursor: pointer;
+    font-size: 11px; font-family: inherit; display: flex; align-items: center; gap: 6px;
+  }
+  .stage-btn:hover { background: rgba(255,255,255,0.15); }
+
+  .stage-body {
+    flex: 1; padding: 32px;
+    display: flex; align-items: center; justify-content: center;
+    overflow: auto;
+  }
+  .doc {
+    width: 540px; min-height: 700px;
+    background: rgba(255,255,255,0.95);
+    border-radius: 12px;
+    padding: 48px;
+    color: #1a1a2e;
+    position: relative;
+    box-shadow: 0 40px 80px -20px rgba(0,0,0,0.5);
+    backdrop-filter: blur(20px);
+  }
+  .doc::before {
+    content: ''; position: absolute; top: 16px; right: 16px;
+    background: linear-gradient(135deg, #ff6bcb 0%, #ffa600 100%);
+    color: white; padding: 4px 10px; border-radius: 4px;
+    font-size: 9px; font-weight: 600; letter-spacing: 0.05em;
+  }
+  .doc h1 { font-size: 28px; margin: 0 0 20px; font-weight: 700; letter-spacing: -0.02em; }
+  .doc p { font-size: 13px; line-height: 1.7; color: #3a3a4a; margin: 0 0 12px; }
+  .doc .h { color: #1a1a2e; font-weight: 600; }
+  .annot-marker {
+    position: absolute;
+    background: linear-gradient(135deg, #ff6bcb 0%, #ffa600 100%);
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: white; font-weight: 700; font-size: 12px;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(255,107,203,0.4);
+    border: 2px solid white;
+  }
+  .annot-marker.b { background: linear-gradient(135deg, #5ad2ff 0%, #2a8aff 100%); box-shadow: 0 4px 12px rgba(90,210,255,0.4); }
+  .annot-marker.c { background: linear-gradient(135deg, #6effc8 0%, #00b389 100%); box-shadow: 0 4px 12px rgba(110,255,200,0.4); }
+  .annot-line {
+    position: absolute; height: 2px;
+    background: linear-gradient(90deg, transparent, #ff6bcb, transparent);
+    pointer-events: none;
+  }
+  .annot-highlight {
+    position: absolute; height: 18px;
+    background: linear-gradient(180deg, rgba(255,200,80,0.3) 0%, rgba(255,150,80,0.3) 100%);
+    border-bottom: 2px solid rgba(255,150,80,0.6);
+    pointer-events: none;
+  }
+
+  /* SIDE PANEL — glass annotations */
+  .side {
+    display: flex; flex-direction: column; gap: 16px;
+  }
+  .glass-card {
+    background: rgba(255,255,255,0.08);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+  }
+  .filter-card { padding: 16px 20px; }
+  .filter-tabs { display: flex; gap: 6px; margin-bottom: 12px; }
+  .filter-tab {
+    flex: 1; padding: 8px; border-radius: 10px;
+    background: rgba(255,255,255,0.05);
+    border: 1px solid transparent;
+    color: rgba(255,255,255,0.7); font-size: 12px; cursor: pointer; text-align: center;
+    font-family: inherit; font-weight: 500;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+  }
+  .filter-tab.active { background: rgba(255,255,255,0.15); color: white; border-color: rgba(255,255,255,0.2); }
+  .filter-tab .num { font-family: 'Geist Mono', monospace; font-size: 16px; font-weight: 600; }
+  .search {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 12px; padding: 10px 14px;
+    display: flex; align-items: center; gap: 10px;
+    color: rgba(255,255,255,0.6); font-size: 12px;
+  }
+  .search input {
+    background: transparent; border: 0; outline: 0;
+    color: white; flex: 1; font-family: inherit; font-size: 12px;
+  }
+  .search input::placeholder { color: rgba(255,255,255,0.4); }
+
+  .comments-list { padding: 8px; max-height: 540px; overflow-y: auto; }
+  .comment {
+    padding: 16px;
+    border-radius: 16px;
+    margin-bottom: 8px;
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .comment:hover { background: rgba(255,255,255,0.1); border-color: rgba(255,255,255,0.2); }
+  .comment.unresolved { border-left: 3px solid #ffa600; }
+  .comment-head {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+  }
+  .avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 600;
+  }
+  .avatar.a { background: linear-gradient(135deg, #ff6bcb 0%, #ffa600 100%); }
+  .avatar.b { background: linear-gradient(135deg, #5ad2ff 0%, #2a8aff 100%); }
+  .avatar.c { background: linear-gradient(135deg, #6effc8 0%, #00b389 100%); }
+  .avatar.d { background: linear-gradient(135deg, #c8a4ff 0%, #7e3aff 100%); }
+  .name { font-weight: 500; font-size: 13px; flex: 1; }
+  .time { font-size: 10px; opacity: 0.5; font-family: 'Geist Mono', monospace; }
+  .ref {
+    font-family: 'Geist Mono', monospace; font-size: 10px;
+    background: rgba(255,255,255,0.1); padding: 3px 8px;
+    border-radius: 6px; opacity: 0.7;
+  }
+  .ref .page { color: #ffa600; font-weight: 600; }
+  .quote {
+    font-size: 12px; line-height: 1.5; color: rgba(255,255,255,0.7);
+    background: rgba(0,0,0,0.2); border-left: 2px solid #ffa600;
+    padding: 8px 10px; border-radius: 0 8px 8px 0;
+    margin-bottom: 8px; font-style: italic;
+  }
+  .comment-body { font-size: 13px; line-height: 1.5; margin-bottom: 12px; }
+  .comment-actions { display: flex; gap: 6px; }
+  .action-btn {
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
+    color: rgba(255,255,255,0.7); padding: 5px 10px; border-radius: 8px;
+    font-size: 11px; cursor: pointer; font-family: inherit;
+    display: flex; align-items: center; gap: 4px;
+  }
+  .action-btn:hover { background: rgba(255,255,255,0.15); color: white; }
+  .action-btn svg { width: 12px; height: 12px; }
+  .action-btn.resolve { color: #6effc8; }
+  .action-btn.resolve:hover { background: rgba(110,255,200,0.2); }
+
+  .new-comment {
+    padding: 16px;
+    background: rgba(255,255,255,0.04);
+    border-top: 1px solid rgba(255,255,255,0.1);
+  }
+  .new-comment textarea {
+    width: 100%; background: rgba(255,255,255,0.06);
+    border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;
+    padding: 12px; color: white; font-family: inherit; font-size: 13px;
+    resize: none; outline: 0;
+  }
+  .new-comment textarea:focus { border-color: rgba(255,255,255,0.3); }
+  .new-comment-foot { display: flex; justify-content: space-between; align-items: center; margin-top: 10px; }
+  .new-comment-foot .left { display: flex; gap: 6px; }
+  .icon-btn {
+    width: 28px; height: 28px; border-radius: 8px;
+    background: rgba(255,255,255,0.06); border: 0;
+    color: rgba(255,255,255,0.7); cursor: pointer; display: flex; align-items: center; justify-content: center;
+  }
+  .icon-btn:hover { background: rgba(255,255,255,0.15); color: white; }
+  .send-btn {
+    background: linear-gradient(135deg, #ff6bcb 0%, #ffa600 100%);
+    color: white; border: 0; padding: 8px 16px;
+    border-radius: 8px; font-family: inherit; font-weight: 600; font-size: 12px;
+    cursor: pointer;
+  }
+  .send-btn:hover { transform: translateY(-1px); box-shadow: 0 4px 12px rgba(255,107,203,0.4); }
+</style>
+</head>
+<body>
+<div class="layout">
+  <section class="doc-stage">
+    <div class="stage-head">
+      <div class="stage-title">
+        <span class="badge">DOC</span>
+        <span class="name">contract-q3-final.pdf</span>
+        <span class="meta">· 24 pages · 8 active comments</span>
+      </div>
+      <div class="stage-tools">
+        <button class="stage-btn">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          Share
+        </button>
+        <button class="stage-btn">
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+          Filters
+        </button>
+      </div>
+    </div>
+    <div class="stage-body">
+      <div class="doc">
+        <h1>Service Agreement</h1>
+        <p>This Service Agreement is entered into as of January 15, 2026 by and between <span class="h">Acme Corporation</span>, a Delaware corporation, and the customer identified on the signature page.</p>
+        <p><span class="h">WHEREAS</span>, Provider operates a software-as-a-service platform; and WHEREAS, Customer desires to engage Provider to provide such services subject to the terms set forth herein.</p>
+        <p><span class="h">1. SERVICES.</span> Provider shall provide the services described in one or more order forms. Each Order Form shall be incorporated into and form part of this Agreement upon execution by both parties.</p>
+        <p><span class="h">2. FEES.</span> Customer shall pay all fees set forth in the applicable Order Form. Unless otherwise specified, fees are payable within thirty days of invoice date.</p>
+        <p><span class="h">3. TERM AND TERMINATION.</span> This Agreement shall commence on the Effective Date and continue for a period of twelve months unless earlier terminated.</p>
+        <div class="annot-marker" style="top: 95px; right: -14px;">1</div>
+        <div class="annot-marker b" style="top: 218px; right: -14px;">2</div>
+        <div class="annot-marker c" style="top: 365px; right: -14px;">3</div>
+        <div class="annot-highlight" style="left: 48px; width: 200px; top: 145px;"></div>
+      </div>
+    </div>
+  </section>
+
+  <aside class="side">
+    <div class="glass-card filter-card">
+      <div class="filter-tabs">
+        <button class="filter-tab active">
+          <span class="num">8</span>
+          <span>All</span>
+        </button>
+        <button class="filter-tab">
+          <span class="num">3</span>
+          <span>Open</span>
+        </button>
+        <button class="filter-tab">
+          <span class="num">5</span>
+          <span>Resolved</span>
+        </button>
+        <button class="filter-tab">
+          <span class="num">2</span>
+          <span>Mine</span>
+        </button>
+      </div>
+      <div class="search">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/></svg>
+        <input placeholder="Search comments & replies…">
+      </div>
+    </div>
+
+    <div class="glass-card comments-list">
+      <div class="comment unresolved">
+        <div class="comment-head">
+          <div class="avatar a">AM</div>
+          <div class="name">A. Mahmoud</div>
+          <span class="ref"><span class="page">P3</span></span>
+          <span class="time">2m ago</span>
+        </div>
+        <div class="quote">"Customer shall pay all fees… payable within thirty days"</div>
+        <div class="comment-body">Net 30 feels long for enterprise. Can we move this to Net 15 for the first year?</div>
+        <div class="comment-actions">
+          <button class="action-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8v.5z"/></svg>
+            Reply
+          </button>
+          <button class="action-btn resolve">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>
+            Resolve
+          </button>
+          <button class="action-btn">···</button>
+        </div>
+      </div>
+
+      <div class="comment">
+        <div class="comment-head">
+          <div class="avatar b">JK</div>
+          <div class="name">J. Klein</div>
+          <span class="ref"><span class="page">P3</span></span>
+          <span class="time">14m ago</span>
+        </div>
+        <div class="quote">"Provider operates a software-as-a-service platform"</div>
+        <div class="comment-body">Should we add a specific definition of the platform? Otherwise this is too vague for legal.</div>
+        <div class="comment-actions">
+          <button class="action-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8v.5z"/></svg>
+            Reply
+          </button>
+          <button class="action-btn resolve">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 6 9 17l-5-5"/></svg>
+            Resolve
+          </button>
+        </div>
+      </div>
+
+      <div class="comment">
+        <div class="comment-head">
+          <div class="avatar c">SR</div>
+          <div class="name">S. Rivera</div>
+          <span class="ref"><span class="page">P3</span></span>
+          <span class="time">1h ago</span>
+        </div>
+        <div class="comment-body">Looks good overall. Approved by legal — moving to sign-off stage.</div>
+        <div class="comment-actions">
+          <button class="action-btn">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8v.5z"/></svg>
+            Reply
+          </button>
+        </div>
+      </div>
+
+      <div class="new-comment">
+        <textarea rows="2" placeholder="Add a comment…"></textarea>
+        <div class="new-comment-foot">
+          <div class="left">
+            <button class="icon-btn" title="Mention someone">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="4"/><path d="M16 8v5a3 3 0 0 0 6 0v-1a10 10 0 1 0-3.9 7.9"/></svg>
+            </button>
+            <button class="icon-btn" title="Attach">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m21.4 11.05-9.19 9.19a6 6 0 0 1-8.49-8.49l8.57-8.57A4 4 0 1 1 17.93 8.8l-8.57 8.57a2 2 0 0 1-2.83-2.83l8.49-8.48"/></svg>
+            </button>
+            <button class="icon-btn" title="Stamp">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 7l3-4h12l3 4v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z"/></svg>
+            </button>
+          </div>
+          <button class="send-btn">Post · ⌘↵</button>
+        </div>
+      </div>
+    </div>
+  </aside>
+</div>
+</body>
+</html>
