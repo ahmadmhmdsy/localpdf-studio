@@ -1,6 +1,18 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { withRetry } from './ai';
 
-// Mock pdfjs
+const { mockGenerateContent, MockGenAI } = vi.hoisted(() => {
+  const mockGenerateContent = vi.fn();
+  class MockGenAI {
+    opts: unknown;
+    constructor(opts: unknown) {
+      this.opts = opts;
+    }
+    models = { generateContent: mockGenerateContent };
+  }
+  return { mockGenerateContent, MockGenAI };
+});
+
 vi.mock('./pdfjs', () => ({
   pdfjsLib: {
     getDocument: vi.fn(),
@@ -8,15 +20,6 @@ vi.mock('./pdfjs', () => ({
   },
 }));
 
-// Mock GoogleGenAI
-const mockGenerateContent = vi.fn();
-class MockGenAI {
-  opts: unknown;
-  constructor(opts: unknown) {
-    this.opts = opts;
-  }
-  models = { generateContent: mockGenerateContent };
-}
 vi.mock('@google/genai', () => ({
   GoogleGenAI: MockGenAI,
 }));
@@ -24,21 +27,6 @@ vi.mock('@google/genai', () => ({
 describe('withRetry', () => {
   it('returns result on first successful attempt', async () => {
     const fn = vi.fn().mockResolvedValue('success');
-    // Inline implementation to avoid module caching
-    async function withRetry<T>(
-      fn: () => Promise<T>,
-      options: { maxAttempts?: number; baseDelay?: number } = {}
-    ): Promise<T> {
-      const { maxAttempts = 3, baseDelay = 10 } = options;
-      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-        try { return await fn(); }
-        catch (error) {
-          if (attempt === maxAttempts) throw error;
-          await new Promise(r => setTimeout(r, baseDelay));
-        }
-      }
-      throw new Error('unreachable');
-    }
     const result = await withRetry(fn, { maxAttempts: 3, baseDelay: 10 });
     expect(result).toBe('success');
     expect(fn).toHaveBeenCalledTimes(1);
@@ -49,20 +37,6 @@ describe('withRetry', () => {
       .mockRejectedValueOnce(new Error('fail 1'))
       .mockRejectedValueOnce(new Error('fail 2'))
       .mockResolvedValue('success');
-    async function withRetry<T>(
-      fn: () => Promise<T>,
-      options: { maxAttempts?: number; baseDelay?: number } = {}
-    ): Promise<T> {
-      const { maxAttempts = 3, baseDelay = 10 } = options;
-      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-        try { return await fn(); }
-        catch (error) {
-          if (attempt === maxAttempts) throw error;
-          await new Promise(r => setTimeout(r, baseDelay));
-        }
-      }
-      throw new Error('unreachable');
-    }
     const result = await withRetry(fn, { maxAttempts: 3, baseDelay: 10 });
     expect(result).toBe('success');
     expect(fn).toHaveBeenCalledTimes(3);
@@ -70,20 +44,6 @@ describe('withRetry', () => {
 
   it('throws after max attempts exhausted', async () => {
     const fn = vi.fn().mockRejectedValue(new Error('always fails'));
-    async function withRetry<T>(
-      fn: () => Promise<T>,
-      options: { maxAttempts?: number; baseDelay?: number } = {}
-    ): Promise<T> {
-      const { maxAttempts = 3, baseDelay = 10 } = options;
-      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-        try { return await fn(); }
-        catch (error) {
-          if (attempt === maxAttempts) throw error;
-          await new Promise(r => setTimeout(r, baseDelay));
-        }
-      }
-      throw new Error('unreachable');
-    }
     await expect(withRetry(fn, { maxAttempts: 2, baseDelay: 10 })).rejects.toThrow('always fails');
     expect(fn).toHaveBeenCalledTimes(2);
   });
@@ -92,39 +52,11 @@ describe('withRetry', () => {
     const fn = vi.fn()
       .mockRejectedValueOnce(new Error('error 1'))
       .mockRejectedValueOnce(new Error('error 2'));
-    async function withRetry<T>(
-      fn: () => Promise<T>,
-      options: { maxAttempts?: number; baseDelay?: number } = {}
-    ): Promise<T> {
-      const { maxAttempts = 3, baseDelay = 10 } = options;
-      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-        try { return await fn(); }
-        catch (error) {
-          if (attempt === maxAttempts) throw error;
-          await new Promise(r => setTimeout(r, baseDelay));
-        }
-      }
-      throw new Error('unreachable');
-    }
     await expect(withRetry(fn, { maxAttempts: 2, baseDelay: 10 })).rejects.toThrow('error 2');
   });
 
   it('handles non-Error rejections', async () => {
     const fn = vi.fn().mockRejectedValue('string error');
-    async function withRetry<T>(
-      fn: () => Promise<T>,
-      options: { maxAttempts?: number; baseDelay?: number } = {}
-    ): Promise<T> {
-      const { maxAttempts = 3, baseDelay = 10 } = options;
-      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-        try { return await fn(); }
-        catch (error) {
-          if (attempt === maxAttempts) throw new Error(String(error));
-          await new Promise(r => setTimeout(r, baseDelay));
-        }
-      }
-      throw new Error('unreachable');
-    }
     await expect(withRetry(fn, { maxAttempts: 1, baseDelay: 10 })).rejects.toThrow('string error');
   });
 });

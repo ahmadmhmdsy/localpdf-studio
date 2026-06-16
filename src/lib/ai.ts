@@ -25,7 +25,7 @@ interface RetryOptions {
   maxDelay?: number;
 }
 
-async function withRetry<T>(
+export async function withRetry<T>(
   fn: () => Promise<T>,
   options: RetryOptions = {}
 ): Promise<T> {

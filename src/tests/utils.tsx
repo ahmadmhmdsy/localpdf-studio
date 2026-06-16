@@ -115,14 +115,23 @@ export function setupUrlMocks() {
 }
 
 /**
- * Asserts that a toast notification was shown
+ * Creates a spy on the showToast function from ToastContext.
+ * Must be called before the component that shows the toast is rendered.
  */
-export function expectToastToHaveBeenShown(
-  message: string,
-  type?: 'success' | 'error' | 'warning' | 'info'
-) {
-  // This is a placeholder - actual implementation depends on how toast is tested
-  // In practice, you'd spy on the toast context or check for toast element in DOM
+export function expectToastToHaveBeenShown() {
+  const showToastSpy = vi.spyOn(useToastStore.getState(), 'showToast');
+  return showToastSpy;
+}
+
+/**
+ * Asserts that a toast with a specific message was shown.
+ * Must be called before the component that shows the toast is rendered.
+ */
+export function expectToastWithMessage(message: string) {
+  const showToastSpy = vi.spyOn(useToastStore.getState(), 'showToast');
+  expect(showToastSpy).toHaveBeenCalledWith(
+    expect.objectContaining({ message })
+  );
 }
 
 /**

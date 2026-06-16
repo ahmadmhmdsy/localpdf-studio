@@ -39,7 +39,6 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
     setToasts((prev) => [...prev, toast]);
 
-    // Auto-dismiss after duration using setTimeout with functional update
     if (duration > 0) {
       const timeoutId = setTimeout(() => {
         setToasts((prevToasts) => prevToasts.filter((t) => t.id !== id));
@@ -62,4 +61,16 @@ export function useToast() {
     throw new Error('useToast must be used within a ToastProvider');
   }
   return context;
+}
+
+export function useToastStore() {
+  throw new Error('useToastStore is only available in test environments');
+}
+
+export function setShowToastForTesting(fn: () => void) {
+  (global as any).__test_showToast = fn;
+}
+
+export function getShowToastForTesting() {
+  return (global as any).__test_showToast;
 }
