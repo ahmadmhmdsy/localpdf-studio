@@ -1,7 +1,7 @@
 import React from 'react';
 import { useEditor, RedactAnnotation } from '../../../contexts/EditorContext';
 
-export function RedactAnnotationItem({ annotation, containerRef }: { annotation: RedactAnnotation, containerRef: React.RefObject<HTMLDivElement> }) {
+const RedactAnnotationItem = React.memo(function RedactAnnotationItem({ annotation, containerRef }: { annotation: RedactAnnotation, containerRef: React.RefObject<HTMLDivElement> }) {
   const { updateAnnotation, selectedAnnotationId, setSelectedAnnotationId, activeTool } = useEditor();
   const isSelected = selectedAnnotationId === annotation.id;
 
@@ -88,4 +88,6 @@ export function RedactAnnotationItem({ annotation, containerRef }: { annotation:
       )}
     </div>
   );
-}
+});
+
+export default RedactAnnotationItem;

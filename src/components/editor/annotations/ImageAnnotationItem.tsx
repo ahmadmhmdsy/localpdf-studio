@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { useEditor, ImageAnnotation } from '../../../contexts/EditorContext';
 
-export function ImageAnnotationItem({ annotation, containerRef }: { annotation: ImageAnnotation, containerRef: React.RefObject<HTMLDivElement> }) {
+const ImageAnnotationItem = React.memo(function ImageAnnotationItem({ annotation, containerRef }: { annotation: ImageAnnotation, containerRef: React.RefObject<HTMLDivElement> }) {
   const { updateAnnotation, selectedAnnotationId, setSelectedAnnotationId, activeTool } = useEditor();
   const isSelected = selectedAnnotationId === annotation.id;
   const cleanupRef = useRef<(() => void)[]>([]);
@@ -112,4 +112,6 @@ export function ImageAnnotationItem({ annotation, containerRef }: { annotation: 
       )}
     </div>
   );
-}
+});
+
+export default ImageAnnotationItem;

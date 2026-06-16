@@ -1,7 +1,7 @@
 import React from 'react';
 import { useEditor, CropAnnotation } from '../../../contexts/EditorContext';
 
-export function CropAnnotationItem({ annotation, containerRef }: { annotation: CropAnnotation, containerRef: React.RefObject<HTMLDivElement> }) {
+const CropAnnotationItem = React.memo(function CropAnnotationItem({ annotation, containerRef }: { annotation: CropAnnotation, containerRef: React.RefObject<HTMLDivElement> }) {
   const { updateAnnotation, selectedAnnotationId, setSelectedAnnotationId, activeTool } = useEditor();
   const isSelected = selectedAnnotationId === annotation.id;
 
@@ -90,4 +90,6 @@ export function CropAnnotationItem({ annotation, containerRef }: { annotation: C
       )}
     </div>
   );
-}
+});
+
+export default CropAnnotationItem;

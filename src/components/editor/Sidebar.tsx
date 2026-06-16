@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
-import { useEditor } from '../../contexts/EditorContext';
 import { pdfjsLib } from '../../lib/pdfjs';
+import { useDocumentStore } from '../../store/documentStore';
+import { useToolsStore } from '../../store/toolsStore';
 import {
   DndContext,
   closestCenter,
@@ -18,7 +19,15 @@ import {
 import { SortableThumbnail } from './SortableThumbnail';
 
 export default function Sidebar() {
-  const { pdfJsDoc, pages, currentPage, setCurrentPage, movePage, deletePage, rotatePage } = useEditor();
+  const pdfJsDoc = useDocumentStore((s) => s.pdfJsDoc);
+  const pages = useDocumentStore((s) => s.pages);
+  const currentPage = useToolsStore((s) => s.currentPage);
+  const setCurrentPage = useToolsStore((s) => s.setCurrentPage);
+  const movePage = useDocumentStore((s) => s.movePage);
+  const deletePageBase = useDocumentStore((s) => s.deletePage);
+  const rotatePage = useDocumentStore((s) => s.rotatePage);
+
+  const deletePage = (index: number) => deletePageBase(index, currentPage);
   const containerRef = useRef<HTMLDivElement>(null);
 
   const sensors = useSensors(

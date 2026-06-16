@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useEditor, TextAnnotation } from '../../../contexts/EditorContext';
 
-export function TextAnnotationItem({ annotation, containerRef }: { annotation: TextAnnotation, containerRef: React.RefObject<HTMLDivElement> }) {
+const TextAnnotationItem = React.memo(function TextAnnotationItem({ annotation, containerRef }: { annotation: TextAnnotation, containerRef: React.RefObject<HTMLDivElement> }) {
   const { updateAnnotation, selectedAnnotationId, setSelectedAnnotationId, activeTool, zoom } = useEditor();
   const isSelected = selectedAnnotationId === annotation.id;
   const [isEditing, setIsEditing] = useState(false);
@@ -102,4 +102,6 @@ export function TextAnnotationItem({ annotation, containerRef }: { annotation: T
       )}
     </div>
   );
-}
+});
+
+export default TextAnnotationItem;

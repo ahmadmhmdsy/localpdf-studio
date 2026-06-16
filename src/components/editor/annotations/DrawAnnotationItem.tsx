@@ -1,7 +1,7 @@
 import React from 'react';
 import { useEditor, DrawAnnotation } from '../../../contexts/EditorContext';
 
-export function DrawAnnotationItem({ annotation }: { annotation: DrawAnnotation }) {
+const DrawAnnotationItem = React.memo(function DrawAnnotationItem({ annotation }: { annotation: DrawAnnotation }) {
   const { selectedAnnotationId, setSelectedAnnotationId, activeTool } = useEditor();
   const isSelected = selectedAnnotationId === annotation.id;
 
@@ -30,4 +30,6 @@ export function DrawAnnotationItem({ annotation }: { annotation: DrawAnnotation 
       </svg>
     </div>
   );
-}
+});
+
+export default DrawAnnotationItem;
