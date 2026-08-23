@@ -1,30 +1,42 @@
 import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
 import { signPdf, redactPdf, dataUrlToBytes } from './security';
 
+const mockState = vi.hoisted(() => ({
+  pages: [] as { drawRectangle: ReturnType<typeof vi.fn>; drawImage: ReturnType<typeof vi.fn>; getSize: ReturnType<typeof vi.fn> }[],
+  embedPng: undefined as ReturnType<typeof vi.fn> | undefined,
+  load: undefined as ReturnType<typeof vi.fn> | undefined,
+  create: undefined as ReturnType<typeof vi.fn> | undefined,
+}));
+
 vi.mock('pdf-lib', () => {
-  const mockPage = {
-    getSize: vi.fn().mockReturnValue({ width: 612, height: 792 }),
-    drawRectangle: vi.fn(),
-    drawImage: vi.fn(),
-    drawText: vi.fn(),
+  const freshMockDoc = () => {
+    mockState.pages = [{
+      getSize: vi.fn().mockReturnValue({ width: 612, height: 792 }),
+      drawRectangle: vi.fn(),
+      drawImage: vi.fn(),
+      drawText: vi.fn(),
+    }];
+    mockState.embedPng = vi.fn().mockResolvedValue({ width: 100, height: 50 });
+    return {
+      getPages: vi.fn().mockReturnValue(mockState.pages),
+      getPageCount: vi.fn().mockReturnValue(1),
+      embedPng: mockState.embedPng,
+      setTitle: vi.fn(),
+      setAuthor: vi.fn(),
+      setSubject: vi.fn(),
+      setKeywords: vi.fn(),
+      setCreator: vi.fn(),
+      setProducer: vi.fn(),
+      save: vi.fn().mockResolvedValue(new Uint8Array([1, 2, 3])),
+      addPage: vi.fn().mockReturnValue(mockState.pages[0]),
+    };
   };
-  const mockPdfDoc = {
-    getPages: vi.fn().mockReturnValue([mockPage]),
-    getPageCount: vi.fn().mockReturnValue(1),
-    embedPng: vi.fn().mockResolvedValue({ width: 100, height: 50 }),
-    setTitle: vi.fn(),
-    setAuthor: vi.fn(),
-    setSubject: vi.fn(),
-    setKeywords: vi.fn(),
-    setCreator: vi.fn(),
-    setProducer: vi.fn(),
-    save: vi.fn().mockResolvedValue(new Uint8Array([1, 2, 3])),
-    addPage: vi.fn().mockReturnValue(mockPage),
-  };
+  mockState.load = vi.fn().mockResolvedValue(freshMockDoc());
+  mockState.create = vi.fn().mockImplementation(() => Promise.resolve(freshMockDoc()));
   return {
     PDFDocument: {
-      load: vi.fn().mockResolvedValue(mockPdfDoc),
-      create: vi.fn().mockResolvedValue(mockPdfDoc),
+      load: mockState.load,
+      create: mockState.create,
     },
     rgb: vi.fn().mockReturnValue({ r: 0, g: 0, b: 0 }),
     degrees: vi.fn().mockReturnValue({ angle: 0 }),
@@ -115,6 +127,9 @@ describe('security.ts', () => {
       const result = await signPdf(mockFile, [signature]);
       expect(result).toBeInstanceOf(Uint8Array);
       expect(fetchSpy).not.toHaveBeenCalled();
+      // signPdf should embed the PNG and draw it on the page
+      expect(mockState.embedPng).toHaveBeenCalled();
+      expect(mockState.pages[0].drawImage).toHaveBeenCalledTimes(1);
       fetchSpy.mockRestore();
     });
   });
@@ -126,6 +141,10 @@ describe('security.ts', () => {
       ];
       const result = await redactPdf(mockFile, redactions);
       expect(result).toBeInstanceOf(Uint8Array);
+      // redactPdf rasterizes the redacted page to PNG and draws it as an image
+      expect(mockState.embedPng).toHaveBeenCalled();
+      // drawImage is called on the OUT pdf's page, not the source mockState.pages[0]
+      expect(mockState.create).toHaveBeenCalled();
     });
 
     it('handles multiple redactions on one page', async () => {
@@ -135,6 +154,9 @@ describe('security.ts', () => {
       ];
       const result = await redactPdf(mockFile, redactions);
       expect(result).toBeInstanceOf(Uint8Array);
+      // Two redactions both on page 0 → rasterize once → embedPng once → drawImage once
+      expect(mockState.embedPng).toHaveBeenCalledTimes(1);
+      expect(mockState.create).toHaveBeenCalled();
     });
   });
 });
