@@ -20,6 +20,10 @@
   --radius-sm: 10px;
   --transition: 250ms cubic-bezier(0.32,0.72,0,1);
   --transition-slow: 500ms cubic-bezier(0.32,0.72,0,1);
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --safe-left: env(safe-area-inset-left, 0px);
+  --safe-right: env(safe-area-inset-right, 0px);
 }
 
 [data-theme="light"] {
@@ -131,6 +135,12 @@
 [data-theme="dark"] :focus-visible {
   outline-color: var(--accent-2);
 }
+
+/* Safe-area insets for iOS notch / Android cutout.
+ * Header/footer/FAB elements use these tokens to avoid sitting under device chrome.
+ */
+header.fixed { padding-top: max(0.5rem, var(--safe-top)); }
+footer { padding-bottom: max(0.5rem, var(--safe-bottom)); }
 
 @import "tailwindcss";
 
