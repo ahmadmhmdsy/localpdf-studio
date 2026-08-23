@@ -11,6 +11,7 @@ import '@testing-library/jest-dom';
 /**
  * Custom render function that includes all necessary providers
  */
+// eslint-disable-next-line react-refresh/only-export-components -- Test utilities, not subject to HMR
 function AllTheProviders({ children }: { children: React.ReactNode }) {
   return (
     <ToastProvider>
