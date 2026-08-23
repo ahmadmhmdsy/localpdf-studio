@@ -42,3 +42,15 @@ Task 6.2: complete (commits 583008e..5b74a47). Manual smoke deferred (no dev ser
 Task 8.1: no-op (plan-listed files live in master worktree, not TASK-28 branch). Documented for follow-up after merge.
 
 Task 8.2: complete (commits 5b74a47..f978bbf). Added .agents/** to eslint ignores (6 → 4 errors), suppressed react-refresh warning in src/tests/utils.tsx (213 → 212 warnings). Remaining 4 errors are pre-existing.
+
+## Final quality gate
+
+- Tests: 529/529 pass
+- Build: ✓ in 19.95s
+- Lint: 4 errors (all pre-existing), 212 warnings (mostly no-explicit-any in tests)
+- Typecheck: 33 pre-existing errors (React namespace, ErrorBoundary.props, DraggableProps) — none introduced by TASK-28
+- npm audit: pdfjs-dist CVE fixed; 13 other pre-existing vulns (vite, ws, esbuild, etc.) out of scope
+
+## TASK-28 Status: COMPLETE (17/18 tasks)
+
+Ready for finishing-a-development-branch (merge / PR / cleanup).
