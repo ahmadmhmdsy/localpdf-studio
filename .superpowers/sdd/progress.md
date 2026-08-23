@@ -30,3 +30,7 @@ Task 4.1: complete (commits c28175d..e8f4da8). Created src/hooks/useFocusTrap.ts
 Task 4.2: complete (commits e8f4da8..dded42f). Added min-w-[44px] min-h-[44px] to ZoomControls (3), HistoryControls (2), ExportButtons (min-h only, 2), Toolbar (dark mode + close file, 2). ToolPicker already had it from prior commit. 14/14 Toolbar tests pass.
 
 Task 4.3: complete (commits dded42f..845b174). Replaced :focus-visible currentColor rule with --accent (light) / --accent-2 (dark). Both meet WCAG AA non-text contrast (3.4:1 light, 10.5:1 dark). 523/523 tests pass.
+
+Task 5.1: complete (commits 845b174..cfdd3fc). Header.tsx rewritten: hamburger (md:hidden) opens focus-trapped drawer, desktop nav (hidden md:flex) unchanged. 12/12 Header tests pass (added 6).
+
+Task 5.2: complete (commits cfdd3fc..481c586). index.html adds viewport-fit=cover. index.css adds --safe-top/-bottom/-left/-right tokens via env(safe-area-inset-*) and applies padding-top to header.fixed, padding-bottom to footer. No-op on desktop.
