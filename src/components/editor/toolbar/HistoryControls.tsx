@@ -10,7 +10,7 @@ export function HistoryControls({ onUndo, onRedo }: HistoryControlsProps) {
     <div className="flex items-center gap-2 border-r border-[var(--border)] pr-4">
       <button
         onClick={onUndo}
-        className="p-2 text-[var(--text-2)] hover:bg-[var(--surface-2)] rounded-md transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+        className="p-2 min-w-[44px] min-h-[44px] text-[var(--text-2)] hover:bg-[var(--surface-2)] rounded-md transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
         title="Undo (Ctrl+Z)"
         aria-label="Undo (Ctrl+Z)"
       >
@@ -18,7 +18,7 @@ export function HistoryControls({ onUndo, onRedo }: HistoryControlsProps) {
       </button>
       <button
         onClick={onRedo}
-        className="p-2 text-[var(--text-2)] hover:bg-[var(--surface-2)] rounded-md transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
+        className="p-2 min-w-[44px] min-h-[44px] text-[var(--text-2)] hover:bg-[var(--surface-2)] rounded-md transition-colors disabled:opacity-30 disabled:cursor-not-allowed"
         title="Redo (Ctrl+Y)"
         aria-label="Redo (Ctrl+Y)"
       >

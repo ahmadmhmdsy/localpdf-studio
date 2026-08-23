@@ -246,7 +246,7 @@ export default function Toolbar() {
       <div className="flex items-center gap-3">
         <button
           onClick={toggleDarkMode}
-          className={`p-2 rounded-md transition-colors ${darkMode ? 'bg-[var(--surface)] text-yellow-400' : 'text-[var(--text-2)] hover:bg-[var(--surface-2)]'}`}
+          className={`p-2 min-w-[44px] min-h-[44px] rounded-md transition-colors ${darkMode ? 'bg-[var(--surface)] text-yellow-400' : 'text-[var(--text-2)] hover:bg-[var(--surface-2)]'}`}
           title={darkMode ? "Light Mode" : "Dark Mode"}
           aria-label={darkMode ? "Light Mode" : "Dark Mode"}
         >
@@ -258,7 +258,7 @@ export default function Toolbar() {
         </span>
         <button
           onClick={clearFile}
-          className="p-2 text-[var(--text-3)] hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+          className="p-2 min-w-[44px] min-h-[44px] text-[var(--text-3)] hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
           title="Close File"
           aria-label="Close File"
         >

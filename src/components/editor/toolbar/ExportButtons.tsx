@@ -18,7 +18,7 @@ export function ExportButtons({
       <button
         onClick={onExportCurrentPage}
         disabled={isExporting || disabled}
-        className="flex items-center gap-2 bg-[var(--surface-2)] hover:bg-[var(--surface-2)] disabled:bg-[var(--surface-2)] text-[var(--text-2)] px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm"
+        className="flex items-center gap-2 bg-[var(--surface-2)] hover:bg-[var(--surface-2)] disabled:bg-[var(--surface-2)] text-[var(--text-2)] px-4 py-2 min-h-[44px] rounded-lg text-sm font-medium transition-colors shadow-sm"
       >
         {isExporting ? (
           <div className="w-4 h-4 border-2 border-[var(--border)] border-t-transparent rounded-full animate-spin" />
@@ -30,7 +30,7 @@ export function ExportButtons({
       <button
         onClick={onExportAll}
         disabled={isExporting || disabled}
-        className="flex items-center gap-2 bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm"
+        className="flex items-center gap-2 bg-red-600 hover:bg-red-700 disabled:bg-red-400 text-white px-4 py-2 min-h-[44px] rounded-lg text-sm font-medium transition-colors shadow-sm"
       >
         {isExporting ? (
           <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
