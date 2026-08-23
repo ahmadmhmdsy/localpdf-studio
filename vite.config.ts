@@ -3,8 +3,17 @@ import react from '@vitejs/plugin-react';
 import path from 'path';
 import {defineConfig, loadEnv} from 'vite';
 
+// Tauri runs the dev server on a fixed port and host. Set TAURI_DEV=1 when
+// launching via `tauri dev` so we hand Vite the URL Tauri expects.
+// Reference: https://v2.tauri.app/start/frontend/vite/
+const TAURI_DEV_HOST = '127.0.0.1';
+const TAURI_DEV_PORT = 1420;
+
 export default defineConfig(({mode}) => {
   const env = loadEnv(mode, '.', '');
+  // Tauri injects TAURI_DEV=1 into the env when launched from `tauri dev`.
+  const isTauriDev = process.env.TAURI_DEV === '1';
+
   return {
     plugins: [react(), tailwindcss()],
     define: {
@@ -33,9 +42,18 @@ export default defineConfig(({mode}) => {
       chunkSizeWarningLimit: 800, // Warn earlier so we can split heavy chunks before they grow further
     },
     server: {
-      // HMR is disabled in AI Studio via DISABLE_HMR env var.
-      // Do not modifyâfile watching is disabled to prevent flickering during agent edits.
-      hmr: process.env.DISABLE_HMR !== 'true',
+      // Tauri dev: fixed host/port so tauri.conf.json devUrl resolves correctly.
+      host: isTauriDev ? TAURI_DEV_HOST : undefined,
+      port: isTauriDev ? TAURI_DEV_PORT : 3000,
+      strictPort: isTauriDev,
+      hmr: isTauriDev
+        ? { host: TAURI_DEV_HOST, port: TAURI_DEV_PORT, protocol: 'ws' }
+        : process.env.DISABLE_HMR !== 'true',
+      // Don't clear the screen so cargo build output stays visible during `tauri dev`.
+      clearScreen: false,
     },
+    // Tauri expects a known good dev URL.
+    envPrefix: ['VITE_', 'TAURI_'],
+    clearScreen: false,
   };
 });

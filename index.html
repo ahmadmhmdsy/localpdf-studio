@@ -9,7 +9,7 @@
     <!-- CSP: 'unsafe-inline' in style-src is required because 23 components use inline `style={{}}` attributes
          (transforms, dynamic widths, cursor changes, color previews). Removal requires migrating these to
          CSS classes — tracked in TASK-24 PR 5 (UI/UX & Accessibility). -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self' data:; connect-src 'self' https://generativelanguage.googleapis.com ws://localhost:*; frame-ancestors 'none'; base-uri 'self'; form-action 'self';">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: asset: https://asset.localhost; font-src 'self' data:; connect-src 'self' https://generativelanguage.googleapis.com ws://localhost:* ws://127.0.0.1:* ipc: http://ipc.localhost https://ipc.localhost tauri://localhost https://tauri.localhost; frame-ancestors 'none'; base-uri 'self'; form-action 'self';">
     <meta http-equiv="X-Content-Type-Options" content="nosniff">
     <meta http-equiv="X-Frame-Options" content="DENY">
     <meta http-equiv="Referrer-Policy" content="no-referrer-when-downgrade">

@@ -1,8 +1,10 @@
 import { Link } from 'react-router-dom';
-import { FileText, Menu, Moon, Sun, X } from 'lucide-react';
+import { FileText, Menu, Moon, Settings, Sun, X } from 'lucide-react';
 import { useState } from 'react';
 import { useToolsStore } from '../../store';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
+import ApiKeySettings from '../settings/ApiKeySettings';
+import { isTauri } from '../../lib/native';
 
 const NAV_LINKS = [
   { to: '/tools/merge-pdf', label: 'Merge PDF' },
@@ -15,9 +17,11 @@ export default function Header() {
   const darkMode = useToolsStore((s) => s.darkMode);
   const toggleDarkMode = useToolsStore((s) => s.toggleDarkMode);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const drawerRef = useFocusTrap<HTMLDivElement>(mobileOpen);
 
   const closeMobile = () => setMobileOpen(false);
+  const showSettingsButton = isTauri();
 
   return (
     <>
@@ -56,6 +60,17 @@ export default function Header() {
           >
             {darkMode ? <Sun size={18} /> : <Moon size={18} />}
           </button>
+          {showSettingsButton && (
+            <button
+              type="button"
+              onClick={() => setSettingsOpen(true)}
+              className="flex h-9 w-9 items-center justify-center rounded-lg transition-colors"
+              style={{ background: 'var(--surface-2)', color: 'var(--text-2)' }}
+              aria-label="Open settings"
+            >
+              <Settings size={18} />
+            </button>
+          )}
           <button
             type="button"
             onClick={() => setMobileOpen(true)}
@@ -126,6 +141,7 @@ export default function Header() {
           </div>
         </div>
       )}
+      <ApiKeySettings open={settingsOpen} onClose={() => setSettingsOpen(false)} />
     </>
   );
 }

@@ -1,4 +1,8 @@
+import { useCallback } from 'react';
 import { Download, RotateCcw } from 'lucide-react';
+import { useToast } from '../../contexts/ToastContext';
+import { isTauri, saveFile } from '../../lib/native';
+import { logError } from '../../lib/logger';
 
 interface DownloadStateProps {
   fileName?: string;
@@ -17,16 +21,71 @@ export default function DownloadState({
   title = 'Merged successfully',
   description = 'Your document is ready for download.',
 }: DownloadStateProps) {
-  const handleDownload = () => {
-    if (fileUrl) {
+  const { showToast } = useToast();
+
+  /**
+   * Resolve the file blob behind fileUrl (which may be a blob: URL or any
+   * URL the browser can fetch) to a Uint8Array suitable for native fs write.
+   */
+  const fetchBytes = useCallback(async (): Promise<Uint8Array | null> => {
+    if (!fileUrl) return null;
+    try {
+      const res = await fetch(fileUrl);
+      const buf = await res.arrayBuffer();
+      return new Uint8Array(buf);
+    } catch (err) {
+      logError('Failed to read fileUrl for native save:', err);
+      return null;
+    }
+  }, [fileUrl]);
+
+  /**
+   * Save the file via the OS-native save dialog when in Tauri, otherwise
+   * fall back to the standard <a download> flow.
+   */
+  const handleDownload = useCallback(async () => {
+    if (!fileUrl) return;
+    if (!isTauri()) {
       const link = document.createElement('a');
       link.href = fileUrl;
       link.download = fileName || 'document.pdf';
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
+      return;
     }
-  };
+    const bytes = await fetchBytes();
+    if (!bytes) {
+      showToast({
+        message: 'Could not read the generated file for saving.',
+        type: 'error',
+        duration: 4000,
+      });
+      return;
+    }
+    try {
+      const ext = (fileName || 'document.pdf').split('.').pop() || 'pdf';
+      const saved = await saveFile({
+        defaultName: fileName || 'document.pdf',
+        extensions: [ext],
+        title: 'Save file',
+        data: bytes,
+      });
+      if (saved) {
+        showToast({
+          message: 'Saved to ' + saved,
+          type: 'success',
+          duration: 3000,
+        });
+      }
+    } catch (err) {
+      showToast({
+        message: 'Native save failed: ' + (err instanceof Error ? err.message : String(err)),
+        type: 'error',
+        duration: 5000,
+      });
+    }
+  }, [fileUrl, fileName, fetchBytes, showToast]);
 
   return (
     <div
@@ -140,8 +199,14 @@ export default function DownloadState({
         <div style={{ display: 'flex', gap: '10px', justifyContent: 'center', flexWrap: 'wrap' }}>
           {fileUrl ? (
             <a
-              href={fileUrl}
-              download={fileName || 'document.pdf'}
+              href={isTauri() ? undefined : fileUrl}
+              download={isTauri() ? undefined : (fileName || 'document.pdf')}
+              onClick={(e) => {
+                if (isTauri()) {
+                  e.preventDefault();
+                  void handleDownload();
+                }
+              }}
               className="btn-download"
               role="link"
               style={{
@@ -169,7 +234,7 @@ export default function DownloadState({
           ) : (
             <button
               className="btn-download"
-              onClick={handleDownload}
+              onClick={() => void handleDownload()}
               style={{
                 background: 'var(--accent-2)',
                 color: '#0a1a16',

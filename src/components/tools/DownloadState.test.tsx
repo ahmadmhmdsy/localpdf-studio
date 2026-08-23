@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import DownloadState from './DownloadState';
+import { renderWithProviders } from '../../tests/utils';
 
 describe('DownloadState', () => {
   const defaultProps = {
@@ -14,14 +15,14 @@ describe('DownloadState', () => {
   };
 
   it('renders with provided title and description', () => {
-    render(<DownloadState {...defaultProps} />);
+    renderWithProviders(<DownloadState {...defaultProps} />);
     
     expect(screen.getByText('Download Ready')).toBeInTheDocument();
     expect(screen.getByText('Your file is ready for download')).toBeInTheDocument();
   });
 
   it('displays file information', () => {
-    render(<DownloadState {...defaultProps} />);
+    renderWithProviders(<DownloadState {...defaultProps} />);
 
     // File name is shown in the download link
     expect(screen.getByText(/test\.pdf/)).toBeInTheDocument();
@@ -29,7 +30,7 @@ describe('DownloadState', () => {
   });
 
   it('has download link', () => {
-    render(<DownloadState {...defaultProps} />);
+    renderWithProviders(<DownloadState {...defaultProps} />);
 
     const downloadLink = screen.getByRole('link', { name: /download/i });
     expect(downloadLink).toBeInTheDocument();
@@ -38,7 +39,7 @@ describe('DownloadState', () => {
   });
 
   it('has start over button', () => {
-    render(<DownloadState {...defaultProps} />);
+    renderWithProviders(<DownloadState {...defaultProps} />);
     
     expect(screen.getByRole('button', { name: /start over/i })).toBeInTheDocument();
   });
@@ -47,7 +48,7 @@ describe('DownloadState', () => {
     const onStartOver = vi.fn();
     const user = userEvent.setup();
     
-    render(<DownloadState {...defaultProps} onStartOver={onStartOver} />);
+    renderWithProviders(<DownloadState {...defaultProps} onStartOver={onStartOver} />);
     
     const startOverButton = screen.getByRole('button', { name: /start over/i });
     await user.click(startOverButton);

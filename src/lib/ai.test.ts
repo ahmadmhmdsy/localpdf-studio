@@ -221,3 +221,139 @@ describe('translatePdf and language list', () => {
     expect(out[0].pageIndex).toBe(0);
   });
 });
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// API key resolution (Tauri store → env fallback)
+// ─────────────────────────────────────────────────────────────────────────────
+
+const mockGetStoreValue = vi.fn();
+
+vi.mock('./native', () => ({
+  getStoreValue: (...args: unknown[]) => mockGetStoreValue(...args),
+  setStoreValue: vi.fn(),
+  deleteStoreValue: vi.fn(),
+  isTauri: () => false,
+  API_KEY_CHANGED_EVENT: 'localpdf:api-key-changed',
+  emitApiKeyChanged: vi.fn(),
+}));
+
+describe('resolveApiKey', () => {
+  beforeEach(() => {
+    mockGetStoreValue.mockReset();
+    // Reset cache between tests
+    vi.resetModules();
+  });
+
+  it('returns null when neither store nor env has a key', async () => {
+    mockGetStoreValue.mockResolvedValueOnce(null);
+    vi.stubEnv('VITE_GEMINI_API_KEY', '');
+    vi.resetModules();
+    const { resolveApiKey } = await import('./ai');
+    expect(await resolveApiKey()).toBeNull();
+    vi.unstubAllEnvs();
+  });
+
+  it('returns key from store when present', async () => {
+    mockGetStoreValue.mockResolvedValueOnce('store-key-123');
+    vi.stubEnv('VITE_GEMINI_API_KEY', 'env-key-456');
+    vi.resetModules();
+    const { resolveApiKey } = await import('./ai');
+    expect(await resolveApiKey()).toBe('store-key-123');
+    expect(mockGetStoreValue).toHaveBeenCalledWith('geminiApiKey');
+    vi.unstubAllEnvs();
+  });
+
+  it('falls back to env when store returns null', async () => {
+    mockGetStoreValue.mockResolvedValueOnce(null);
+    vi.stubEnv('VITE_GEMINI_API_KEY', 'env-key-456');
+    vi.resetModules();
+    const { resolveApiKey } = await import('./ai');
+    expect(await resolveApiKey()).toBe('env-key-456');
+    vi.unstubAllEnvs();
+  });
+
+  it('trims whitespace from the resolved key', async () => {
+    mockGetStoreValue.mockResolvedValueOnce('  spaced-key  ');
+    vi.stubEnv('VITE_GEMINI_API_KEY', '');
+    vi.resetModules();
+    const { resolveApiKey } = await import('./ai');
+    expect(await resolveApiKey()).toBe('spaced-key');
+    vi.unstubAllEnvs();
+  });
+});
+
+describe('clearApiKeyCache + getCachedApiKey', () => {
+  beforeEach(() => {
+    vi.resetModules();
+    mockGetStoreValue.mockReset();
+  });
+
+  it('starts with no cached key', async () => {
+    const { getCachedApiKey } = await import('./ai');
+    expect(getCachedApiKey()).toBeNull();
+  });
+
+  it('clears the cache after resolveApiKey populated it', async () => {
+    mockGetStoreValue.mockResolvedValueOnce('once-key');
+    vi.stubEnv('VITE_GEMINI_API_KEY', '');
+    vi.resetModules();
+    const { resolveApiKey, clearApiKeyCache, getCachedApiKey } = await import('./ai');
+    expect(await resolveApiKey()).toBe('once-key');
+    expect(getCachedApiKey()).toBe('once-key');
+    clearApiKeyCache();
+    expect(getCachedApiKey()).toBeNull();
+    vi.unstubAllEnvs();
+  });
+});
+
+describe('sync getGenAI()', () => {
+  beforeEach(() => {
+    vi.resetModules();
+    mockGetStoreValue.mockReset();
+    mockGenerateContent.mockReset();
+  });
+
+  it('throws a helpful error when no key is configured', async () => {
+    vi.stubEnv('VITE_GEMINI_API_KEY', '');
+    vi.resetModules();
+    const { getGenAI } = await import('./ai');
+    expect(() => getGenAI()).toThrow(/API key not configured/);
+    vi.unstubAllEnvs();
+  });
+
+  it('uses env var when set', async () => {
+    vi.stubEnv('VITE_GEMINI_API_KEY', 'env-only');
+    vi.resetModules();
+    const { getGenAI } = await import('./ai');
+    const client = getGenAI();
+    expect(client).toBeInstanceOf(MockGenAI);
+    expect((client as unknown as { opts: { apiKey: string } }).opts.apiKey).toBe('env-only');
+    vi.unstubAllEnvs();
+  });
+});
+
+describe('async getGenAIAsync()', () => {
+  beforeEach(() => {
+    vi.resetModules();
+    mockGetStoreValue.mockReset();
+  });
+
+  it('throws when no key available anywhere', async () => {
+    mockGetStoreValue.mockResolvedValueOnce(null);
+    vi.stubEnv('VITE_GEMINI_API_KEY', '');
+    vi.resetModules();
+    const { getGenAIAsync } = await import('./ai');
+    await expect(getGenAIAsync()).rejects.toThrow(/API key not configured/);
+    vi.unstubAllEnvs();
+  });
+
+  it('uses the store key when available', async () => {
+    mockGetStoreValue.mockResolvedValueOnce('store-key');
+    vi.resetModules();
+    const { getGenAIAsync } = await import('./ai');
+    const client = await getGenAIAsync();
+    expect(client).toBeInstanceOf(MockGenAI);
+    expect((client as unknown as { opts: { apiKey: string } }).opts.apiKey).toBe('store-key');
+  });
+});

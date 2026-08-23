@@ -27,3 +27,9 @@ test-results/
 # Local scratch / debug output
 .superpowers/sdd/*.txt
 .superpowers/sdd/*.log
+
+# Tauri
+src-tauri/target/
+src-tauri/gen/
+src-tauri/.lock
+src-tauri/WixTools/

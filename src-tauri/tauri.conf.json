@@ -1,0 +1,58 @@
+{
+  "$schema": "https://schema.tauri.app/config/2.0.0",
+  "productName": "LocalPDF Studio",
+  "version": "1.0.0",
+  "identifier": "studio.localpdf.app",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "beforeBuildCommand": "npm run build",
+    "devUrl": "http://127.0.0.1:1420",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "LocalPDF Studio",
+        "width": 1280,
+        "height": 820,
+        "minWidth": 900,
+        "minHeight": 600,
+        "resizable": true,
+        "fullscreen": false,
+        "center": true,
+        "decorations": true
+      }
+    ],
+    "security": {
+      "csp": null,
+      "assetProtocol": {
+        "enable": true,
+        "scope": ["**"]
+      }
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": "all",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.icns",
+      "icons/icon.ico"
+    ],
+    "category": "Productivity",
+    "shortDescription": "Edit PDFs locally in your browser.",
+    "longDescription": "LocalPDF Studio is a privacy-first PDF toolkit that runs entirely on your device. Merge, split, convert, sign, redact, compress, OCR, and more \\u2014 no uploads, no servers.",
+    "publisher": "LocalPDF Studio",
+    "copyright": "",
+    "homepage": "https://localpdf.studio",
+    "windows": {
+      "webviewInstallMode": { "type": "embedBootstrapper" }
+    },
+    "macOS": {
+      "minimumSystemVersion": "10.15"
+    }
+  }
+}

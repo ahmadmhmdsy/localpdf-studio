@@ -1,10 +1,11 @@
 import { useCallback } from 'react';
 import { useDropzone, Accept } from 'react-dropzone';
-import { Upload } from 'lucide-react';
+import { Upload, FolderOpen } from 'lucide-react';
 import { cn, sanitizeFilename } from '../../lib/utils';
 import { useToast } from '../../contexts/ToastContext';
 import { PDF_ACCEPT } from '../../types/dropzone';
 import { MAX_FILE_SIZE_BYTES, MAX_FILE_SIZE_MB } from '../../constants/limits';
+import { isTauri, pickFilesAsFiles } from '../../lib/native';
 
 interface FileUploadZoneProps {
   onFilesSelected: (files: File[]) => void;
@@ -77,6 +78,42 @@ export default function FileUploadZone({
       onFilesSelected(validFiles);
     }
   }, [onFilesSelected, maxSize, validateMagicBytes, showToast]);
+
+  /**
+   * Open the OS-native file dialog when running inside Tauri. The picked
+   * paths are read into File objects so the rest of the pipeline (which
+   * expects File[]) keeps working unchanged.
+   */
+  const handleNativePick = useCallback(async () => {
+    if (!isTauri()) return;
+    try {
+      // Convert react-dropzone Accept to extension list (drop leading dot, lowercase).
+      const extensions: string[] = [];
+      if (accept) {
+        for (const list of Object.values(accept)) {
+          for (const mime of list) {
+            const ext = mime.replace(/^\./, '').toLowerCase();
+            if (!extensions.includes(ext)) extensions.push(ext);
+          }
+        }
+      }
+      const files = await pickFilesAsFiles({
+        extensions: extensions.length ? extensions : ['pdf'],
+        multiple: maxFiles !== 1,
+        title,
+      });
+      if (files.length > 0) {
+        // Reuse the same validation pipeline as drop.
+        await onDrop(files);
+      }
+    } catch (err) {
+      showToast({
+        message: 'Native file picker failed: ' + (err instanceof Error ? err.message : String(err)),
+        type: 'error',
+        duration: 5000,
+      });
+    }
+  }, [accept, maxFiles, onDrop, showToast, title]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -218,6 +255,33 @@ export default function FileUploadZone({
             >
               Choose files
             </button>
+            {isTauri() && (
+              <button
+                className="btn"
+                type="button"
+                onClick={(e) => { e.stopPropagation(); void handleNativePick(); }}
+                aria-label="Browse files from disk (native)"
+                style={{
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '8px',
+                  padding: '13px 22px',
+                  borderRadius: '100px',
+                  fontFamily: 'inherit',
+                  fontWeight: 600,
+                  fontSize: '14px',
+                  cursor: 'pointer',
+                  border: '1px solid var(--border)',
+                  background: 'transparent',
+                  color: 'var(--text)',
+                  minHeight: '44px',
+                  transition: 'all var(--transition)',
+                }}
+              >
+                <FolderOpen size={18} aria-hidden="true" />
+                Browse from disk…
+              </button>
+            )}
           </div>
         </div>
 

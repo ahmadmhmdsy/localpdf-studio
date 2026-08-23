@@ -1,12 +1,12 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { BrowserRouter } from 'react-router-dom';
 import Header from './Header';
+import { renderWithProviders } from '../../tests/utils';
 
-const renderWithRouter = (ui: React.ReactElement) => {
-  return render(<BrowserRouter>{ui}</BrowserRouter>);
-};
+// Re-export under the same local name to keep the existing test bodies unchanged.
+// renderWithProviders already wraps in ToastProvider + EditorProvider + BrowserRouter.
+const renderWithRouter = renderWithProviders;
 
 describe('Header', () => {
   let user: ReturnType<typeof userEvent.setup>;

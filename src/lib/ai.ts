@@ -6,17 +6,79 @@ interface TextItemWithString extends TextItem {
   str: string;
 }
 
-let genAI: GoogleGenAI | null = null;
+import { getStoreValue } from './native';
 
-export function getGenAI(): GoogleGenAI {
-  if (!genAI) {
-    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-    if (!apiKey) {
-      throw new Error('VITE_GEMINI_API_KEY is not set. AI features require a valid Gemini API key.');
-    }
-    genAI = new GoogleGenAI({ apiKey });
+let genAI: GoogleGenAI | null = null;
+let apiKeyCache: string | null = null;
+
+/**
+ * Resolve the Gemini API key from the most specific to least specific source:
+ *   1. tauri-plugin-store (desktop: user-configured via Settings UI)
+ *   2. import.meta.env.VITE_GEMINI_API_KEY (web: build-time injected)
+ * Returns null if neither is set.
+ */
+export async function resolveApiKey(): Promise<string | null> {
+  if (apiKeyCache) return apiKeyCache;
+  const fromStore = await getStoreValue<string>('geminiApiKey');
+  if (fromStore && fromStore.trim()) {
+    apiKeyCache = fromStore.trim();
+    return apiKeyCache;
   }
+  const fromEnv = import.meta.env.VITE_GEMINI_API_KEY;
+  if (fromEnv && typeof fromEnv === 'string' && fromEnv.trim()) {
+    apiKeyCache = fromEnv.trim();
+    return apiKeyCache;
+  }
+  return null;
+}
+
+/** Reset the cached API key. Call after the user updates it in Settings. */
+export function clearApiKeyCache(): void {
+  apiKeyCache = null;
+  genAI = null;
+}
+
+/** Synchronous accessor for tests and non-async call sites. */
+export function getCachedApiKey(): string | null {
+  return apiKeyCache;
+}
+
+/**
+ * Async getter that resolves the API key and constructs the SDK client.
+ * Throws a user-friendly error pointing to the Settings UI when missing.
+ */
+export async function getGenAIAsync(): Promise<GoogleGenAI> {
+  if (genAI) return genAI;
+  const key = await resolveApiKey();
+  if (!key) {
+    throw new Error(
+      'Gemini API key not configured. Open Settings to add your key, ' +
+      'or set VITE_GEMINI_API_KEY in your environment for web builds.'
+    );
+  }
+  genAI = new GoogleGenAI({ apiKey: key });
   return genAI;
+}
+
+/**
+ * @deprecated Prefer getGenAIAsync(). Kept for back-compat with code paths
+ * that cannot be made async (e.g. synchronous React renderers). Falls back to
+ * the build-time env var; throws if missing.
+ */
+export function getGenAI(): GoogleGenAI {
+  if (genAI) return genAI;
+  // Prefer the in-memory cache (set by resolveApiKey() or the Settings UI)
+  // before falling back to the build-time env var. This lets users update
+  // their key at runtime without a page reload.
+  const key = apiKeyCache ?? import.meta.env.VITE_GEMINI_API_KEY;
+  if (key && typeof key === 'string' && key.trim()) {
+    genAI = new GoogleGenAI({ apiKey: key.trim() });
+    return genAI;
+  }
+  throw new Error(
+    'Gemini API key not configured. Open Settings to add your key, ' +
+    'call resolveApiKey() first, or set VITE_GEMINI_API_KEY in your environment.'
+  );
 }
 
 interface RetryOptions {

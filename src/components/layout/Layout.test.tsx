@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
-import { BrowserRouter } from 'react-router-dom';
 import Layout from './Layout';
 import { useToolsStore } from '../../store';
+import { renderWithProviders } from '../../tests/utils';
 
 vi.mock('react-router-dom', async () => {
   const actual = await vi.importActual<typeof import('react-router-dom')>('react-router-dom');
@@ -18,50 +18,30 @@ describe('Layout', () => {
   });
 
   it('renders Header and Footer', () => {
-    render(
-      <BrowserRouter>
-        <Layout />
-      </BrowserRouter>
-    );
+    renderWithProviders(<Layout />);
     expect(screen.getByText('LocalPDF Studio')).toBeInTheDocument();
     expect(screen.getByText(/All processing is done locally/i)).toBeInTheDocument();
   });
 
   it('renders the Outlet', () => {
-    render(
-      <BrowserRouter>
-        <Layout />
-      </BrowserRouter>
-    );
+    renderWithProviders(<Layout />);
     expect(screen.getByTestId('outlet')).toBeInTheDocument();
   });
 
   it('sets data-theme attribute based on darkMode', () => {
-    render(
-      <BrowserRouter>
-        <Layout />
-      </BrowserRouter>
-    );
+    renderWithProviders(<Layout />);
     expect(document.documentElement.getAttribute('data-theme')).toBe('light');
   });
 
   it('sets data-theme to dark when darkMode is enabled', () => {
     useToolsStore.setState({ darkMode: true });
-    render(
-      <BrowserRouter>
-        <Layout />
-      </BrowserRouter>
-    );
+    renderWithProviders(<Layout />);
     expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
   });
 
   it('sets data-skin="glass" by default and renders Header', async () => {
     useToolsStore.setState({ skin: 'glass', hydrated: true });
-    render(
-      <BrowserRouter>
-        <Layout />
-      </BrowserRouter>
-    );
+    renderWithProviders(<Layout />);
     expect(document.documentElement.getAttribute('data-skin')).toBe('glass');
     expect(screen.getByText('LocalPDF Studio')).toBeInTheDocument();
     expect(screen.queryByLabelText('Primary')).toBeNull();
@@ -69,11 +49,7 @@ describe('Layout', () => {
 
   it('sets data-skin="bento" and renders Sidebar when skin is bento', async () => {
     useToolsStore.setState({ skin: 'bento', hydrated: true });
-    render(
-      <BrowserRouter>
-        <Layout />
-      </BrowserRouter>
-    );
+    renderWithProviders(<Layout />);
     expect(document.documentElement.getAttribute('data-skin')).toBe('bento');
     expect(screen.getByLabelText('Primary')).toBeInTheDocument();
     expect(screen.getByText('All Tools')).toBeInTheDocument();
