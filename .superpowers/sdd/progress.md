@@ -38,3 +38,7 @@ Task 5.2: complete (commits cfdd3fc..481c586). index.html adds viewport-fit=cove
 Task 6.1: complete (commits 481c586..583008e). Added shadow-inner shadow-[var(--border)]/40 to 12 of 15 tool page cards (MergePdf, SplitPdf, AddWatermark, RotatePdf, RemovePages, ExtractPages, AddPageNumbers, OrganizePdf, CompressPdf, CropPdf, RepairPdf, AiSummarizer). TranslatePdf/PdfToPdfA/PdfToWord have status-only info boxes without card containers. 83/83 tests pass.
 
 Task 6.2: complete (commits 583008e..5b74a47). Manual smoke deferred (no dev server in session). Visual change is token-driven and theme-aware; deferred to interactive verification.
+
+Task 8.1: no-op (plan-listed files live in master worktree, not TASK-28 branch). Documented for follow-up after merge.
+
+Task 8.2: complete (commits 5b74a47..f978bbf). Added .agents/** to eslint ignores (6 → 4 errors), suppressed react-refresh warning in src/tests/utils.tsx (213 → 212 warnings). Remaining 4 errors are pre-existing.
