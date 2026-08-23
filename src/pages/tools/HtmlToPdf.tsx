@@ -81,8 +81,8 @@ export default function HtmlToPdf() {
     >
       {step === 'input' && (
         <div className="w-full max-w-4xl mx-auto">
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden mb-8">
-            <div className="flex border-b border-gray-200">
+          <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-sm overflow-hidden mb-8">
+            <div className="flex border-b border-[var(--border)]">
               <div className="flex-1 py-4 px-6 text-center font-medium flex items-center justify-center gap-2 bg-red-50 text-red-600 border-b-2 border-red-600">
                 <Code size={18} />
                 HTML Code
@@ -91,21 +91,21 @@ export default function HtmlToPdf() {
 
             <div className="p-6">
               <div className="space-y-4">
-                <label className="block text-sm font-medium text-gray-700">
+                <label className="block text-sm font-medium text-[var(--text-2)]">
                   Paste your HTML code here
                 </label>
                 <textarea
                   value={htmlContent}
                   onChange={(e) => setHtmlContent(e.target.value)}
-                  className="w-full h-64 p-4 border border-gray-300 rounded-xl font-mono text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all"
+                  className="w-full h-64 p-4 border border-[var(--border)] rounded-xl font-mono text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all"
                   placeholder="<h1>Your HTML here</h1>"
                 />
 
                 <div className="mt-8">
-                  <h3 className="text-sm font-medium text-gray-700 mb-4">Preview</h3>
+                  <h3 className="text-sm font-medium text-[var(--text-2)] mb-4">Preview</h3>
                   <div
                     ref={previewRef}
-                    className="border border-gray-200 rounded-xl p-8 bg-white min-h-[400px] prose max-w-none"
+                    className="border border-[var(--border)] rounded-xl p-8 bg-[var(--surface)] min-h-[400px] prose max-w-none"
                     dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(htmlContent) }}
                   />
                 </div>

@@ -14,11 +14,11 @@ export function ToolPicker({ activeTool, onSelect, onOpenSignature, onPickImage 
         ? color === 'red'
           ? 'bg-red-50 text-red-600'
           : 'bg-emerald-50 text-emerald-600'
-        : 'text-gray-600 hover:bg-gray-100'
+        : 'text-[var(--text-2)] hover:bg-[var(--surface-2)]'
     }`;
 
   return (
-    <div className="flex items-center gap-2 border-r border-gray-200 pr-4">
+    <div className="flex items-center gap-2 border-r border-[var(--border)] pr-4">
       <button
         onClick={() => onSelect('select')}
         className={toolButtonClass(activeTool === 'select' || !activeTool)}
@@ -53,7 +53,7 @@ export function ToolPicker({ activeTool, onSelect, onOpenSignature, onPickImage 
       </button>
       <button
         onClick={onOpenSignature}
-        className="p-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md transition-colors text-gray-600 hover:bg-gray-100"
+        className="p-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md transition-colors text-[var(--text-2)] hover:bg-[var(--surface-2)]"
         title="Add Signature"
         aria-label="Add Signature"
       >
@@ -61,7 +61,7 @@ export function ToolPicker({ activeTool, onSelect, onOpenSignature, onPickImage 
       </button>
       <button
         onClick={onPickImage}
-        className="p-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md transition-colors text-gray-600 hover:bg-gray-100"
+        className="p-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md transition-colors text-[var(--text-2)] hover:bg-[var(--surface-2)]"
         title="Add Image/Watermark"
         aria-label="Add Image/Watermark"
       >

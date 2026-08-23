@@ -81,20 +81,20 @@ export default function CompressPdf() {
 
       {step === 'configure' && file && (
         <div className="w-full max-w-3xl">
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-8">
-            <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
+          <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-sm p-6 mb-8">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-[var(--border)]">
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center flex-shrink-0">
                   <FileIcon size={20} className="text-red-600" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="font-semibold text-gray-900">{file.name}</span>
-                  <span className="text-xs text-gray-500">{originalSize}</span>
+                  <span className="font-semibold text-[var(--text)]">{file.name}</span>
+                  <span className="text-xs text-[var(--text-3)]">{originalSize}</span>
                 </div>
               </div>
               <button
                 onClick={startOver}
-                className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                className="p-2 text-[var(--text-3)] hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                 aria-label="Remove file"
               >
                 <X size={20} />
@@ -114,7 +114,7 @@ export default function CompressPdf() {
             </div>
 
             <div className="space-y-6">
-              <div className="flex items-center gap-2 text-gray-800 font-medium">
+              <div className="flex items-center gap-2 text-[var(--text)] font-medium">
                 <Settings size={20} className="text-red-600" />
                 Compression Level
               </div>
@@ -125,11 +125,11 @@ export default function CompressPdf() {
                   className={`p-4 rounded-xl border-2 text-left transition-all ${
                     quality === 'low'
                       ? 'border-red-600 bg-red-50'
-                      : 'border-gray-200 hover:border-red-300 hover:bg-gray-50'
+                      : 'border-[var(--border)] hover:border-red-300 hover:bg-[var(--surface-2)]'
                   }`}
                 >
-                  <div className="font-semibold text-gray-900 mb-1">Smaller file</div>
-                  <div className="text-sm text-gray-500">More aggressive object-stream packing</div>
+                  <div className="font-semibold text-[var(--text)] mb-1">Smaller file</div>
+                  <div className="text-sm text-[var(--text-3)]">More aggressive object-stream packing</div>
                 </button>
 
                 <button
@@ -137,11 +137,11 @@ export default function CompressPdf() {
                   className={`p-4 rounded-xl border-2 text-left transition-all ${
                     quality === 'medium'
                       ? 'border-red-600 bg-red-50'
-                      : 'border-gray-200 hover:border-red-300 hover:bg-gray-50'
+                      : 'border-[var(--border)] hover:border-red-300 hover:bg-[var(--surface-2)]'
                   }`}
                 >
-                  <div className="font-semibold text-gray-900 mb-1">Recommended</div>
-                  <div className="text-sm text-gray-500">Balanced packing</div>
+                  <div className="font-semibold text-[var(--text)] mb-1">Recommended</div>
+                  <div className="text-sm text-[var(--text-3)]">Balanced packing</div>
                 </button>
 
                 <button
@@ -149,11 +149,11 @@ export default function CompressPdf() {
                   className={`p-4 rounded-xl border-2 text-left transition-all ${
                     quality === 'high'
                       ? 'border-red-600 bg-red-50'
-                      : 'border-gray-200 hover:border-red-300 hover:bg-gray-50'
+                      : 'border-[var(--border)] hover:border-red-300 hover:bg-[var(--surface-2)]'
                   }`}
                 >
-                  <div className="font-semibold text-gray-900 mb-1">Smoother progress</div>
-                  <div className="text-sm text-gray-500">Smaller progress chunks for large files</div>
+                  <div className="font-semibold text-[var(--text)] mb-1">Smoother progress</div>
+                  <div className="text-sm text-[var(--text-3)]">Smaller progress chunks for large files</div>
                 </button>
               </div>
             </div>

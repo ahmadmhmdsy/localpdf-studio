@@ -159,20 +159,20 @@ export default function BlackoutPdf() {
         <div className="w-full max-w-6xl flex flex-col lg:flex-row gap-8">
           {/* Sidebar Controls */}
           <div className="w-full lg:w-80 flex-shrink-0 space-y-6">
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-              <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
+            <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-sm p-6">
+              <div className="flex items-center justify-between mb-6 pb-4 border-b border-[var(--border)]">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg bg-blue-100 flex items-center justify-center flex-shrink-0">
                     <FileIcon size={20} className="text-blue-600" />
                   </div>
                   <div className="flex flex-col overflow-hidden">
-                    <span className="font-semibold text-gray-900 truncate">{file.name}</span>
-                    <span className="text-xs text-gray-500">{thumbnails.length} pages</span>
+                    <span className="font-semibold text-[var(--text)] truncate">{file.name}</span>
+                    <span className="text-xs text-[var(--text-3)]">{thumbnails.length} pages</span>
                   </div>
                 </div>
                 <button
                   onClick={startOver}
-                  className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                  className="p-2 text-[var(--text-3)] hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                   title="Remove file"
                 >
                   <X size={20} />
@@ -192,21 +192,21 @@ export default function BlackoutPdf() {
                 </p>
               </aside>
 
-              <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-                <h3 className="text-sm font-bold text-gray-900 mb-4 uppercase tracking-wider">Blackouts ({redactions.length})</h3>
+              <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-sm p-6">
+                <h3 className="text-sm font-bold text-[var(--text)] mb-4 uppercase tracking-wider">Blackouts ({redactions.length})</h3>
                 {redactions.length === 0 ? (
-                  <p className="text-sm text-gray-500 italic">Click and drag on the document to mark areas to blackout.</p>
+                  <p className="text-sm text-[var(--text-3)] italic">Click and drag on the document to mark areas to blackout.</p>
                 ) : (
                   <ul className="space-y-2 max-h-60 overflow-y-auto pr-2">
                     {redactions.map((rect, i) => (
-                      <li key={i} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg border border-gray-100">
+                      <li key={i} className="flex items-center justify-between p-2 bg-[var(--surface-2)] rounded-lg border border-[var(--border)]">
                         <div className="flex items-center gap-2 overflow-hidden">
-                          <div className="w-4 h-4 bg-black rounded-sm border border-gray-300"></div>
-                          <span className="text-xs text-gray-500">Page {rect.pageIndex + 1}</span>
+                          <div className="w-4 h-4 bg-black rounded-sm border border-[var(--border)]"></div>
+                          <span className="text-xs text-[var(--text-3)]">Page {rect.pageIndex + 1}</span>
                         </div>
                         <button
                           onClick={() => removeRedaction(i)}
-                          className="p-1 text-gray-400 hover:text-red-500 rounded transition-colors"
+                          className="p-1 text-[var(--text-3)] hover:text-red-500 rounded transition-colors"
                           aria-label={`Remove blackout ${i + 1}`}
                         >
                           <X size={14} />
@@ -230,29 +230,29 @@ export default function BlackoutPdf() {
 
           {/* Main Preview Area */}
           <div className="flex-1 flex flex-col items-center">
-            <div className="flex items-center gap-4 mb-4 bg-white px-4 py-2 rounded-full border border-gray-200 shadow-sm">
+            <div className="flex items-center gap-4 mb-4 bg-[var(--surface)] px-4 py-2 rounded-full border border-[var(--border)] shadow-sm">
               <button
                 onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
                 disabled={currentPage === 0}
-                className="p-1 text-gray-600 hover:text-blue-600 disabled:text-gray-300 transition-colors"
+                className="p-1 text-[var(--text-2)] hover:text-blue-600 disabled:text-[var(--text-3)] transition-colors"
                 aria-label="Previous page"
               >
                 <ChevronLeft size={24} />
               </button>
-              <span className="text-sm font-medium text-gray-700">
+              <span className="text-sm font-medium text-[var(--text-2)]">
                 Page {currentPage + 1} of {thumbnails.length}
               </span>
               <button
                 onClick={() => setCurrentPage(Math.min(thumbnails.length - 1, currentPage + 1))}
                 disabled={currentPage === thumbnails.length - 1}
-                className="p-1 text-gray-600 hover:text-blue-600 disabled:text-gray-300 transition-colors"
+                className="p-1 text-[var(--text-2)] hover:text-blue-600 disabled:text-[var(--text-3)] transition-colors"
                 aria-label="Next page"
               >
                 <ChevronRight size={24} />
               </button>
             </div>
 
-            <div className="relative bg-gray-50 p-4 rounded-xl border border-gray-200 shadow-inner overflow-auto max-h-[70vh] w-full flex justify-center">
+            <div className="relative bg-[var(--surface-2)] p-4 rounded-xl border border-[var(--border)] shadow-inner overflow-auto max-h-[70vh] w-full flex justify-center">
               <div
                 className="relative inline-block cursor-crosshair"
                 onMouseLeave={handleMouseUp}
@@ -296,7 +296,7 @@ export default function BlackoutPdf() {
                 )}
               </div>
             </div>
-            <p className="text-sm text-gray-500 mt-4 text-center">
+            <p className="text-sm text-[var(--text-3)] mt-4 text-center">
               Click and drag on the document to mark an area to blackout.
             </p>
           </div>

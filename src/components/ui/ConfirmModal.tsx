@@ -49,29 +49,29 @@ export default function ConfirmModal({
       aria-label={title}
       onKeyDown={handleKeyDown}
     >
-      <div className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
+      <div className="bg-[var(--surface)] rounded-xl shadow-2xl w-full max-w-md overflow-hidden">
         <div className="p-4">
           <div className="flex items-start gap-3">
             <div className="flex-shrink-0 w-10 h-10 bg-red-100 rounded-full flex items-center justify-center">
               <AlertTriangle className="w-5 h-5 text-red-600" />
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-              <p className="text-sm text-gray-600 mt-1 whitespace-pre-wrap">{message}</p>
+              <h3 className="text-lg font-semibold text-[var(--text)]">{title}</h3>
+              <p className="text-sm text-[var(--text-2)] mt-1 whitespace-pre-wrap">{message}</p>
             </div>
             <button
               onClick={onCancel}
-              className="flex-shrink-0 p-1 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors"
+              className="flex-shrink-0 p-1 text-[var(--text-3)] hover:text-[var(--text-2)] rounded-full hover:bg-[var(--surface-2)] transition-colors"
               aria-label="Close"
             >
               <X size={20} />
             </button>
           </div>
         </div>
-        <div className="px-4 py-3 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
+        <div className="px-4 py-3 bg-[var(--surface-2)] border-t border-[var(--border)] flex justify-end gap-3">
           <button
             onClick={onCancel}
-            className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
+            className="px-4 py-2 text-sm font-medium text-[var(--text-2)] bg-[var(--surface)] border border-[var(--border)] rounded-lg hover:bg-[var(--surface-2)] transition-colors"
           >
             {cancelLabel}
           </button>

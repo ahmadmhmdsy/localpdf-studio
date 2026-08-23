@@ -1,0 +1,476 @@
+npm warn Unknown env config "manage-package-manager-versions". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+> localpdf-studio@1.0.0 lint
+> eslint .
+
+
+E:\js_projects\localpdf-studio-task28\.agents\skills\wireframe-prototyping\templates\component-template.tsx
+   6:11  error  An empty interface declaration allows any non-nullish value, including literals like `0` and `""`.
+- If that's what you want, disable this lint rule with an inline comment or configure the 'allowInterfaces' rule option.
+- If you want a type meaning "any object", you probably want `object` instead.
+- If you want a type meaning "any value", you probably want `unknown` instead  @typescript-eslint/no-empty-object-type
+  10:31  error  Unexpected empty object pattern                                                                                                                                                                                                                                                                                                                                                           no-empty-pattern
+
+E:\js_projects\localpdf-studio-task28\src\components\editor\AnnotationLayer.tsx
+   1:18  warning  'useState' is defined but never used                                                                                          @typescript-eslint/no-unused-vars
+  32:3   error    React Hook "useEffect" is called conditionally. React Hooks must be called in the exact same order in every component render  react-hooks/rules-of-hooks
+
+E:\js_projects\localpdf-studio-task28\src\components\editor\Canvas.tsx
+    8:51  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  118:14  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  122:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\js_projects\localpdf-studio-task28\src\components\editor\PropertiesPanel.test.tsx
+  24:123  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  25:93   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  31:10   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  39:121  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  40:93   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  46:10   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  55:123  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  56:89   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  60:10   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\js_projects\localpdf-studio-task28\src\components\editor\PropertiesPanel.tsx
+  1:61  warning  'CropAnnotation' is defined but never used  @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\components\editor\Sidebar.tsx
+  1:10  warning  'useEffect' is defined but never used  @typescript-eslint/no-unused-vars
+  1:21  warning  'useState' is defined but never used   @typescript-eslint/no-unused-vars
+  2:10  warning  'pdfjsLib' is defined but never used   @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\components\editor\SignatureModal.tsx
+  56:63  warning  The ref value 'canvasRef.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'canvasRef.current' to a variable inside the effect, and use that variable in the cleanup function  react-hooks/exhaustive-deps
+
+E:\js_projects\localpdf-studio-task28\src\components\editor\SortableThumbnail.tsx
+  57:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  65:31  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\js_projects\localpdf-studio-task28\src\components\editor\Toolbar.test.tsx
+   42:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   50:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   57:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   63:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   73:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  130:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  141:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  151:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  162:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  172:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  182:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\js_projects\localpdf-studio-task28\src\components\editor\annotations\ImageAnnotationItem.tsx
+  11:18  warning  The ref value 'cleanupRef.current' will likely have changed by the time this effect cleanup function runs. If this ref points to a node rendered by React, copy 'cleanupRef.current' to a variable inside the effect, and use that variable in the cleanup function  react-hooks/exhaustive-deps
+
+E:\js_projects\localpdf-studio-task28\src\components\onboarding\OnboardingTour.tsx
+  97:5  warning  Unused eslint-disable directive (no problems were reported from 'react-hooks/exhaustive-deps')
+
+E:\js_projects\localpdf-studio-task28\src\constants\tools.ts
+  7:13  warning  'Lock' is defined but never used  @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\contexts\EditorContext.tsx
+  138:10  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  138:28  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  138:43  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  146:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+E:\js_projects\localpdf-studio-task28\src\contexts\ToastContext.test.tsx
+  1:32  warning  'vi' is defined but never used  @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\contexts\ToastContext.tsx
+  52:17  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+  60:10  warning  Fast refresh only works when a file only exports components. Use a new file to share constants or functions between components  react-refresh/only-export-components
+
+E:\js_projects\localpdf-studio-task28\src\lib\ai.test.ts
+   80:30  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+   94:30  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+  107:30  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+  111:39  warning  'total' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  157:46  warning  'total' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  191:30  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+  213:30  warning  Unexpected any. Specify a different type                                 @typescript-eslint/no-explicit-any
+
+E:\js_projects\localpdf-studio-task28\src\lib\image.ts
+  100:10  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\js_projects\localpdf-studio-task28\src\lib\ocr.test.ts
+  21:9  warning  'mockGetPage' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\lib\ocr.ts
+   1:23  warning  'PDFImage' is defined but never used      @typescript-eslint/no-unused-vars
+  19:15  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  53:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\js_projects\localpdf-studio-task28\src\lib\office-excel.test.ts
+   7:36  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+   7:51  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+  11:26  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+  11:46  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+  19:19  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+  21:32  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+  33:9   warning  'mockWorkbookCtor' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  34:19  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+  49:17  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+
+E:\js_projects\localpdf-studio-task28\src\lib\office-excel.ts
+  28:17  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  32:22  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\js_projects\localpdf-studio-task28\src\lib\office-pptx.ts
+  2:10  warning  'pdfjsLib' is defined but never used  @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\lib\office-word.ts
+  1:10  warning  'PDFDocument' is defined but never used  @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\lib\pdf-to-excel.test.ts
+  23:22  warning  'mockAddWorksheet' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  24:13  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+  25:13  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+  37:13  warning  Unexpected any. Specify a different type               @typescript-eslint/no-explicit-any
+
+E:\js_projects\localpdf-studio-task28\src\lib\pdf-to-excel.ts
+  17:45  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\js_projects\localpdf-studio-task28\src\lib\pdf-to-pptx.ts
+  1:10  warning  'pdfjsLib' is defined but never used  @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\lib\pdf-to-word.test.ts
+  29:7  warning  'ParagraphStub' is defined but never used  @typescript-eslint/no-unused-vars
+  35:7  warning  'TextRunStub' is defined but never used    @typescript-eslint/no-unused-vars
+  41:7  warning  'DocumentStub' is defined but never used   @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\lib\pdf-to-word.ts
+  12:21  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  21:45  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\js_projects\localpdf-studio-task28\src\lib\repair.ts
+  59:13  warning  'arrayBuffer' is assigned a value but never used  @typescript-eslint/no-unused-vars
+  66:15  warning  'width' is assigned a value but never used        @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\lib\security.ts
+  1:23  warning  'rgb' is defined but never used  @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\pages\Editor.tsx
+    7:8   warning  'Sidebar' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      @typescript-eslint/no-unused-vars
+    8:8   warning  'Canvas' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                       @typescript-eslint/no-unused-vars
+    9:8   warning  'Toolbar' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      @typescript-eslint/no-unused-vars
+   10:8   warning  'PropertiesPanel' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                              @typescript-eslint/no-unused-vars
+   11:8   warning  'FileUploadZone' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                               @typescript-eslint/no-unused-vars
+   69:37  error    Compilation Skipped: Existing memoization could not be preserved
+
+React Compiler has skipped optimizing this component because the existing manual memoization could not be preserved. The inferred dependencies did not match the manually specified dependencies, which could cause the value to change more or less frequently than expected. The inferred dependency was `setPages`, but the source dependencies were [undo, redo, pages, selectedAnnotationId, deleteAnnotation, zoom, setZoom, setActiveTool, setShowShortcuts, togglePropertiesPanel]. Inferred different dependency than source.
+
+E:\js_projects\localpdf-studio-task28\src\pages\Editor.tsx:69:37
+   67 |
+   68 |   // Use the keyboard shortcuts hook
+>  69 |   const keyboardShortcuts = useMemo(() => [
+      |                                     ^^^^^^^
+>  70 |     // Undo/Redo
+      | ^^^^^^^^^^^^^^^^
+>  71 |     { key: 'z', ctrl: true, handler: () => {
+      …
+      | ^^^^^^^^^^^^^^^^
+> 110 |     { key: ',', ctrl: true, handler: () => togglePropertiesPanel() },
+      | ^^^^^^^^^^^^^^^^
+> 111 |   ], [undo, redo, pages, selectedAnnotationId, deleteAnnotation, zoom, setZoom, setActiveTool, setShowShortcuts, togglePropertiesPanel]);
+      | ^^^^ Could not preserve existing manual memoization
+  112 |
+  113 |   useKeyboardShortcuts(keyboardShortcuts);
+  114 |  react-hooks/preserve-manual-memoization
+   69:37  error    Compilation Skipped: Existing memoization could not be preserved
+
+React Compiler has skipped optimizing this component because the existing manual memoization could not be preserved. The inferred dependencies did not match the manually specified dependencies, which could cause the value to change more or less frequently than expected. The inferred dependency was `setPages`, but the source dependencies were [undo, redo, pages, selectedAnnotationId, deleteAnnotation, zoom, setZoom, setActiveTool, setShowShortcuts, togglePropertiesPanel]. Inferred different dependency than source.
+
+E:\js_projects\localpdf-studio-task28\src\pages\Editor.tsx:69:37
+   67 |
+   68 |   // Use the keyboard shortcuts hook
+>  69 |   const keyboardShortcuts = useMemo(() => [
+      |                                     ^^^^^^^
+>  70 |     // Undo/Redo
+      | ^^^^^^^^^^^^^^^^
+>  71 |     { key: 'z', ctrl: true, handler: () => {
+      …
+      | ^^^^^^^^^^^^^^^^
+> 110 |     { key: ',', ctrl: true, handler: () => togglePropertiesPanel() },
+      | ^^^^^^^^^^^^^^^^
+> 111 |   ], [undo, redo, pages, selectedAnnotationId, deleteAnnotation, zoom, setZoom, setActiveTool, setShowShortcuts, togglePropertiesPanel]);
+      | ^^^^ Could not preserve existing manual memoization
+  112 |
+  113 |   useKeyboardShortcuts(keyboardShortcuts);
+  114 |  react-hooks/preserve-manual-memoization
+   69:37  error    Compilation Skipped: Existing memoization could not be preserved
+
+React Compiler has skipped optimizing this component because the existing manual memoization could not be preserved. The inferred dependencies did not match the manually specified dependencies, which could cause the value to change more or less frequently than expected. The inferred dependency was `setPages`, but the source dependencies were [undo, redo, pages, selectedAnnotationId, deleteAnnotation, zoom, setZoom, setActiveTool, setShowShortcuts, togglePropertiesPanel]. Inferred different dependency than source.
+
+E:\js_projects\localpdf-studio-task28\src\pages\Editor.tsx:69:37
+   67 |
+   68 |   // Use the keyboard shortcuts hook
+>  69 |   const keyboardShortcuts = useMemo(() => [
+      |                                     ^^^^^^^
+>  70 |     // Undo/Redo
+      | ^^^^^^^^^^^^^^^^
+>  71 |     { key: 'z', ctrl: true, handler: () => {
+      …
+      | ^^^^^^^^^^^^^^^^
+> 110 |     { key: ',', ctrl: true, handler: () => togglePropertiesPanel() },
+      | ^^^^^^^^^^^^^^^^
+> 111 |   ], [undo, redo, pages, selectedAnnotationId, deleteAnnotation, zoom, setZoom, setActiveTool, setShowShortcuts, togglePropertiesPanel]);
+      | ^^^^ Could not preserve existing manual memoization
+  112 |
+  113 |   useKeyboardShortcuts(keyboardShortcuts);
+  114 |  react-hooks/preserve-manual-memoization
+  111:6   warning  React Hook useMemo has a missing dependency: 'setPages'. Either include it or remove the dependency array                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                react-hooks/exhaustive-deps
+  129:14  warning  'error' is defined but never used                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                        @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\pages\Home.test.tsx
+  33:7  warning  'user' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\pages\tools\AddPageNumbers.test.tsx
+  2:10  warning  'render' is defined but never used                                         @typescript-eslint/no-unused-vars
+  9:32  warning  'file' is defined but never used. Allowed unused args must match /^_/u     @typescript-eslint/no-unused-vars
+  9:44  warning  'options' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  9:53  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+
+E:\js_projects\localpdf-studio-task28\src\pages\tools\AddWatermark.test.tsx
+  2:10  warning  'render' is defined but never used                                      @typescript-eslint/no-unused-vars
+  9:30  warning  'file' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  9:42  warning  'text' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\pages\tools\AiSummarizer.test.tsx
+   2:10  warning  'render' is defined but never used                                            @typescript-eslint/no-unused-vars
+   9:32  warning  'file' is defined but never used. Allowed unused args must match /^_/u        @typescript-eslint/no-unused-vars
+   9:44  warning  'onProgress' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  13:30  warning  'text' is defined but never used. Allowed unused args must match /^_/u        @typescript-eslint/no-unused-vars
+  13:44  warning  'onProgress' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\pages\tools\AiSummarizer.tsx
+  17:10  warning  'totalSummarizationChunks' is assigned a value but never used     @typescript-eslint/no-unused-vars
+  17:36  warning  'setTotalSummarizationChunks' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\pages\tools\BlackoutPdf.test.tsx
+  9:27  warning  'file' is defined but never used. Allowed unused args must match /^_/u   @typescript-eslint/no-unused-vars
+  9:39  warning  'areas' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\pages\tools\ComparePdf.test.tsx
+  2:10  warning  'render' is defined but never used                                       @typescript-eslint/no-unused-vars
+  9:29  warning  'file1' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  9:42  warning  'file2' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\pages\tools\ComparePdf.tsx
+  2:18  warning  'FileIcon' is defined but never used  @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\pages\tools\CompressPdf.test.tsx
+   2:10  warning  'render' is defined but never used                                         @typescript-eslint/no-unused-vars
+  10:29  warning  'file' is defined but never used. Allowed unused args must match /^_/u     @typescript-eslint/no-unused-vars
+  10:41  warning  'quality' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\pages\tools\CropPdf.test.tsx
+  2:10  warning  'render' is defined but never used                                         @typescript-eslint/no-unused-vars
+  9:25  warning  'file' is defined but never used. Allowed unused args must match /^_/u     @typescript-eslint/no-unused-vars
+  9:37  warning  'cropBox' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  9:46  warning  Unexpected any. Specify a different type                                   @typescript-eslint/no-explicit-any
+
+E:\js_projects\localpdf-studio-task28\src\pages\tools\CropPdf.tsx
+  1:28  warning  'useEffect' is defined but never used  @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\pages\tools\DecryptPdf.test.tsx
+  9:27  warning  'file' is defined but never used. Allowed unused args must match /^_/u      @typescript-eslint/no-unused-vars
+  9:39  warning  'password' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\pages\tools\EditPdf.test.tsx
+  2:10  warning  'render' is defined but never used                                             @typescript-eslint/no-unused-vars
+  9:25  warning  'file' is defined but never used. Allowed unused args must match /^_/u         @typescript-eslint/no-unused-vars
+  9:37  warning  'annotations' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  9:50  warning  Unexpected any. Specify a different type                                       @typescript-eslint/no-explicit-any
+
+E:\js_projects\localpdf-studio-task28\src\pages\tools\EditPdf.tsx
+   2:64  warning  'Palette' is defined but never used  @typescript-eslint/no-unused-vars
+  10:10  warning  'cn' is defined but never used       @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\pages\tools\ExcelToPdf.test.tsx
+  2:10  warning  'render' is defined but never used                                      @typescript-eslint/no-unused-vars
+  9:35  warning  'file' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\pages\tools\ExcelToPdf.tsx
+  2:27  warning  'FileCheck' is defined but never used  @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\pages\tools\ExtractPages.test.tsx
+  2:10  warning  'render' is defined but never used                                        @typescript-eslint/no-unused-vars
+  9:30  warning  'file' is defined but never used. Allowed unused args must match /^_/u    @typescript-eslint/no-unused-vars
+  9:42  warning  'ranges' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\pages\tools\HtmlToPdf.test.tsx
+  2:10  warning  'render' is defined but never used                                      @typescript-eslint/no-unused-vars
+  2:26  warning  'waitFor' is defined but never used                                     @typescript-eslint/no-unused-vars
+  8:27  warning  'html' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\pages\tools\JpgToPdf.test.tsx
+   2:10  warning  'render' is defined but never used                                       @typescript-eslint/no-unused-vars
+  10:27  warning  'files' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\pages\tools\MergePdf.test.tsx
+    2:10  warning  'render' is defined but never used                                       @typescript-eslint/no-unused-vars
+    2:35  warning  'within' is defined but never used                                       @typescript-eslint/no-unused-vars
+    5:31  warning  'mockSaveAs' is defined but never used                                   @typescript-eslint/no-unused-vars
+    5:43  warning  'waitForProcessing' is defined but never used                            @typescript-eslint/no-unused-vars
+   15:27  warning  'files' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  192:15  warning  'mergePdfs' is assigned a value but never used                           @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\pages\tools\OcrPdf.test.tsx
+  2:10  warning  'render' is defined but never used                                          @typescript-eslint/no-unused-vars
+  9:24  warning  'file' is defined but never used. Allowed unused args must match /^_/u      @typescript-eslint/no-unused-vars
+  9:36  warning  'language' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\pages\tools\OcrPdf.tsx
+  2:20  warning  'FileCheck' is defined but never used  @typescript-eslint/no-unused-vars
+  2:44  warning  'Loader2' is defined but never used    @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\pages\tools\OrganizePdf.test.tsx
+   2:10  warning  'render' is defined but never used                                            @typescript-eslint/no-unused-vars
+   9:29  warning  'file' is defined but never used. Allowed unused args must match /^_/u        @typescript-eslint/no-unused-vars
+   9:41  warning  'operations' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+   9:53  warning  Unexpected any. Specify a different type                                      @typescript-eslint/no-explicit-any
+  21:52  warning  Unexpected any. Specify a different type                                      @typescript-eslint/no-explicit-any
+  28:26  warning  Unexpected any. Specify a different type                                      @typescript-eslint/no-explicit-any
+  28:41  warning  Unexpected any. Specify a different type                                      @typescript-eslint/no-explicit-any
+
+E:\js_projects\localpdf-studio-task28\src\pages\tools\OrganizePdf.tsx
+  1:20  warning  'useEffect' is defined but never used     @typescript-eslint/no-unused-vars
+  3:31  warning  'GripVertical' is defined but never used  @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\pages\tools\PdfToExcel.test.tsx
+  2:10  warning  'render' is defined but never used                                      @typescript-eslint/no-unused-vars
+  9:35  warning  'file' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\pages\tools\PdfToExcel.tsx
+  2:27  warning  'FileCheck' is defined but never used  @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\pages\tools\PdfToJpg.test.tsx
+   2:10  warning  'render' is defined but never used                                      @typescript-eslint/no-unused-vars
+  10:27  warning  'file' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\pages\tools\PdfToJpg.tsx
+  9:10  warning  'saveAs' is defined but never used  @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\pages\tools\PdfToPdfA.test.tsx
+  2:10  warning  'render' is defined but never used                                       @typescript-eslint/no-unused-vars
+  9:31  warning  'file' is defined but never used. Allowed unused args must match /^_/u   @typescript-eslint/no-unused-vars
+  9:43  warning  'level' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\pages\tools\PdfToPowerpoint.test.tsx
+  2:10  warning  'render' is defined but never used                                      @typescript-eslint/no-unused-vars
+  9:40  warning  'file' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\pages\tools\PdfToPowerpoint.tsx
+  2:24  warning  'FileCheck' is defined but never used  @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\pages\tools\PdfToWord.test.tsx
+   2:10  warning  'render' is defined but never used                                      @typescript-eslint/no-unused-vars
+  10:34  warning  'file' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\pages\tools\PdfToWord.tsx
+  2:20  warning  'FileCheck' is defined but never used  @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\pages\tools\PowerpointToPdf.test.tsx
+  2:10  warning  'render' is defined but never used                                      @typescript-eslint/no-unused-vars
+  9:40  warning  'file' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\pages\tools\PowerpointToPdf.tsx
+  2:24  warning  'FileCheck' is defined but never used  @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\pages\tools\ProtectPdf.test.tsx
+  2:10  warning  'render' is defined but never used                                             @typescript-eslint/no-unused-vars
+  9:28  warning  'file' is defined but never used. Allowed unused args must match /^_/u         @typescript-eslint/no-unused-vars
+  9:40  warning  'password' is defined but never used. Allowed unused args must match /^_/u     @typescript-eslint/no-unused-vars
+  9:58  warning  'permissions' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  9:71  warning  Unexpected any. Specify a different type                                       @typescript-eslint/no-explicit-any
+
+E:\js_projects\localpdf-studio-task28\src\pages\tools\RemovePages.test.tsx
+  2:10  warning  'render' is defined but never used                                        @typescript-eslint/no-unused-vars
+  9:29  warning  'file' is defined but never used. Allowed unused args must match /^_/u    @typescript-eslint/no-unused-vars
+  9:41  warning  'ranges' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\pages\tools\RepairPdf.test.tsx
+  2:10  warning  'render' is defined but never used                                      @typescript-eslint/no-unused-vars
+  9:27  warning  'file' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\pages\tools\RepairPdf.tsx
+  2:10  warning  'Wrench' is defined but never used     @typescript-eslint/no-unused-vars
+  2:18  warning  'FileCheck' is defined but never used  @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\pages\tools\RotatePdf.test.tsx
+  2:10  warning  'render' is defined but never used                                       @typescript-eslint/no-unused-vars
+  9:27  warning  'file' is defined but never used. Allowed unused args must match /^_/u   @typescript-eslint/no-unused-vars
+  9:39  warning  'angle' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\pages\tools\ScanToPdf.test.tsx
+  2:10  warning  'render' is defined but never used                                       @typescript-eslint/no-unused-vars
+  2:35  warning  'act' is defined but never used                                          @typescript-eslint/no-unused-vars
+  8:29  warning  'files' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\pages\tools\ScanToPdf.tsx
+  2:10  warning  'Camera' is defined but never used     @typescript-eslint/no-unused-vars
+  2:47  warning  'RefreshCw' is defined but never used  @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\pages\tools\SignPdf.test.tsx
+   2:10  warning  'render' is defined but never used                                           @typescript-eslint/no-unused-vars
+   9:25  warning  'file' is defined but never used. Allowed unused args must match /^_/u       @typescript-eslint/no-unused-vars
+   9:37  warning  'signature' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+   9:48  warning  Unexpected any. Specify a different type                                     @typescript-eslint/no-explicit-any
+  31:54  warning  Unexpected any. Specify a different type                                     @typescript-eslint/no-explicit-any
+
+E:\js_projects\localpdf-studio-task28\src\pages\tools\SplitPdf.test.tsx
+  2:10  warning  'render' is defined but never used  @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\pages\tools\TranslatePdf.test.tsx
+  2:10  warning  'render' is defined but never used  @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\pages\tools\WordToPdf.test.tsx
+   2:10  warning  'render' is defined but never used                                      @typescript-eslint/no-unused-vars
+  10:34  warning  'file' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\pages\tools\WordToPdf.tsx
+  2:20  warning  'FileCheck' is defined but never used  @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\store\annotationsStore.ts
+   2:10  warning  'get' is defined but never used                                          @typescript-eslint/no-unused-vars
+  68:10  warning  'pages' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+  87:10  warning  'pages' is defined but never used. Allowed unused args must match /^_/u  @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\store\documentStore.test.ts
+   30:11  warning  'store' is assigned a value but never used       @typescript-eslint/no-unused-vars
+  115:13  warning  'newCurrent' is assigned a value but never used  @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\store\documentStore.ts
+  4:10  warning  'get' is defined but never used  @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\store\toolsStore.ts
+  2:10  warning  'get' is defined but never used  @typescript-eslint/no-unused-vars
+  2:15  warning  'set' is defined but never used  @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\tests\fixtures\pdfGenerator.ts
+  113:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  114:12  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\js_projects\localpdf-studio-task28\src\tests\setup.ts
+   51:37  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   71:23  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   71:38  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+   75:6   warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  122:83  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+  174:27  warning  Unexpected any. Specify a different type  @typescript-eslint/no-explicit-any
+
+E:\js_projects\localpdf-studio-task28\src\tests\unit\lib\pdf.test.ts
+   8:3   warning  'removePages' is defined but never used    @typescript-eslint/no-unused-vars
+  11:23  warning  'rgb' is defined but never used            @typescript-eslint/no-unused-vars
+  11:28  warning  'degrees' is defined but never used        @typescript-eslint/no-unused-vars
+  11:37  warning  'StandardFonts' is defined but never used  @typescript-eslint/no-unused-vars
+
+E:\js_projects\localpdf-studio-task28\src\tests\utils.tsx
+   14:10  warning  Fast refresh only works when a file only exports components. Move your component(s) to a separate file. If all exports are HOCs, add them to the `extraHOCs` option  react-refresh/only-export-components
+   74:8   warning  Unexpected any. Specify a different type                                                                                                                             @typescript-eslint/no-explicit-any
+  141:37  warning  Unexpected any. Specify a different type                                                                                                                             @typescript-eslint/no-explicit-any
+
+✖ 232 problems (6 errors, 226 warnings)
+  0 errors and 1 warning potentially fixable with the `--fix` option.
+

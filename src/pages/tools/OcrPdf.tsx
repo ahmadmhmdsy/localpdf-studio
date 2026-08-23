@@ -89,7 +89,7 @@ export default function OcrPdf() {
             description={getProgressDescription()}
           />
           {progress && (
-            <div className="mt-6 w-64 bg-gray-200 rounded-full h-2">
+            <div className="mt-6 w-64 bg-[var(--surface-2)] rounded-full h-2">
               <div
                 className="bg-blue-600 h-2 rounded-full transition-all duration-300"
                 style={{ width: `${(progress.page / progress.totalPages) * 100}%` }}
@@ -105,8 +105,8 @@ export default function OcrPdf() {
             <ScanText className="w-10 h-10 text-green-600" />
           </div>
           <div className="text-center">
-            <h3 className="text-xl font-semibold text-gray-900">OCR Complete!</h3>
-            <p className="text-gray-500 mt-2">
+            <h3 className="text-xl font-semibold text-[var(--text)]">OCR Complete!</h3>
+            <p className="text-[var(--text-3)] mt-2">
               Your PDF is now searchable. Text can be selected and copied.
             </p>
           </div>
@@ -131,9 +131,9 @@ export default function OcrPdf() {
             <AlertCircle className="w-10 h-10 text-red-600" />
           </div>
           <div className="text-center max-w-md">
-            <h3 className="text-xl font-semibold text-gray-900">OCR Failed</h3>
+            <h3 className="text-xl font-semibold text-[var(--text)]">OCR Failed</h3>
             <p className="text-red-500 mt-2">{error}</p>
-            <p className="text-gray-500 mt-4 text-sm">
+            <p className="text-[var(--text-3)] mt-4 text-sm">
               Note: Large PDFs may cause memory issues. Try splitting the PDF first.
             </p>
           </div>

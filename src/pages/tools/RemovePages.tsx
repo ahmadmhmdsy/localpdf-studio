@@ -79,20 +79,20 @@ export default function RemovePages() {
 
       {step === 'configure' && file && (
         <div className="w-full max-w-4xl">
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8 mb-8">
-            <div className="flex items-center justify-between mb-8 pb-6 border-b border-gray-100">
+          <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-sm p-8 mb-8">
+            <div className="flex items-center justify-between mb-8 pb-6 border-b border-[var(--border)]">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-lg bg-red-100 flex items-center justify-center flex-shrink-0">
                   <FileIcon size={24} className="text-red-600" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="font-semibold text-gray-900 text-lg">{file.name}</span>
-                  <span className="text-sm text-gray-500">{(file.size / 1024 / 1024).toFixed(2)} MB</span>
+                  <span className="font-semibold text-[var(--text)] text-lg">{file.name}</span>
+                  <span className="text-sm text-[var(--text-3)]">{(file.size / 1024 / 1024).toFixed(2)} MB</span>
                 </div>
               </div>
               <button 
                 onClick={startOver}
-                className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                className="p-2 text-[var(--text-3)] hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                 aria-label="Remove file"
               >
                 <X size={24} />
@@ -100,7 +100,7 @@ export default function RemovePages() {
             </div>
 
             <div className="space-y-4">
-              <label htmlFor="ranges" className="block text-sm font-medium text-gray-700">
+              <label htmlFor="ranges" className="block text-sm font-medium text-[var(--text-2)]">
                 Pages to remove
               </label>
               <input
@@ -109,9 +109,9 @@ export default function RemovePages() {
                 value={ranges}
                 onChange={(e) => setRanges(e.target.value)}
                 placeholder="e.g., 1-5, 8, 11-13"
-                className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all"
+                className="w-full px-4 py-3 rounded-xl border border-[var(--border)] focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all"
               />
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-[var(--text-3)]">
                 Enter page numbers and/or page ranges separated by commas. These pages will be deleted.
               </p>
             </div>
@@ -121,7 +121,7 @@ export default function RemovePages() {
             <button 
               onClick={handleProcess}
               disabled={!ranges.trim()}
-              className="bg-red-600 hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-4 px-12 rounded-xl text-xl transition-colors shadow-lg"
+              className="bg-red-600 hover:bg-red-700 disabled:bg-[var(--surface-2)] disabled:cursor-not-allowed text-white font-semibold py-4 px-12 rounded-xl text-xl transition-colors shadow-lg"
             >
               Remove Pages
             </button>

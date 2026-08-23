@@ -83,9 +83,9 @@ export default function PdfToExcel() {
             <FileSpreadsheet className="w-10 h-10 text-green-600" />
           </div>
           <div className="text-center">
-            <h3 className="text-xl font-semibold text-gray-900">Extraction Complete!</h3>
-            <p className="text-gray-500 mt-2">PDF data has been extracted to Excel format.</p>
-            <p className="text-sm text-gray-500 mt-1">Note: Table detection is heuristic-based and may require manual adjustment.</p>
+            <h3 className="text-xl font-semibold text-[var(--text)]">Extraction Complete!</h3>
+            <p className="text-[var(--text-3)] mt-2">PDF data has been extracted to Excel format.</p>
+            <p className="text-sm text-[var(--text-3)] mt-1">Note: Table detection is heuristic-based and may require manual adjustment.</p>
           </div>
           <button
             onClick={handleDownload}
@@ -108,7 +108,7 @@ export default function PdfToExcel() {
             <AlertCircle className="w-10 h-10 text-red-600" />
           </div>
           <div className="text-center max-w-md">
-            <h3 className="text-xl font-semibold text-gray-900">Extraction Failed</h3>
+            <h3 className="text-xl font-semibold text-[var(--text)]">Extraction Failed</h3>
             <p className="text-red-500 mt-2">{error}</p>
           </div>
           <button

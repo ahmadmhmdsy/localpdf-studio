@@ -88,9 +88,9 @@ export default function PowerpointToPdf() {
             <Presentation className="w-10 h-10 text-green-600" />
           </div>
           <div className="text-center">
-            <h3 className="text-xl font-semibold text-gray-900">Conversion Successful!</h3>
-            <p className="text-gray-500 mt-2">Your presentation has been converted to PDF.</p>
-            <p className="text-sm text-gray-500 mt-1">Each slide is now a PDF page.</p>
+            <h3 className="text-xl font-semibold text-[var(--text)]">Conversion Successful!</h3>
+            <p className="text-[var(--text-3)] mt-2">Your presentation has been converted to PDF.</p>
+            <p className="text-sm text-[var(--text-3)] mt-1">Each slide is now a PDF page.</p>
           </div>
           <button
             onClick={handleDownload}
@@ -113,7 +113,7 @@ export default function PowerpointToPdf() {
             <AlertCircle className="w-10 h-10 text-red-600" />
           </div>
           <div className="text-center max-w-md">
-            <h3 className="text-xl font-semibold text-gray-900">Conversion Failed</h3>
+            <h3 className="text-xl font-semibold text-[var(--text)]">Conversion Failed</h3>
             <p className="text-red-500 mt-2">{error}</p>
           </div>
           <button

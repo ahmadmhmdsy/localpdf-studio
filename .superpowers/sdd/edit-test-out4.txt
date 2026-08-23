@@ -1,0 +1,47 @@
+npm warn Unknown env config "manage-package-manager-versions". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.8 E:/js_projects/localpdf-studio-task28
+
+ ❯ src/lib/edit.test.ts (5 tests | 1 failed) 18ms
+       × applies crop box to all pages 11ms
+       ✓ handles full page crop 1ms
+       ✓ adds text annotations to PDF 2ms
+       ✓ handles multiple annotations on different pages 2ms
+       ✓ ignores annotations with invalid page indices 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/lib/edit.test.ts > edit.ts > cropPdf > applies crop box to all pages
+AssertionError: expected "vi.fn()" to be called with arguments: [ 61.2, 79.2, 489.6, 633.6 ]
+
+Received:
+
+  1st vi.fn() call:
+
+  [
+    61.2,
+-   79.2,
++   79.19999999999993,
+    489.6,
+    633.6,
+  ]
+
+
+Number of calls: 1
+
+ ❯ src/lib/edit.test.ts:56:39
+     54|       expect(mockPages[0].setCropBox).toHaveBeenCalledTimes(1);
+     55|       // cropPdf converts percentages (10/80/10/80) against page size …
+     56|       expect(mockPages[0].setCropBox).toHaveBeenCalledWith(61.2, 79.2,…
+       |                                       ^
+     57|       expect(mockPages[1].setCropBox).toHaveBeenCalledTimes(1);
+     58|       expect(mockPages[1].setCropBox).toHaveBeenCalledWith(61.2, 79.2,…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 4 passed (5)
+   Start at  20:55:44
+   Duration  1.70s (transform 98ms, setup 211ms, import 40ms, tests 18ms, environment 1.19s)
+

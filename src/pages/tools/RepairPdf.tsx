@@ -92,20 +92,20 @@ export default function RepairPdf() {
           </div>
 
           <div className="text-center max-w-md">
-            <h3 className="text-xl font-semibold text-gray-900">
+            <h3 className="text-xl font-semibold text-[var(--text)]">
               {result.success ? 'Repair Successful!' : 'Partial Repair'}
             </h3>
-            <p className={`mt-2 ${result.success ? 'text-gray-500' : 'text-yellow-600'}`}>
+            <p className={`mt-2 ${result.success ? 'text-[var(--text-3)]' : 'text-yellow-600'}`}>
               {result.message}
             </p>
           </div>
 
           {result.issuesFixed.length > 0 && (
-            <div className="w-full max-w-lg bg-gray-50 rounded-xl p-4">
-              <h4 className="font-medium text-gray-900 mb-3">Issues Fixed:</h4>
+            <div className="w-full max-w-lg bg-[var(--surface-2)] rounded-xl p-4">
+              <h4 className="font-medium text-[var(--text)] mb-3">Issues Fixed:</h4>
               <ul className="space-y-2">
                 {result.issuesFixed.map((issue, idx) => (
-                  <li key={idx} className="flex items-center gap-2 text-sm text-gray-600">
+                  <li key={idx} className="flex items-center gap-2 text-sm text-[var(--text-2)]">
                     <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
                     {issue}
                   </li>
@@ -139,9 +139,9 @@ export default function RepairPdf() {
             <AlertCircle className="w-10 h-10 text-red-600" />
           </div>
           <div className="text-center max-w-md">
-            <h3 className="text-xl font-semibold text-gray-900">Repair Failed</h3>
+            <h3 className="text-xl font-semibold text-[var(--text)]">Repair Failed</h3>
             <p className="text-red-500 mt-2">{error}</p>
-            <p className="text-gray-500 mt-4 text-sm">
+            <p className="text-[var(--text-3)] mt-4 text-sm">
               The PDF may be too corrupted for client-side repair. Consider using a server-based PDF repair service for severely damaged files.
             </p>
           </div>

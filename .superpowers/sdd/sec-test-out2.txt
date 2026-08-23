@@ -1,0 +1,46 @@
+npm warn Unknown env config "manage-package-manager-versions". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.8 E:/js_projects/localpdf-studio-task28
+
+ ❯ src/lib/security.test.ts (8 tests | 2 failed) 33ms
+       ✓ decodes a valid base64 data URL to bytes 5ms
+       ✓ round-trips a known short payload 1ms
+       ✓ throws on missing base64 marker 2ms
+       ✓ throws on non-data URL 1ms
+       ✓ throws on empty string 1ms
+       ✓ adds a signature image to PDF using dataUrlToBytes (no fetch) 3ms
+       × returns a Uint8Array for valid input 12ms
+       × handles multiple redactions on one page 3ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/lib/security.test.ts > security.ts > redactPdf > returns a Uint8Array for valid input
+AssertionError: expected "vi.fn()" to be called 1 times, but got 0 times
+ ❯ src/lib/security.test.ts:145:48
+    143|       expect(result).toBeInstanceOf(Uint8Array);
+    144|       // Redaction calls drawRectangle on the page for each redaction
+    145|       expect(mockState.pages[0].drawRectangle).toHaveBeenCalledTimes(1…
+       |                                                ^
+    146|     });
+    147|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/lib/security.test.ts > security.ts > redactPdf > handles multiple redactions on one page
+AssertionError: expected "vi.fn()" to be called 2 times, but got 0 times
+ ❯ src/lib/security.test.ts:155:48
+    153|       const result = await redactPdf(mockFile, redactions);
+    154|       expect(result).toBeInstanceOf(Uint8Array);
+    155|       expect(mockState.pages[0].drawRectangle).toHaveBeenCalledTimes(2…
+       |                                                ^
+    156|     });
+    157|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 6 passed (8)
+   Start at  20:57:33
+   Duration  3.07s (transform 252ms, setup 408ms, import 101ms, tests 33ms, environment 2.12s)
+

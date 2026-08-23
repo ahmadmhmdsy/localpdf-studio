@@ -166,7 +166,7 @@ export default function MergePdf() {
                               <div {...provided.dragHandleProps} aria-label="Drag to reorder" className="text-[var(--text-3)] hover:text-[var(--accent)] cursor-grab active:cursor-grabbing transition-colors">
                                 <GripVertical size={20} />
                               </div>
-                              <div className="w-10 h-10 rounded-full bg-pink-500/10 flex items-center justify-center flex-shrink-0">
+                              <div className="w-10 h-10 rounded-full bg-[var(--accent)]/10 flex items-center justify-center flex-shrink-0">
                                 <FileIcon size={20} className="text-[var(--accent)]" />
                               </div>
                               <div className="flex flex-col overflow-hidden">
@@ -179,7 +179,7 @@ export default function MergePdf() {
                                 aria-label="Move file up"
                                 onClick={() => moveFile(index, index - 1)}
                                 disabled={index === 0}
-                                className="p-2 rounded hover:bg-gray-100 disabled:opacity-50"
+                                className="p-2 rounded hover:bg-[var(--surface-2)] disabled:opacity-50"
                               >
                                 <ChevronUp size={16} />
                               </button>
@@ -187,7 +187,7 @@ export default function MergePdf() {
                                 aria-label="Move file down"
                                 onClick={() => moveFile(index, index + 1)}
                                 disabled={index === files.length - 1}
-                                className="p-2 rounded hover:bg-gray-100 disabled:opacity-50"
+                                className="p-2 rounded hover:bg-[var(--surface-2)] disabled:opacity-50"
                               >
                                 <ChevronDown size={16} />
                               </button>

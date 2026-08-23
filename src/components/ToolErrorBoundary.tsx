@@ -39,21 +39,21 @@ class ToolErrorBoundaryInner extends Component<Props, State> {
       
       return (
         <div className="flex items-center justify-center p-8">
-          <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-8 text-center border border-red-100">
+          <div className="max-w-md w-full bg-[var(--surface)] rounded-2xl shadow-lg p-8 text-center border border-red-100">
             <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <AlertTriangle className="w-8 h-8 text-red-600" />
             </div>
             
-            <h2 className="text-xl font-bold text-gray-900 mb-2">
+            <h2 className="text-xl font-bold text-[var(--text)] mb-2">
               {toolName} encountered an error
             </h2>
             
-            <p className="text-gray-600 mb-4">
+            <p className="text-[var(--text-2)] mb-4">
               Something went wrong while processing your file. Your data is safe - try again or use a different tool.
             </p>
 
             {this.state.error && (
-              <div className="bg-gray-50 rounded-lg p-3 mb-6 text-left">
+              <div className="bg-[var(--surface-2)] rounded-lg p-3 mb-6 text-left">
                 <p className="text-xs font-mono text-red-600 break-words">
                   {this.state.error.message}
                 </p>
@@ -71,7 +71,7 @@ class ToolErrorBoundaryInner extends Component<Props, State> {
               
               <button
                 onClick={this.handleGoHome}
-                className="flex items-center gap-2 px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors"
+                className="flex items-center gap-2 px-4 py-2 bg-[var(--surface-2)] hover:bg-[var(--surface-2)] text-[var(--text-2)] rounded-lg font-medium transition-colors"
               >
                 <Home className="w-4 h-4" />
                 All Tools

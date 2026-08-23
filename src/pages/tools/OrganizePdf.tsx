@@ -132,20 +132,20 @@ export default function OrganizePdf() {
 
       {step === 'configure' && file && (
         <div className="w-full max-w-5xl">
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-8">
-            <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
+          <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-sm p-6 mb-8">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-[var(--border)]">
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center flex-shrink-0">
                   <FileIcon size={20} className="text-red-600" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="font-semibold text-gray-900">{file.name}</span>
-                  <span className="text-xs text-gray-500">{pages.length} pages</span>
+                  <span className="font-semibold text-[var(--text)]">{file.name}</span>
+                  <span className="text-xs text-[var(--text-3)]">{pages.length} pages</span>
                 </div>
               </div>
               <button 
                 onClick={startOver}
-                className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                className="p-2 text-[var(--text-3)] hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                 title="Remove file"
               >
                 <X size={20} />
@@ -167,24 +167,24 @@ export default function OrganizePdf() {
                             ref={provided.innerRef}
                             {...provided.draggableProps}
                             className={cn(
-                              "relative flex flex-col items-center p-2 rounded-xl border bg-white transition-shadow w-32",
-                              snapshot.isDragging ? "shadow-xl border-red-400 z-50 scale-105" : "border-gray-200 hover:border-gray-300 hover:shadow-md"
+                              "relative flex flex-col items-center p-2 rounded-xl border bg-[var(--surface)] transition-shadow w-32",
+                              snapshot.isDragging ? "shadow-xl border-red-400 z-50 scale-105" : "border-[var(--border)] hover:border-[var(--border)] hover:shadow-md"
                             )}
                           >
                             <button 
                               onClick={() => removePage(index)}
-                              className="absolute -top-2 -right-2 p-1 bg-white text-gray-400 hover:text-red-500 border border-gray-200 rounded-full shadow-sm z-10 transition-colors"
+                              className="absolute -top-2 -right-2 p-1 bg-[var(--surface)] text-[var(--text-3)] hover:text-red-500 border border-[var(--border)] rounded-full shadow-sm z-10 transition-colors"
                               aria-label="Remove page"
                             >
                               <X size={14} />
                             </button>
                             <div 
                               {...provided.dragHandleProps} 
-                              className="w-full h-36 flex items-center justify-center overflow-hidden rounded bg-gray-50 mb-2 cursor-grab active:cursor-grabbing"
+                              className="w-full h-36 flex items-center justify-center overflow-hidden rounded bg-[var(--surface-2)] mb-2 cursor-grab active:cursor-grabbing"
                             >
                               <img src={page.thumbnailUrl} alt={`Page ${page.originalIndex + 1}`} className="max-w-full max-h-full object-contain pointer-events-none" />
                             </div>
-                            <span className="text-xs font-medium text-gray-500">Page {page.originalIndex + 1}</span>
+                            <span className="text-xs font-medium text-[var(--text-3)]">Page {page.originalIndex + 1}</span>
                           </div>
                         )}
                       </Draggable>
@@ -196,7 +196,7 @@ export default function OrganizePdf() {
             </DragDropContext>
             
             {pages.length === 0 && (
-              <div className="text-center py-12 text-gray-500">
+              <div className="text-center py-12 text-[var(--text-3)]">
                 All pages removed. Please start over.
               </div>
             )}
@@ -206,7 +206,7 @@ export default function OrganizePdf() {
             <button 
               onClick={handleProcess}
               disabled={pages.length === 0}
-              className="bg-red-600 hover:bg-red-700 disabled:bg-gray-300 disabled:cursor-not-allowed text-white font-semibold py-4 px-12 rounded-xl text-xl transition-colors shadow-lg"
+              className="bg-red-600 hover:bg-red-700 disabled:bg-[var(--surface-2)] disabled:cursor-not-allowed text-white font-semibold py-4 px-12 rounded-xl text-xl transition-colors shadow-lg"
             >
               Organize PDF
             </button>

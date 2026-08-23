@@ -109,14 +109,14 @@ export default function ProtectPdf() {
           <div className="flex items-center gap-3 bg-blue-50 px-6 py-4 rounded-xl w-full">
             <FileCheck className="w-8 h-8 text-blue-600" />
             <div>
-              <p className="font-medium text-gray-900">{file.name}</p>
-              <p className="text-sm text-gray-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+              <p className="font-medium text-[var(--text)]">{file.name}</p>
+              <p className="text-sm text-[var(--text-3)]">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
             </div>
           </div>
 
           <div className="w-full space-y-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-[var(--text-2)] mb-2">
                 Set Password *
               </label>
               <div className="relative">
@@ -125,12 +125,12 @@ export default function ProtectPdf() {
                   value={userPassword}
                   onChange={(e) => setUserPassword(e.target.value)}
                   placeholder="Enter password (min 4 characters)"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                  className="w-full px-4 py-3 border border-[var(--border)] rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                 />
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3 top-3.5 text-gray-400 hover:text-gray-600"
+                  className="absolute right-3 top-3.5 text-[var(--text-3)] hover:text-[var(--text-2)]"
                 >
                   {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
                 </button>
@@ -138,7 +138,7 @@ export default function ProtectPdf() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-[var(--text-2)] mb-2">
                 Confirm Password *
               </label>
               <input
@@ -146,7 +146,7 @@ export default function ProtectPdf() {
                 value={confirmPassword}
                 onChange={(e) => setConfirmPassword(e.target.value)}
                 placeholder="Re-enter password"
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                className="w-full px-4 py-3 border border-[var(--border)] rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
               />
             </div>
           </div>
@@ -156,7 +156,7 @@ export default function ProtectPdf() {
           <div className="flex gap-3 w-full">
             <button
               onClick={reset}
-              className="flex-1 px-6 py-3 text-gray-600 hover:text-gray-800 font-medium border border-gray-300 rounded-xl hover:bg-gray-50"
+              className="flex-1 px-6 py-3 text-[var(--text-2)] hover:text-[var(--text)] font-medium border border-[var(--border)] rounded-xl hover:bg-[var(--surface-2)]"
             >
               Cancel
             </button>
@@ -176,16 +176,16 @@ export default function ProtectPdf() {
           <div className="flex items-center gap-3 bg-blue-50 px-6 py-4 rounded-xl w-full">
             <Shield className="w-8 h-8 text-blue-600" />
             <div>
-              <p className="font-medium text-gray-900">Set Permissions</p>
-              <p className="text-sm text-gray-500">Control what users can do with the PDF</p>
+              <p className="font-medium text-[var(--text)]">Set Permissions</p>
+              <p className="text-sm text-[var(--text-3)]">Control what users can do with the PDF</p>
             </div>
           </div>
 
           <div className="w-full space-y-3">
-            <label className="flex items-center justify-between p-4 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors">
+            <label className="flex items-center justify-between p-4 bg-[var(--surface-2)] rounded-xl cursor-pointer hover:bg-[var(--surface-2)] transition-colors">
               <div>
-                <p className="font-medium text-gray-900">Allow Printing</p>
-                <p className="text-sm text-gray-500">Users can print the document</p>
+                <p className="font-medium text-[var(--text)]">Allow Printing</p>
+                <p className="text-sm text-[var(--text-3)]">Users can print the document</p>
               </div>
               <input
                 type="checkbox"
@@ -195,10 +195,10 @@ export default function ProtectPdf() {
               />
             </label>
 
-            <label className="flex items-center justify-between p-4 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors">
+            <label className="flex items-center justify-between p-4 bg-[var(--surface-2)] rounded-xl cursor-pointer hover:bg-[var(--surface-2)] transition-colors">
               <div>
-                <p className="font-medium text-gray-900">Allow Copying</p>
-                <p className="text-sm text-gray-500">Users can copy text and images</p>
+                <p className="font-medium text-[var(--text)]">Allow Copying</p>
+                <p className="text-sm text-[var(--text-3)]">Users can copy text and images</p>
               </div>
               <input
                 type="checkbox"
@@ -208,10 +208,10 @@ export default function ProtectPdf() {
               />
             </label>
 
-            <label className="flex items-center justify-between p-4 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors">
+            <label className="flex items-center justify-between p-4 bg-[var(--surface-2)] rounded-xl cursor-pointer hover:bg-[var(--surface-2)] transition-colors">
               <div>
-                <p className="font-medium text-gray-900">Allow Annotating</p>
-                <p className="text-sm text-gray-500">Users can add comments and annotations</p>
+                <p className="font-medium text-[var(--text)]">Allow Annotating</p>
+                <p className="text-sm text-[var(--text-3)]">Users can add comments and annotations</p>
               </div>
               <input
                 type="checkbox"
@@ -221,10 +221,10 @@ export default function ProtectPdf() {
               />
             </label>
 
-            <label className="flex items-center justify-between p-4 bg-gray-50 rounded-xl cursor-pointer hover:bg-gray-100 transition-colors">
+            <label className="flex items-center justify-between p-4 bg-[var(--surface-2)] rounded-xl cursor-pointer hover:bg-[var(--surface-2)] transition-colors">
               <div>
-                <p className="font-medium text-gray-900">Allow Modifying</p>
-                <p className="text-sm text-gray-500">Users can edit the document content</p>
+                <p className="font-medium text-[var(--text)]">Allow Modifying</p>
+                <p className="text-sm text-[var(--text-3)]">Users can edit the document content</p>
               </div>
               <input
                 type="checkbox"
@@ -238,7 +238,7 @@ export default function ProtectPdf() {
           <div className="flex gap-3 w-full">
             <button
               onClick={() => setStep('password')}
-              className="flex-1 px-6 py-3 text-gray-600 hover:text-gray-800 font-medium border border-gray-300 rounded-xl hover:bg-gray-50"
+              className="flex-1 px-6 py-3 text-[var(--text-2)] hover:text-[var(--text)] font-medium border border-[var(--border)] rounded-xl hover:bg-[var(--surface-2)]"
             >
               Back
             </button>
@@ -268,8 +268,8 @@ export default function ProtectPdf() {
                 <Lock className="w-10 h-10 text-green-600" />
               </div>
               <div className="text-center">
-                <h3 className="text-xl font-semibold text-gray-900">PDF Protected Successfully!</h3>
-                <p className="text-gray-500 mt-2">Your PDF is now password protected.</p>
+                <h3 className="text-xl font-semibold text-[var(--text)]">PDF Protected Successfully!</h3>
+                <p className="text-[var(--text-3)] mt-2">Your PDF is now password protected.</p>
               </div>
               <button
                 onClick={handleDownload}
@@ -284,7 +284,7 @@ export default function ProtectPdf() {
                 <Lock className="w-10 h-10 text-red-600" />
               </div>
               <div className="text-center">
-                <h3 className="text-xl font-semibold text-gray-900">Protection Failed</h3>
+                <h3 className="text-xl font-semibold text-[var(--text)]">Protection Failed</h3>
                 <p className="text-red-500 mt-2">{error}</p>
               </div>
             </>

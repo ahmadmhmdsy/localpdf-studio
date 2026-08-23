@@ -140,20 +140,20 @@ export default function EditPdf() {
         <div className="w-full max-w-6xl flex flex-col lg:flex-row gap-8">
           {/* Sidebar Controls */}
           <div className="w-full lg:w-80 flex-shrink-0 space-y-6">
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-              <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
+            <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-sm p-6">
+              <div className="flex items-center justify-between mb-6 pb-4 border-b border-[var(--border)]">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center flex-shrink-0">
                     <FileIcon size={20} className="text-red-600" />
                   </div>
                   <div className="flex flex-col overflow-hidden">
-                    <span className="font-semibold text-gray-900 truncate">{file.name}</span>
-                    <span className="text-xs text-gray-500">{thumbnails.length} pages</span>
+                    <span className="font-semibold text-[var(--text)] truncate">{file.name}</span>
+                    <span className="text-xs text-[var(--text-3)]">{thumbnails.length} pages</span>
                   </div>
                 </div>
                 <button 
                   onClick={startOver}
-                  className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                  className="p-2 text-[var(--text-3)] hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                   title="Remove file"
                 >
                   <X size={20} />
@@ -162,29 +162,29 @@ export default function EditPdf() {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Text to add</label>
+                  <label className="block text-sm font-medium text-[var(--text-2)] mb-1">Text to add</label>
                   <input
                     type="text"
                     value={currentText}
                     onChange={(e) => setCurrentText(e.target.value)}
                     placeholder="Type here, then click on page"
-                    className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all"
+                    className="w-full p-3 border border-[var(--border)] rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all"
                   />
                 </div>
                 
                 <div className="flex gap-4">
                   <div className="flex-1">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Size</label>
+                    <label className="block text-sm font-medium text-[var(--text-2)] mb-1">Size</label>
                     <input
                       type="number"
                       value={currentSize}
                       onChange={(e) => setCurrentSize(Number(e.target.value))}
-                      className="w-full p-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all"
+                      className="w-full p-3 border border-[var(--border)] rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all"
                     />
                   </div>
                   <div className="flex-1">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Color</label>
-                    <div className="flex items-center gap-2 p-1 border border-gray-300 rounded-xl h-[50px]">
+                    <label className="block text-sm font-medium text-[var(--text-2)] mb-1">Color</label>
+                    <div className="flex items-center gap-2 p-1 border border-[var(--border)] rounded-xl h-[50px]">
                       <input
                         type="color"
                         value={currentColor}
@@ -197,21 +197,21 @@ export default function EditPdf() {
               </div>
             </div>
 
-            <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6">
-              <h3 className="text-sm font-bold text-gray-900 mb-4 uppercase tracking-wider">Annotations ({annotations.length})</h3>
+            <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-sm p-6">
+              <h3 className="text-sm font-bold text-[var(--text)] mb-4 uppercase tracking-wider">Annotations ({annotations.length})</h3>
               {annotations.length === 0 ? (
-                <p className="text-sm text-gray-500 italic">No annotations added yet.</p>
+                <p className="text-sm text-[var(--text-3)] italic">No annotations added yet.</p>
               ) : (
                 <ul className="space-y-2 max-h-60 overflow-y-auto pr-2">
                   {annotations.map((ann, i) => (
-                    <li key={i} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg border border-gray-100">
+                    <li key={i} className="flex items-center justify-between p-2 bg-[var(--surface-2)] rounded-lg border border-[var(--border)]">
                       <div className="flex flex-col overflow-hidden">
-                        <span className="text-sm font-medium text-gray-900 truncate" style={{ color: ann.color }}>"{ann.text}"</span>
-                        <span className="text-xs text-gray-500">Page {ann.pageIndex + 1}</span>
+                        <span className="text-sm font-medium text-[var(--text)] truncate" style={{ color: ann.color }}>"{ann.text}"</span>
+                        <span className="text-xs text-[var(--text-3)]">Page {ann.pageIndex + 1}</span>
                       </div>
                       <button 
                         onClick={() => removeAnnotation(i)}
-                        className="p-1 text-gray-400 hover:text-red-500 rounded transition-colors"
+                        className="p-1 text-[var(--text-3)] hover:text-red-500 rounded transition-colors"
                         aria-label={`Remove annotation: ${ann.text}`}
                       >
                         <X size={14} />
@@ -233,29 +233,29 @@ export default function EditPdf() {
 
           {/* Main Preview Area */}
           <div className="flex-1 flex flex-col items-center">
-            <div className="flex items-center gap-4 mb-4 bg-white px-4 py-2 rounded-full border border-gray-200 shadow-sm">
+            <div className="flex items-center gap-4 mb-4 bg-[var(--surface)] px-4 py-2 rounded-full border border-[var(--border)] shadow-sm">
               <button 
                 onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
                 disabled={currentPage === 0}
-                className="p-1 text-gray-600 hover:text-red-600 disabled:text-gray-300 transition-colors"
+                className="p-1 text-[var(--text-2)] hover:text-red-600 disabled:text-[var(--text-3)] transition-colors"
                 aria-label="Previous page"
               >
                 <ChevronLeft size={24} />
               </button>
-              <span className="text-sm font-medium text-gray-700">
+              <span className="text-sm font-medium text-[var(--text-2)]">
                 Page {currentPage + 1} of {thumbnails.length}
               </span>
               <button 
                 onClick={() => setCurrentPage(Math.min(thumbnails.length - 1, currentPage + 1))}
                 disabled={currentPage === thumbnails.length - 1}
-                className="p-1 text-gray-600 hover:text-red-600 disabled:text-gray-300 transition-colors"
+                className="p-1 text-[var(--text-2)] hover:text-red-600 disabled:text-[var(--text-3)] transition-colors"
                 aria-label="Next page"
               >
                 <ChevronRight size={24} />
               </button>
             </div>
 
-            <div className="relative bg-gray-50 p-4 rounded-xl border border-gray-200 shadow-inner overflow-auto max-h-[70vh] w-full flex justify-center">
+            <div className="relative bg-[var(--surface-2)] p-4 rounded-xl border border-[var(--border)] shadow-inner overflow-auto max-h-[70vh] w-full flex justify-center">
               <div className="relative inline-block cursor-crosshair">
                 <img 
                   ref={imgRef}
@@ -285,7 +285,7 @@ export default function EditPdf() {
                 ))}
               </div>
             </div>
-            <p className="text-sm text-gray-500 mt-4 text-center">
+            <p className="text-sm text-[var(--text-3)] mt-4 text-center">
               Enter text in the sidebar, then click anywhere on the document to place it.
             </p>
           </div>

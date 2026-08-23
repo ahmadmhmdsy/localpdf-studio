@@ -1,0 +1,120 @@
+npm warn Unknown env config "manage-package-manager-versions". This will stop working in the next major version of npm. See `npm help npmrc` for supported config options.
+
+ RUN  v4.1.8 E:/js_projects/localpdf-studio-task28
+
+ ❯ src/lib/edit.test.ts (5 tests | 3 failed) 19ms
+       × applies crop box to all pages 10ms
+       × handles full page crop 3ms
+       × adds text annotations to PDF 3ms
+       ✓ handles multiple annotations on different pages 1ms
+       ✓ ignores annotations with invalid page indices 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 3 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/lib/edit.test.ts > edit.ts > cropPdf > applies crop box to all pages
+AssertionError: expected "vi.fn()" to be called with arguments: [ 10, 10, 80, 80 ]
+
+Received:
+
+  1st vi.fn() call:
+
+  [
+-   10,
+-   10,
+-   80,
+-   80,
++   61.2,
++   79.19999999999993,
++   489.6,
++   633.6,
+  ]
+
+
+Number of calls: 1
+
+ ❯ src/lib/edit.test.ts:55:39
+     53|       expect(mockLoad).toHaveBeenCalled();
+     54|       expect(mockPages[0].setCropBox).toHaveBeenCalledTimes(1);
+     55|       expect(mockPages[0].setCropBox).toHaveBeenCalledWith(10, 10, 80,…
+       |                                       ^
+     56|       expect(mockPages[1].setCropBox).toHaveBeenCalledTimes(1);
+     57|       expect(mockPages[1].setCropBox).toHaveBeenCalledWith(10, 10, 80,…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/3]⎯
+
+ FAIL  src/lib/edit.test.ts > edit.ts > cropPdf > handles full page crop
+AssertionError: expected "vi.fn()" to be called with arguments: [ +0, +0, 100, 100 ]
+
+Received:
+
+  1st vi.fn() call:
+
+  [
+    0,
+    0,
+-   100,
+-   100,
++   612,
++   792,
+  ]
+
+
+Number of calls: 1
+
+ ❯ src/lib/edit.test.ts:67:35
+     65|       expect(mockLoad).toHaveBeenCalled();
+     66|       const mockPage = mockPages[0];
+     67|       expect(mockPage.setCropBox).toHaveBeenCalledWith(0, 0, 100, 100);
+       |                                   ^
+     68|     });
+     69|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/3]⎯
+
+ FAIL  src/lib/edit.test.ts > edit.ts > editPdf > adds text annotations to PDF
+AssertionError: expected "vi.fn()" to be called with arguments: [ 'Hello', ObjectContaining{…} ]
+
+Received:
+
+  1st vi.fn() call:
+
+  [
+    "Hello",
+-   ObjectContaining {
++   {
++     "color": {
++       "b": 0,
++       "g": 0,
++       "r": 0,
++     },
++     "font": {
++       "heightAtSize": [Function Mock],
++       "widthOfTextAtSize": [Function Mock],
++     },
+      "size": 12,
+-     "x": 50,
+-     "y": 50,
++     "x": 306,
++     "y": 396,
+    },
+  ]
+
+
+Number of calls: 1
+
+ ❯ src/lib/edit.test.ts:82:33
+     80|       const mockPage = mockPages[0];
+     81|       expect(mockPage.drawText).toHaveBeenCalledTimes(1);
+     82|       expect(mockPage.drawText).toHaveBeenCalledWith(
+       |                                 ^
+     83|         'Hello',
+     84|         expect.objectContaining({ x: 50, y: 50, size: 12 })
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/3]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  3 failed | 2 passed (5)
+   Start at  20:55:22
+   Duration  1.57s (transform 105ms, setup 215ms, import 44ms, tests 19ms, environment 1.06s)
+

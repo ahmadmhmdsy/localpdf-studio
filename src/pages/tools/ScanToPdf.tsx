@@ -147,7 +147,7 @@ export default function ScanToPdf() {
                 {images.length > 0 && (
                   <button 
                     onClick={() => setStep('preview')}
-                    className="bg-white/20 hover:bg-white/30 text-white p-3 rounded-full backdrop-blur-sm transition-colors"
+                    className="bg-[var(--surface)]/20 hover:bg-[var(--surface)]/30 text-white p-3 rounded-full backdrop-blur-sm transition-colors"
                     title="View captured images"
                   >
                     <ImageIcon size={24} />
@@ -159,10 +159,10 @@ export default function ScanToPdf() {
                 
                 <button 
                   onClick={captureImage}
-                  className="w-16 h-16 bg-white rounded-full border-4 border-gray-300 hover:border-white hover:scale-105 transition-all flex items-center justify-center shadow-lg"
+                  className="w-16 h-16 bg-[var(--surface)] rounded-full border-4 border-[var(--border)] hover:border-white hover:scale-105 transition-all flex items-center justify-center shadow-lg"
                   aria-label="Capture image from camera"
                 >
-                  <div className="w-12 h-12 bg-white rounded-full border border-gray-200"></div>
+                  <div className="w-12 h-12 bg-[var(--surface)] rounded-full border border-[var(--border)]"></div>
                 </button>
                 
                 {images.length > 0 && (
@@ -176,9 +176,9 @@ export default function ScanToPdf() {
 
       {step === 'preview' && (
         <div className="w-full max-w-5xl">
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-8">
-            <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
-              <h3 className="text-lg font-semibold text-gray-900">Captured Pages ({images.length})</h3>
+          <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-sm p-6 mb-8">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-[var(--border)]">
+              <h3 className="text-lg font-semibold text-[var(--text)]">Captured Pages ({images.length})</h3>
               <button 
                 onClick={() => setStep('capture')}
                 className="flex items-center gap-2 text-sm font-medium text-red-600 hover:text-red-700 bg-red-50 px-4 py-2 rounded-lg transition-colors"
@@ -190,12 +190,12 @@ export default function ScanToPdf() {
 
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {images.map((img, index) => (
-                <div key={index} className="relative group rounded-xl border border-gray-200 overflow-hidden bg-gray-50 aspect-[3/4]">
+                <div key={index} className="relative group rounded-xl border border-[var(--border)] overflow-hidden bg-[var(--surface-2)] aspect-[3/4]">
                   <img src={img} alt={`Scan ${index + 1}`} className="w-full h-full object-cover" />
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                     <button 
                       onClick={() => removeImage(index)}
-                      className="bg-white text-red-600 p-2 rounded-full hover:bg-red-50 transition-colors shadow-lg"
+                      className="bg-[var(--surface)] text-red-600 p-2 rounded-full hover:bg-red-50 transition-colors shadow-lg"
                       title="Remove page"
                     >
                       <X size={20} />

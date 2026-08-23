@@ -137,27 +137,27 @@ export default function CropPdf() {
 
       {step === 'configure' && file && thumbnailUrl && (
         <div className="w-full max-w-4xl">
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-8">
-            <div className="flex items-center justify-between mb-6 pb-4 border-b border-gray-100">
+          <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-sm p-6 mb-8">
+            <div className="flex items-center justify-between mb-6 pb-4 border-b border-[var(--border)]">
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center flex-shrink-0">
                   <FileIcon size={20} className="text-red-600" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="font-semibold text-gray-900">{file.name}</span>
-                  <span className="text-xs text-gray-500">Draw a rectangle to crop all pages</span>
+                  <span className="font-semibold text-[var(--text)]">{file.name}</span>
+                  <span className="text-xs text-[var(--text-3)]">Draw a rectangle to crop all pages</span>
                 </div>
               </div>
               <button 
                 onClick={startOver}
-                className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                className="p-2 text-[var(--text-3)] hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                 aria-label="Remove file"
               >
                 <X size={20} />
               </button>
             </div>
 
-            <div className="flex justify-center bg-gray-50 p-4 rounded-xl border border-gray-200 overflow-hidden">
+            <div className="flex justify-center bg-[var(--surface-2)] p-4 rounded-xl border border-[var(--border)] overflow-hidden">
               <ReactCrop 
                 crop={crop} 
                 onChange={c => setCrop(c)}

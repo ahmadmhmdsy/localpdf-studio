@@ -76,13 +76,13 @@ export default function DecryptPdf() {
           <div className="flex items-center gap-3 bg-blue-50 px-6 py-4 rounded-xl">
             <FileCheck className="w-8 h-8 text-blue-600" />
             <div>
-              <p className="font-medium text-gray-900">{file.name}</p>
-              <p className="text-sm text-gray-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+              <p className="font-medium text-[var(--text)]">{file.name}</p>
+              <p className="text-sm text-[var(--text-3)]">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
             </div>
           </div>
 
           <div className="w-full max-w-md">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-[var(--text-2)] mb-2">
               Enter PDF Password
             </label>
             <div className="relative">
@@ -91,17 +91,17 @@ export default function DecryptPdf() {
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 placeholder="Enter password..."
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
+                className="w-full px-4 py-3 border border-[var(--border)] rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                 onKeyDown={(e) => e.key === 'Enter' && handleDecrypt()}
               />
-              <Eye className="absolute right-3 top-3.5 w-5 h-5 text-gray-400" />
+              <Eye className="absolute right-3 top-3.5 w-5 h-5 text-[var(--text-3)]" />
             </div>
           </div>
 
           <div className="flex gap-3">
             <button
               onClick={reset}
-              className="px-6 py-3 text-gray-600 hover:text-gray-800 font-medium"
+              className="px-6 py-3 text-[var(--text-2)] hover:text-[var(--text)] font-medium"
             >
               Cancel
             </button>
@@ -132,8 +132,8 @@ export default function DecryptPdf() {
                 <KeyRound className="w-10 h-10 text-green-600" />
               </div>
               <div className="text-center">
-                <h3 className="text-xl font-semibold text-gray-900">PDF decrypted</h3>
-                <p className="text-gray-500 mt-2">Your PDF is no longer password-protected.</p>
+                <h3 className="text-xl font-semibold text-[var(--text)]">PDF decrypted</h3>
+                <p className="text-[var(--text-3)] mt-2">Your PDF is no longer password-protected.</p>
               </div>
               <button
                 onClick={handleDownload}
@@ -148,7 +148,7 @@ export default function DecryptPdf() {
                 <KeyRound className="w-10 h-10 text-red-600" />
               </div>
               <div className="text-center">
-                <h3 className="text-xl font-semibold text-gray-900">Decryption Failed</h3>
+                <h3 className="text-xl font-semibold text-[var(--text)]">Decryption Failed</h3>
                 <p className="text-red-500 mt-2">{error}</p>
               </div>
             </>

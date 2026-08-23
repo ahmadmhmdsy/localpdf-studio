@@ -216,7 +216,7 @@ export default function Toolbar() {
   if (!file) return null;
 
   return (
-    <div className="h-14 bg-white border-b border-gray-200 flex items-center justify-between px-4 shadow-sm z-10">
+    <div className="h-14 bg-[var(--surface)] border-b border-[var(--border)] flex items-center justify-between px-4 shadow-sm z-10">
       <div className="flex items-center gap-4">
         <ToolPicker
           activeTool={activeTool}
@@ -246,25 +246,25 @@ export default function Toolbar() {
       <div className="flex items-center gap-3">
         <button
           onClick={toggleDarkMode}
-          className={`p-2 rounded-md transition-colors ${darkMode ? 'bg-gray-800 text-yellow-400' : 'text-gray-600 hover:bg-gray-100'}`}
+          className={`p-2 rounded-md transition-colors ${darkMode ? 'bg-[var(--surface)] text-yellow-400' : 'text-[var(--text-2)] hover:bg-[var(--surface-2)]'}`}
           title={darkMode ? "Light Mode" : "Dark Mode"}
           aria-label={darkMode ? "Light Mode" : "Dark Mode"}
         >
           {darkMode ? <Sun size={18} /> : <Moon size={18} />}
         </button>
-        <div className="w-px h-6 bg-gray-200 mx-1"></div>
-        <span className="text-sm font-medium text-gray-500 truncate max-w-[200px]" title={file.name}>
+        <div className="w-px h-6 bg-[var(--surface-2)] mx-1"></div>
+        <span className="text-sm font-medium text-[var(--text-3)] truncate max-w-[200px]" title={file.name}>
           {file.name}
         </span>
         <button
           onClick={clearFile}
-          className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+          className="p-2 text-[var(--text-3)] hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
           title="Close File"
           aria-label="Close File"
         >
           <Trash2 size={18} />
         </button>
-        <div className="w-px h-6 bg-gray-200 mx-1"></div>
+        <div className="w-px h-6 bg-[var(--surface-2)] mx-1"></div>
         <ExportButtons
           isExporting={isExporting}
           disabled={pages.length === 0}

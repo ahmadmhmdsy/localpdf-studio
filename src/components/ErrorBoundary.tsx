@@ -35,22 +35,22 @@ export default class ErrorBoundary extends Component<Props, State> {
   public render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
-          <div className="max-w-md w-full bg-white rounded-2xl shadow-lg p-8 text-center">
+        <div className="min-h-screen flex items-center justify-center bg-[var(--surface-2)] p-4">
+          <div className="max-w-md w-full bg-[var(--surface)] rounded-2xl shadow-lg p-8 text-center">
             <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <AlertTriangle className="w-8 h-8 text-red-600" />
             </div>
             
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
+            <h1 className="text-2xl font-bold text-[var(--text)] mb-2">
               Something went wrong
             </h1>
             
-            <p className="text-gray-600 mb-6">
+            <p className="text-[var(--text-2)] mb-6">
               We apologize for the inconvenience. An unexpected error has occurred.
             </p>
 
             {this.state.error && (
-              <div className="bg-gray-100 rounded-lg p-4 mb-6 text-left">
+              <div className="bg-[var(--surface-2)] rounded-lg p-4 mb-6 text-left">
                 <p className="text-sm font-mono text-red-600 break-words">
                   {this.state.error.message}
                 </p>
@@ -68,7 +68,7 @@ export default class ErrorBoundary extends Component<Props, State> {
               
               <button
                 onClick={this.handleGoHome}
-                className="px-4 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-lg font-medium transition-colors"
+                className="px-4 py-2 bg-[var(--surface-2)] hover:bg-[var(--surface-2)] text-[var(--text-2)] rounded-lg font-medium transition-colors"
               >
                 Go Home
               </button>

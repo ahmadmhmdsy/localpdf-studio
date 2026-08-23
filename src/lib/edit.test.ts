@@ -1,33 +1,26 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { cropPdf, editPdf } from './edit';
 
-// Module-level mock handles accessible after vi.clearAllMocks.
-// We declare them outside vi.mock and capture them on import.
-let mockPages: { setCropBox: ReturnType<typeof vi.fn>; drawText: ReturnType<typeof vi.fn> }[];
-let mockEmbedFont: ReturnType<typeof vi.fn>;
-let mockSave: ReturnType<typeof vi.fn>;
-let mockLoad: ReturnType<typeof vi.fn>;
+const mockState = vi.hoisted(() => ({
+  pages: [] as { setCropBox: ReturnType<typeof vi.fn>; drawText: ReturnType<typeof vi.fn>; getSize?: ReturnType<typeof vi.fn> }[],
+  load: undefined as ReturnType<typeof vi.fn> | undefined,
+}));
 
 vi.mock('pdf-lib', () => {
+  mockState.load = vi.fn(async () => {
+    mockState.pages = [
+      { getSize: vi.fn().mockReturnValue({ width: 612, height: 792 }), setCropBox: vi.fn(), drawText: vi.fn() },
+      { getSize: vi.fn().mockReturnValue({ width: 612, height: 792 }), setCropBox: vi.fn(), drawText: vi.fn() },
+    ];
+    const embedFont = vi.fn().mockResolvedValue({
+      widthOfTextAtSize: vi.fn().mockReturnValue(100),
+      heightAtSize: vi.fn().mockReturnValue(12),
+    });
+    const save = vi.fn().mockResolvedValue(new Uint8Array([1, 2, 3]));
+    return { getPages: () => mockState.pages, embedFont, save };
+  });
   return {
-    PDFDocument: {
-      load: vi.fn(async () => {
-        mockPages = [
-          { getSize: vi.fn().mockReturnValue({ width: 612, height: 792 }), setCropBox: vi.fn(), drawText: vi.fn() },
-          { getSize: vi.fn().mockReturnValue({ width: 612, height: 792 }), setCropBox: vi.fn(), drawText: vi.fn() },
-        ];
-        mockEmbedFont = vi.fn().mockResolvedValue({
-          widthOfTextAtSize: vi.fn().mockReturnValue(100),
-          heightAtSize: vi.fn().mockReturnValue(12),
-        });
-        mockSave = vi.fn().mockResolvedValue(new Uint8Array([1, 2, 3]));
-        return {
-          getPages: () => mockPages,
-          embedFont: mockEmbedFont,
-          save: mockSave,
-        };
-      }),
-    },
+    PDFDocument: { load: mockState.load },
     rgb: vi.fn().mockReturnValue({ r: 0, g: 0, b: 0 }),
     StandardFonts: { Helvetica: 'Helvetica' },
   };
@@ -36,12 +29,10 @@ vi.mock('pdf-lib', () => {
 describe('edit.ts', () => {
   let mockFile: File;
 
-  beforeEach(async () => {
+  beforeEach(() => {
     vi.clearAllMocks();
     mockFile = new File(['pdf content'], 'test.pdf', { type: 'application/pdf' });
     mockFile.arrayBuffer = vi.fn().mockResolvedValue(new ArrayBuffer(8));
-    const pdfLib = await import('pdf-lib');
-    mockLoad = pdfLib.PDFDocument.load as ReturnType<typeof vi.fn>;
   });
 
   describe('cropPdf', () => {
@@ -50,14 +41,14 @@ describe('edit.ts', () => {
       const result = await cropPdf(mockFile, cropRect);
 
       expect(result).toBeInstanceOf(Uint8Array);
-      expect(mockLoad).toHaveBeenCalled();
-      expect(mockPages[0].setCropBox).toHaveBeenCalledTimes(1);
+      expect(mockState.load).toHaveBeenCalled();
+      expect(mockState.pages[0].setCropBox).toHaveBeenCalledTimes(1);
       // cropPdf converts percentages (10/80/10/80) against page size 612×792
-      expect(mockPages[0].setCropBox).toHaveBeenCalledWith(
+      expect(mockState.pages[0].setCropBox).toHaveBeenCalledWith(
         expect.closeTo(61.2, 0.01), expect.closeTo(79.2, 0.01), expect.closeTo(489.6, 0.01), expect.closeTo(633.6, 0.01)
       );
-      expect(mockPages[1].setCropBox).toHaveBeenCalledTimes(1);
-      expect(mockPages[1].setCropBox).toHaveBeenCalledWith(
+      expect(mockState.pages[1].setCropBox).toHaveBeenCalledTimes(1);
+      expect(mockState.pages[1].setCropBox).toHaveBeenCalledWith(
         expect.closeTo(61.2, 0.01), expect.closeTo(79.2, 0.01), expect.closeTo(489.6, 0.01), expect.closeTo(633.6, 0.01)
       );
     });
@@ -67,8 +58,8 @@ describe('edit.ts', () => {
       const result = await cropPdf(mockFile, cropRect);
 
       expect(result).toBeInstanceOf(Uint8Array);
-      expect(mockLoad).toHaveBeenCalled();
-      const mockPage = mockPages[0];
+      expect(mockState.load).toHaveBeenCalled();
+      const mockPage = mockState.pages[0];
       // cropPdf converts 0/0/100/100% to 0/0/612/792 (full page size)
       expect(mockPage.setCropBox).toHaveBeenCalledWith(0, 0, 612, 792);
     });
@@ -82,8 +73,8 @@ describe('edit.ts', () => {
       const result = await editPdf(mockFile, annotations);
 
       expect(result).toBeInstanceOf(Uint8Array);
-      expect(mockLoad).toHaveBeenCalled();
-      const mockPage = mockPages[0];
+      expect(mockState.load).toHaveBeenCalled();
+      const mockPage = mockState.pages[0];
       expect(mockPage.drawText).toHaveBeenCalledTimes(1);
       expect(mockPage.drawText).toHaveBeenCalledWith(
         'Hello',
@@ -100,9 +91,9 @@ describe('edit.ts', () => {
       const result = await editPdf(mockFile, annotations);
 
       expect(result).toBeInstanceOf(Uint8Array);
-      expect(mockLoad).toHaveBeenCalled();
-      expect(mockPages[0].drawText).toHaveBeenCalledWith('Page 1', expect.anything());
-      expect(mockPages[1].drawText).toHaveBeenCalledWith('Page 2', expect.anything());
+      expect(mockState.load).toHaveBeenCalled();
+      expect(mockState.pages[0].drawText).toHaveBeenCalledWith('Page 1', expect.anything());
+      expect(mockState.pages[1].drawText).toHaveBeenCalledWith('Page 2', expect.anything());
     });
 
     it('ignores annotations with invalid page indices', async () => {
@@ -112,8 +103,8 @@ describe('edit.ts', () => {
       const result = await editPdf(mockFile, annotations);
 
       expect(result).toBeInstanceOf(Uint8Array);
-      expect(mockPages[0].drawText).not.toHaveBeenCalled();
-      expect(mockPages[1].drawText).not.toHaveBeenCalled();
+      expect(mockState.pages[0].drawText).not.toHaveBeenCalled();
+      expect(mockState.pages[1].drawText).not.toHaveBeenCalled();
     });
   });
 });

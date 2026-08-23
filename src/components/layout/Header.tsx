@@ -7,7 +7,7 @@ export default function Header() {
   const toggleDarkMode = useToolsStore((s) => s.toggleDarkMode);
 
   return (
-    <header className="fixed top-4 left-1/2 -translate-x-1/2 z-50 mt-6 mx-auto rounded-full backdrop-blur-xl bg-white/10 border border-white/20 shadow-2xl">
+    <header className="fixed top-4 left-1/2 -translate-x-1/2 z-50 mt-6 mx-auto rounded-full backdrop-blur-xl bg-[var(--surface)]/10 border border-white/20 shadow-2xl">
       <nav className="flex items-center gap-5 px-6 py-3">
         <Link to="/" className="flex items-center gap-2.5">
           <div className="flex h-9 w-9 items-center justify-center rounded-lg" style={{ background: 'var(--accent)' }}>

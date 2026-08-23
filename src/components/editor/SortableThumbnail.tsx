@@ -111,13 +111,13 @@ function SortableThumbnailInner({
       ref={setNodeRef} 
       style={style}
       className={`relative cursor-pointer group rounded-lg p-2 transition-all ${
-        isActive ? 'bg-red-50 border-2 border-red-500' : 'hover:bg-gray-100 border-2 border-transparent'
+        isActive ? 'bg-red-50 border-2 border-red-500' : 'hover:bg-[var(--surface-2)] border-2 border-transparent'
       }`}
       onClick={onClick}
       {...attributes}
       {...listeners}
     >
-      <div ref={containerRef} className="aspect-[1/1.4] bg-white shadow-sm border border-gray-200 rounded overflow-hidden flex items-center justify-center relative">
+      <div ref={containerRef} className="aspect-[1/1.4] bg-[var(--surface)] shadow-sm border border-[var(--border)] rounded overflow-hidden flex items-center justify-center relative">
         {thumbnailUrl ? (
           <img 
             src={thumbnailUrl} 
@@ -127,14 +127,14 @@ function SortableThumbnailInner({
             draggable={false}
           />
         ) : (
-          <div className="w-full h-full bg-gray-100 animate-pulse" />
+          <div className="w-full h-full bg-[var(--surface-2)] animate-pulse" />
         )}
         
         {/* Hover Actions */}
         <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
           <button 
             onClick={onRotate}
-            className="p-1.5 bg-white text-gray-700 rounded-full hover:bg-gray-100 hover:text-blue-600 transition-colors shadow-sm"
+            className="p-1.5 bg-[var(--surface)] text-[var(--text-2)] rounded-full hover:bg-[var(--surface-2)] hover:text-blue-600 transition-colors shadow-sm"
             aria-label="Rotate 90 degrees"
             title="Rotate 90°"
           >
@@ -142,7 +142,7 @@ function SortableThumbnailInner({
           </button>
           <button 
             onClick={onDelete}
-            className="p-1.5 bg-white text-gray-700 rounded-full hover:bg-gray-100 hover:text-red-600 transition-colors shadow-sm"
+            className="p-1.5 bg-[var(--surface)] text-[var(--text-2)] rounded-full hover:bg-[var(--surface-2)] hover:text-red-600 transition-colors shadow-sm"
             aria-label="Delete Page"
             title="Delete Page"
           >
@@ -150,7 +150,7 @@ function SortableThumbnailInner({
           </button>
         </div>
       </div>
-      <div className={`text-center mt-2 text-xs font-medium ${isActive ? 'text-red-600' : 'text-gray-500'}`}>
+      <div className={`text-center mt-2 text-xs font-medium ${isActive ? 'text-red-600' : 'text-[var(--text-3)]'}`}>
         {index + 1}
       </div>
     </div>

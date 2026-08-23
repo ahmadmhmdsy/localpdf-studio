@@ -216,8 +216,8 @@ export default function Canvas() {
 
   if (!pdfJsDoc || pages.length === 0) {
     return (
-      <div className="flex-1 flex items-center justify-center bg-gray-100">
-        <p className="text-gray-500">No document loaded.</p>
+      <div className="flex-1 flex items-center justify-center bg-[var(--surface-2)]">
+        <p className="text-[var(--text-3)]">No document loaded.</p>
       </div>
     );
   }
@@ -225,7 +225,7 @@ export default function Canvas() {
   return (
     <div 
       ref={containerRef}
-      className={`flex-1 overflow-auto flex items-center justify-center p-8 relative transition-colors duration-200 ${darkMode ? 'bg-gray-900' : 'bg-gray-200'} ${activeTool === 'pan' ? (isPanning ? 'cursor-grabbing' : 'cursor-grab') : ''}`}
+      className={`flex-1 overflow-auto flex items-center justify-center p-8 relative transition-colors duration-200 ${darkMode ? 'bg-[var(--surface)]' : 'bg-[var(--surface-2)]'} ${activeTool === 'pan' ? (isPanning ? 'cursor-grabbing' : 'cursor-grab') : ''}`}
       style={{ touchAction: 'none' }} // Prevent browser handling of touch gestures
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
@@ -236,7 +236,7 @@ export default function Canvas() {
       onTouchEnd={handleTouchEnd}
     >
       <div 
-        className={`relative shadow-2xl bg-white transition-opacity duration-200 ${isRendering || isZooming ? 'opacity-70' : 'opacity-100'}`}
+        className={`relative shadow-2xl bg-[var(--surface)] transition-opacity duration-200 ${isRendering || isZooming ? 'opacity-70' : 'opacity-100'}`}
         style={{
           // Use CSS transform for visual scaling when zoom differs from render scale
           // This handles both button zoom and wheel zoom
@@ -257,8 +257,8 @@ export default function Canvas() {
         />
         <AnnotationLayer />
         {(isRendering || isZooming) && (
-          <div className="absolute inset-0 flex items-center justify-center bg-white/50 pointer-events-none">
-            <div className="flex items-center gap-2 px-4 py-2 bg-gray-900/80 text-white rounded-lg text-sm">
+          <div className="absolute inset-0 flex items-center justify-center bg-[var(--surface)]/50 pointer-events-none">
+            <div className="flex items-center gap-2 px-4 py-2 bg-[var(--surface)]/80 text-white rounded-lg text-sm">
               <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24">
                 <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
                 <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />

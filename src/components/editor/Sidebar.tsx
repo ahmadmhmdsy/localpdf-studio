@@ -53,16 +53,16 @@ export default function Sidebar() {
 
   if (!pdfJsDoc) {
     return (
-      <div className="w-64 bg-white border-r border-gray-200 flex flex-col items-center justify-center text-sm text-gray-500 p-4 text-center">
+      <div className="w-64 bg-[var(--surface)] border-r border-[var(--border)] flex flex-col items-center justify-center text-sm text-[var(--text-3)] p-4 text-center">
         Upload a document to see pages here.
       </div>
     );
   }
 
   return (
-    <div className="w-64 bg-gray-50 border-r border-gray-200 flex flex-col h-full overflow-hidden">
-      <div className="p-4 border-b border-gray-200 bg-white">
-        <h3 className="font-semibold text-gray-700 text-sm uppercase tracking-wider">Pages ({pages.length})</h3>
+    <div className="w-64 bg-[var(--surface-2)] border-r border-[var(--border)] flex flex-col h-full overflow-hidden">
+      <div className="p-4 border-b border-[var(--border)] bg-[var(--surface)]">
+        <h3 className="font-semibold text-[var(--text-2)] text-sm uppercase tracking-wider">Pages ({pages.length})</h3>
       </div>
       
       <div 

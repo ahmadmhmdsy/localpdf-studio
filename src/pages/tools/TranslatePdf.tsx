@@ -156,20 +156,20 @@ export default function TranslatePdf() {
           <div className="flex items-center gap-3 bg-blue-50 px-6 py-4 rounded-xl w-full">
             <FileCheck className="w-8 h-8 text-blue-600" />
             <div>
-              <p className="font-medium text-gray-900">{file.name}</p>
-              <p className="text-sm text-gray-500">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+              <p className="font-medium text-[var(--text)]">{file.name}</p>
+              <p className="text-sm text-[var(--text-3)]">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
             </div>
           </div>
 
           <div className="w-full">
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label className="block text-sm font-medium text-[var(--text-2)] mb-2">
               Select Target Language
             </label>
             <div className="relative">
               <select
                 value={targetLang}
                 onChange={(e) => setTargetLang(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none bg-white"
+                className="w-full px-4 py-3 border border-[var(--border)] rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none appearance-none bg-[var(--surface)]"
               >
                 {SUPPORTED_LANGUAGES.map((lang) => (
                   <option key={lang.code} value={lang.code}>
@@ -177,14 +177,14 @@ export default function TranslatePdf() {
                   </option>
                 ))}
               </select>
-              <ChevronDown className="absolute right-3 top-3.5 w-5 h-5 text-gray-400 pointer-events-none" />
+              <ChevronDown className="absolute right-3 top-3.5 w-5 h-5 text-[var(--text-3)] pointer-events-none" />
             </div>
           </div>
 
           <div className="flex gap-3 w-full">
             <button
               onClick={reset}
-              className="flex-1 px-6 py-3 text-gray-600 hover:text-gray-800 font-medium border border-gray-300 rounded-xl hover:bg-gray-50"
+              className="flex-1 px-6 py-3 text-[var(--text-2)] hover:text-[var(--text)] font-medium border border-[var(--border)] rounded-xl hover:bg-[var(--surface-2)]"
             >
               Cancel
             </button>
@@ -205,7 +205,7 @@ export default function TranslatePdf() {
             title="Translating..."
             description={`Processing page ${progress.page} of ${progress.total}`}
           />
-          <div className="mt-6 w-64 bg-gray-200 rounded-full h-2">
+          <div className="mt-6 w-64 bg-[var(--surface-2)] rounded-full h-2">
             <div
               className="bg-blue-600 h-2 rounded-full transition-all duration-300"
               style={{ width: `${progress.total > 0 ? (progress.page / progress.total) * 100 : 0}%` }}
@@ -220,11 +220,11 @@ export default function TranslatePdf() {
             <Languages className="w-10 h-10 text-green-600" />
           </div>
           <div className="text-center">
-            <h3 className="text-xl font-semibold text-gray-900">Translation Complete!</h3>
-            <p className="text-gray-500 mt-2">
+            <h3 className="text-xl font-semibold text-[var(--text)]">Translation Complete!</h3>
+            <p className="text-[var(--text-3)] mt-2">
               Translations have been added to your PDF.
             </p>
-            <p className="text-sm text-gray-400 mt-1">
+            <p className="text-sm text-[var(--text-3)] mt-1">
               Note: Translations appear as blue text annotations below original content.
             </p>
           </div>
@@ -249,9 +249,9 @@ export default function TranslatePdf() {
             <AlertCircle className="w-10 h-10 text-red-600" />
           </div>
           <div className="text-center max-w-md">
-            <h3 className="text-xl font-semibold text-gray-900">Translation Failed</h3>
+            <h3 className="text-xl font-semibold text-[var(--text)]">Translation Failed</h3>
             <p className="text-red-500 mt-2">{error}</p>
-            <p className="text-gray-500 mt-4 text-sm">
+            <p className="text-[var(--text-3)] mt-4 text-sm">
               Make sure you have set up your Gemini API key in the environment variables.
             </p>
           </div>

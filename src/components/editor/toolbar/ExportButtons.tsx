@@ -18,10 +18,10 @@ export function ExportButtons({
       <button
         onClick={onExportCurrentPage}
         disabled={isExporting || disabled}
-        className="flex items-center gap-2 bg-gray-100 hover:bg-gray-200 disabled:bg-gray-50 text-gray-700 px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm"
+        className="flex items-center gap-2 bg-[var(--surface-2)] hover:bg-[var(--surface-2)] disabled:bg-[var(--surface-2)] text-[var(--text-2)] px-4 py-2 rounded-lg text-sm font-medium transition-colors shadow-sm"
       >
         {isExporting ? (
-          <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />
+          <div className="w-4 h-4 border-2 border-[var(--border)] border-t-transparent rounded-full animate-spin" />
         ) : (
           <Download size={16} />
         )}

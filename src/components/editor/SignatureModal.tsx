@@ -192,12 +192,12 @@ export default function SignatureModal({ isOpen, onClose, onSave }: SignatureMod
       aria-modal="true"
       aria-label="Signature creation dialog"
     >
-      <div ref={modalRef} className="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col">
-        <div className="flex items-center justify-between p-4 border-b border-gray-100">
-          <h3 className="font-semibold text-gray-900">Create Signature</h3>
+      <div ref={modalRef} className="bg-[var(--surface)] rounded-xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col">
+        <div className="flex items-center justify-between p-4 border-b border-[var(--border)]">
+          <h3 className="font-semibold text-[var(--text)]">Create Signature</h3>
           <button
             onClick={onClose}
-            className="p-1 text-gray-400 hover:text-gray-600 rounded-full hover:bg-gray-100 transition-colors"
+            className="p-1 text-[var(--text-3)] hover:text-[var(--text-2)] rounded-full hover:bg-[var(--surface-2)] transition-colors"
             aria-label="Close signature dialog"
           >
             <X size={20} />
@@ -205,13 +205,13 @@ export default function SignatureModal({ isOpen, onClose, onSave }: SignatureMod
         </div>
 
         {/* Mode selector */}
-        <div className="flex border-b border-gray-100" role="tablist" aria-label="Signature input method">
+        <div className="flex border-b border-[var(--border)]" role="tablist" aria-label="Signature input method">
           <button
             onClick={() => setMode('draw')}
             className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium transition-colors ${
               mode === 'draw'
                 ? 'text-red-600 border-b-2 border-red-600'
-                : 'text-gray-500 hover:text-gray-700'
+                : 'text-[var(--text-3)] hover:text-[var(--text-2)]'
             }`}
             role="tab"
             aria-selected={mode === 'draw'}
@@ -225,7 +225,7 @@ export default function SignatureModal({ isOpen, onClose, onSave }: SignatureMod
             className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium transition-colors ${
               mode === 'type'
                 ? 'text-red-600 border-b-2 border-red-600'
-                : 'text-gray-500 hover:text-gray-700'
+                : 'text-[var(--text-3)] hover:text-[var(--text-2)]'
             }`}
             role="tab"
             aria-selected={mode === 'type'}
@@ -237,8 +237,8 @@ export default function SignatureModal({ isOpen, onClose, onSave }: SignatureMod
         </div>
 
         {mode === 'draw' ? (
-          <div className="p-6 bg-gray-50 flex-1 flex flex-col items-center justify-center">
-            <div className="bg-white rounded-lg border-2 border-dashed border-gray-300 w-full h-48 relative overflow-hidden shadow-sm">
+          <div className="p-6 bg-[var(--surface-2)] flex-1 flex flex-col items-center justify-center">
+            <div className="bg-[var(--surface)] rounded-lg border-2 border-dashed border-[var(--border)] w-full h-48 relative overflow-hidden shadow-sm">
               <canvas
                 ref={canvasRef}
                 width={400}
@@ -255,15 +255,15 @@ export default function SignatureModal({ isOpen, onClose, onSave }: SignatureMod
                 onTouchMove={draw}
               />
               {isEmpty && (
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none text-gray-500 font-medium">
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none text-[var(--text-3)] font-medium">
                   Draw your signature here
                 </div>
               )}
             </div>
           </div>
         ) : (
-          <div className="p-6 bg-gray-50 flex-1 flex flex-col items-center justify-center gap-4">
-            <label htmlFor="signature-type-input" className="text-sm text-gray-600 font-medium">
+          <div className="p-6 bg-[var(--surface-2)] flex-1 flex flex-col items-center justify-center gap-4">
+            <label htmlFor="signature-type-input" className="text-sm text-[var(--text-2)] font-medium">
               Type your signature
             </label>
             <input
@@ -273,19 +273,19 @@ export default function SignatureModal({ isOpen, onClose, onSave }: SignatureMod
               value={typedSignature}
               onChange={(e) => { setTypedSignature(e.target.value); setIsEmpty(!e.target.value.trim()); }}
               placeholder="John Doe"
-              className="w-full max-w-xs px-4 py-3 text-2xl text-center border-2 border-dashed border-gray-300 rounded-lg bg-white shadow-sm focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-100"
+              className="w-full max-w-xs px-4 py-3 text-2xl text-center border-2 border-dashed border-[var(--border)] rounded-lg bg-[var(--surface)] shadow-sm focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-100"
               style={{ fontFamily: '"Brush Script MT", cursive, "Segoe Script", serif' }}
               aria-label="Type your signature text"
             />
-            <p className="text-xs text-gray-500">This will be rendered in a cursive font</p>
+            <p className="text-xs text-[var(--text-3)]">This will be rendered in a cursive font</p>
           </div>
         )}
 
-        <div className="p-4 border-t border-gray-100 flex items-center justify-between bg-white">
+        <div className="p-4 border-t border-[var(--border)] flex items-center justify-between bg-[var(--surface)]">
           {mode === 'draw' ? (
             <button
               onClick={clearCanvas}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[var(--text-2)] hover:text-[var(--text)] hover:bg-[var(--surface-2)] rounded-lg transition-colors"
               aria-label="Clear signature canvas"
             >
               <RotateCcw size={16} />
@@ -294,7 +294,7 @@ export default function SignatureModal({ isOpen, onClose, onSave }: SignatureMod
           ) : (
             <button
               onClick={() => { setTypedSignature(''); setIsEmpty(true); typeInputRef.current?.focus(); }}
-              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-gray-600 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
+              className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[var(--text-2)] hover:text-[var(--text)] hover:bg-[var(--surface-2)] rounded-lg transition-colors"
               aria-label="Clear typed signature"
             >
               <RotateCcw size={16} />
@@ -304,7 +304,7 @@ export default function SignatureModal({ isOpen, onClose, onSave }: SignatureMod
           <div className="flex gap-2">
             <button
               onClick={onClose}
-              className="px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+              className="px-4 py-2 text-sm font-medium text-[var(--text-2)] hover:bg-[var(--surface-2)] rounded-lg transition-colors"
               aria-label="Cancel signature"
             >
               Cancel

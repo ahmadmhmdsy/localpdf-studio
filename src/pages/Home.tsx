@@ -51,8 +51,8 @@ export default function Home() {
                     <Link
                       to={tool.isMVP ? targetPath : '#'}
                       className={cn(
-                        "group relative rounded-[28px] border border-white/5 bg-white/5 p-1.5 transition-all hover:bg-white/10",
-                        !tool.isMVP && "opacity-60 grayscale cursor-not-allowed hover:bg-white/5"
+                        "group relative rounded-[28px] border border-white/5 bg-[var(--surface)]/5 p-1.5 transition-all hover:bg-[var(--surface)]/10",
+                        !tool.isMVP && "opacity-60 grayscale cursor-not-allowed hover:bg-[var(--surface)]/5"
                       )}
                       onClick={(e) => {
                         if (!tool.isMVP) {

@@ -100,14 +100,14 @@ export default function JpgToPdf() {
 
       {step === 'configure' && (
         <div className="w-full max-w-4xl">
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 mb-8">
+          <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-sm p-6 mb-8">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-gray-900">Drag and drop to reorder images</h3>
+              <h3 className="text-lg font-semibold text-[var(--text)]">Drag and drop to reorder images</h3>
               <div 
                 {...getRootProps()} 
                 className={cn(
                   "flex items-center gap-2 px-4 py-2 rounded-lg border-2 border-dashed cursor-pointer transition-colors",
-                  isDragActive ? "border-yellow-500 bg-yellow-50 text-yellow-600" : "border-gray-300 hover:border-yellow-400 hover:text-yellow-600 text-gray-600"
+                  isDragActive ? "border-yellow-500 bg-yellow-50 text-yellow-600" : "border-[var(--border)] hover:border-yellow-400 hover:text-yellow-600 text-[var(--text-2)]"
                 )}
               >
                 <input {...getInputProps()} />
@@ -133,25 +133,25 @@ export default function JpgToPdf() {
                             ref={provided.innerRef}
                             {...provided.draggableProps}
                             className={cn(
-                              "flex items-center justify-between p-4 rounded-xl border bg-white transition-shadow",
-                              snapshot.isDragging ? "shadow-lg border-yellow-300 z-50" : "border-gray-200 hover:border-gray-300"
+                              "flex items-center justify-between p-4 rounded-xl border bg-[var(--surface)] transition-shadow",
+                              snapshot.isDragging ? "shadow-lg border-yellow-300 z-50" : "border-[var(--border)] hover:border-[var(--border)]"
                             )}
                           >
                             <div className="flex items-center gap-4 overflow-hidden">
-                              <div {...provided.dragHandleProps} className="text-gray-400 hover:text-gray-600 cursor-grab active:cursor-grabbing">
+                              <div {...provided.dragHandleProps} className="text-[var(--text-3)] hover:text-[var(--text-2)] cursor-grab active:cursor-grabbing">
                                 <GripVertical size={20} />
                               </div>
                               <div className="w-10 h-10 rounded bg-yellow-100 flex items-center justify-center flex-shrink-0">
                                 <ImageIcon size={20} className="text-yellow-600" />
                               </div>
                               <div className="flex flex-col overflow-hidden">
-                                <span className="font-medium text-gray-900 truncate">{file.name}</span>
-                                <span className="text-xs text-gray-500">{(file.size / 1024 / 1024).toFixed(2)} MB</span>
+                                <span className="font-medium text-[var(--text)] truncate">{file.name}</span>
+                                <span className="text-xs text-[var(--text-3)]">{(file.size / 1024 / 1024).toFixed(2)} MB</span>
                               </div>
                             </div>
                             <button 
                               onClick={() => removeFile(index)}
-                              className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                              className="p-2 text-[var(--text-3)] hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                               aria-label={`Remove ${file.name}`}
                             >
                               <X size={20} />

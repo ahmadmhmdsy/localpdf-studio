@@ -116,14 +116,14 @@ export default function AiSummarizer() {
                 <Sparkles className="w-6 h-6 text-purple-600" />
               </div>
               <div>
-                <h3 className="font-semibold text-gray-900">AI Summary Generated</h3>
-                <p className="text-sm text-gray-500">{file?.name}</p>
+                <h3 className="font-semibold text-[var(--text)]">AI Summary Generated</h3>
+                <p className="text-sm text-[var(--text-3)]">{file?.name}</p>
               </div>
             </div>
             <div className="flex gap-2">
               <button
                 onClick={handleCopy}
-                className="flex items-center gap-2 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+                className="flex items-center gap-2 px-4 py-2 text-[var(--text-2)] bg-[var(--surface-2)] rounded-lg hover:bg-[var(--surface-2)] transition-colors"
               >
                 {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
                 {copied ? 'Copied!' : 'Copy'}
@@ -138,10 +138,10 @@ export default function AiSummarizer() {
             </div>
           </div>
 
-          <div className="bg-gray-50 rounded-xl p-6">
+          <div className="bg-[var(--surface-2)] rounded-xl p-6">
             <div className="prose prose-sm max-w-none">
               {summary.split('\n').map((paragraph, idx) => (
-                <p key={idx} className="mb-4 last:mb-0 text-gray-700 leading-relaxed">
+                <p key={idx} className="mb-4 last:mb-0 text-[var(--text-2)] leading-relaxed">
                   {paragraph}
                 </p>
               ))}
@@ -165,9 +165,9 @@ export default function AiSummarizer() {
             <FileText className="w-10 h-10 text-red-600" />
           </div>
           <div className="text-center max-w-md">
-            <h3 className="text-xl font-semibold text-gray-900">Summarization Failed</h3>
+            <h3 className="text-xl font-semibold text-[var(--text)]">Summarization Failed</h3>
             <p className="text-red-500 mt-2">{error}</p>
-            <p className="text-gray-500 mt-4 text-sm">
+            <p className="text-[var(--text-3)] mt-4 text-sm">
               Make sure you have set up your Gemini API key in the environment variables.
             </p>
           </div>

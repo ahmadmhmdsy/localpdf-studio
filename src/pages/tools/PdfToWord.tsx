@@ -83,8 +83,8 @@ export default function PdfToWord() {
             <FileText className="w-10 h-10 text-green-600" />
           </div>
           <div className="text-center">
-            <h3 className="text-xl font-semibold text-gray-900">Conversion Successful!</h3>
-            <p className="text-gray-500 mt-2">Your PDF has been converted to Word format.</p>
+            <h3 className="text-xl font-semibold text-[var(--text)]">Conversion Successful!</h3>
+            <p className="text-[var(--text-3)] mt-2">Your PDF has been converted to Word format.</p>
           </div>
           <button
             onClick={handleDownload}
@@ -107,7 +107,7 @@ export default function PdfToWord() {
             <AlertCircle className="w-10 h-10 text-red-600" />
           </div>
           <div className="text-center max-w-md">
-            <h3 className="text-xl font-semibold text-gray-900">Conversion Failed</h3>
+            <h3 className="text-xl font-semibold text-[var(--text)]">Conversion Failed</h3>
             <p className="text-red-500 mt-2">{error}</p>
           </div>
           <button

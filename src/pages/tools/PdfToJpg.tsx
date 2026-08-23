@@ -73,20 +73,20 @@ export default function PdfToJpg() {
 
       {step === 'configure' && file && (
         <div className="w-full max-w-4xl">
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8 mb-8">
+          <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-sm p-8 mb-8">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-lg bg-yellow-100 flex items-center justify-center flex-shrink-0">
                   <FileIcon size={24} className="text-yellow-600" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="font-semibold text-gray-900 text-lg">{file.name}</span>
-                  <span className="text-sm text-gray-500">{(file.size / 1024 / 1024).toFixed(2)} MB</span>
+                  <span className="font-semibold text-[var(--text)] text-lg">{file.name}</span>
+                  <span className="text-sm text-[var(--text-3)]">{(file.size / 1024 / 1024).toFixed(2)} MB</span>
                 </div>
               </div>
               <button 
                 onClick={startOver}
-                className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                className="p-2 text-[var(--text-3)] hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                 aria-label="Remove file"
               >
                 <X size={24} />

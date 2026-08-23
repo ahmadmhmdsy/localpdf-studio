@@ -77,20 +77,20 @@ export default function AddPageNumbers() {
 
       {step === 'configure' && file && (
         <div className="w-full max-w-4xl">
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-8 mb-8">
-            <div className="flex items-center justify-between mb-8 pb-6 border-b border-gray-100">
+          <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-sm p-8 mb-8">
+            <div className="flex items-center justify-between mb-8 pb-6 border-b border-[var(--border)]">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
                   <FileIcon size={24} className="text-purple-600" />
                 </div>
                 <div className="flex flex-col">
-                  <span className="font-semibold text-gray-900 text-lg">{file.name}</span>
-                  <span className="text-sm text-gray-500">{(file.size / 1024 / 1024).toFixed(2)} MB</span>
+                  <span className="font-semibold text-[var(--text)] text-lg">{file.name}</span>
+                  <span className="text-sm text-[var(--text-3)]">{(file.size / 1024 / 1024).toFixed(2)} MB</span>
                 </div>
               </div>
               <button 
                 onClick={startOver}
-                className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+                className="p-2 text-[var(--text-3)] hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                 aria-label="Remove file"
               >
                 <X size={24} />
@@ -98,7 +98,7 @@ export default function AddPageNumbers() {
             </div>
 
             <div className="space-y-4">
-              <label className="block text-sm font-medium text-gray-700">
+              <label className="block text-sm font-medium text-[var(--text-2)]">
                 Position
               </label>
               <div className="grid grid-cols-3 gap-4 max-w-md">
@@ -106,7 +106,7 @@ export default function AddPageNumbers() {
                   <button
                     key={pos}
                     onClick={() => setPosition(pos)}
-                    className={`p-4 rounded-xl border font-medium transition-colors flex items-center justify-center text-sm ${position === pos ? 'bg-purple-50 border-purple-500 text-purple-700' : 'border-gray-300 text-gray-700 hover:bg-gray-50'}`}
+                    className={`p-4 rounded-xl border font-medium transition-colors flex items-center justify-center text-sm ${position === pos ? 'bg-purple-50 border-purple-500 text-purple-700' : 'border-[var(--border)] text-[var(--text-2)] hover:bg-[var(--surface-2)]'}`}
                   >
                     {pos.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
                   </button>
