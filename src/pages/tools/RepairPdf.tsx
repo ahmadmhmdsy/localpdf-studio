@@ -101,7 +101,7 @@ export default function RepairPdf() {
           </div>
 
           {result.issuesFixed.length > 0 && (
-            <div className="w-full max-w-lg bg-[var(--surface-2)] rounded-xl p-4">
+            <div className="w-full max-w-lg bg-[var(--surface-2)] rounded-xl p-4 shadow-inner shadow-[var(--border)]/40">
               <h4 className="font-medium text-[var(--text)] mb-3">Issues Fixed:</h4>
               <ul className="space-y-2">
                 {result.issuesFixed.map((issue, idx) => (

@@ -77,7 +77,7 @@ export default function AddPageNumbers() {
 
       {step === 'configure' && file && (
         <div className="w-full max-w-4xl">
-          <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-sm p-8 mb-8">
+          <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-sm shadow-inner shadow-[var(--border)]/40 p-8 mb-8">
             <div className="flex items-center justify-between mb-8 pb-6 border-b border-[var(--border)]">
               <div className="flex items-center gap-4">
                 <div className="w-12 h-12 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">

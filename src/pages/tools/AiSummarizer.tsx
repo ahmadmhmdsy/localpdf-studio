@@ -138,7 +138,7 @@ export default function AiSummarizer() {
             </div>
           </div>
 
-          <div className="bg-[var(--surface-2)] rounded-xl p-6">
+          <div className="bg-[var(--surface-2)] rounded-xl p-6 shadow-inner shadow-[var(--border)]/40">
             <div className="prose prose-sm max-w-none">
               {summary.split('\n').map((paragraph, idx) => (
                 <p key={idx} className="mb-4 last:mb-0 text-[var(--text-2)] leading-relaxed">

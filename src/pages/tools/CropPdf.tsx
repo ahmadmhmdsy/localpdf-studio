@@ -137,7 +137,7 @@ export default function CropPdf() {
 
       {step === 'configure' && file && thumbnailUrl && (
         <div className="w-full max-w-4xl">
-          <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-sm p-6 mb-8">
+          <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-sm shadow-inner shadow-[var(--border)]/40 p-6 mb-8">
             <div className="flex items-center justify-between mb-6 pb-4 border-b border-[var(--border)]">
               <div className="flex items-center gap-4">
                 <div className="w-10 h-10 rounded-lg bg-red-100 flex items-center justify-center flex-shrink-0">

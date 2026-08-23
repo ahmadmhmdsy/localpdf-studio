@@ -125,7 +125,7 @@ export default function MergePdf() {
 
       {step === 'configure' && (
         <div className="w-full max-w-4xl">
-          <div className="bg-[var(--surface)] rounded-[var(--radius-xl)] border border-[var(--border)] p-6 mb-8">
+          <div className="bg-[var(--surface)] rounded-[var(--radius-xl)] border border-[var(--border)] shadow-inner shadow-[var(--border)]/40 p-6 mb-8">
             <div className="flex items-center justify-between mb-6">
               <h3 className="text-lg font-semibold text-[var(--text)]">Drag and drop to reorder files</h3>
               <div
