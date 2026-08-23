@@ -1,4 +1,4 @@
-import { Component, ErrorInfo, ReactNode } from 'react';
+import { Component, createRef, ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 
 interface Props {
@@ -11,7 +11,9 @@ interface State {
 }
 
 export default class ErrorBoundary extends Component<Props, State> {
-  public state: State = {
+  private errorRef = createRef<HTMLDivElement>();
+
+  public override state: State = {
     hasError: false,
     error: null,
   };
@@ -20,8 +22,14 @@ export default class ErrorBoundary extends Component<Props, State> {
     return { hasError: true, error };
   }
 
-  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  public override componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('Uncaught error:', error, errorInfo);
+    // Move focus to the alert container after re-render so screen readers
+    // announce it and keyboard users land at the error UI.
+    // Defer via microtask so the ref is attached before we focus.
+    queueMicrotask(() => {
+      this.errorRef.current?.focus();
+    });
   }
 
   private handleReload = () => {
@@ -32,19 +40,24 @@ export default class ErrorBoundary extends Component<Props, State> {
     window.location.href = '/';
   };
 
-  public render() {
+  public override render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen flex items-center justify-center bg-[var(--surface-2)] p-4">
+        <div
+          ref={this.errorRef}
+          role="alert"
+          tabIndex={-1}
+          className="min-h-screen flex items-center justify-center bg-[var(--surface-2)] p-4 outline-none"
+        >
           <div className="max-w-md w-full bg-[var(--surface)] rounded-2xl shadow-lg p-8 text-center">
             <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-6">
               <AlertTriangle className="w-8 h-8 text-red-600" />
             </div>
-            
+
             <h1 className="text-2xl font-bold text-[var(--text)] mb-2">
               Something went wrong
             </h1>
-            
+
             <p className="text-[var(--text-2)] mb-6">
               We apologize for the inconvenience. An unexpected error has occurred.
             </p>
@@ -65,7 +78,7 @@ export default class ErrorBoundary extends Component<Props, State> {
                 <RefreshCw className="w-4 h-4" />
                 Reload Page
               </button>
-              
+
               <button
                 onClick={this.handleGoHome}
                 className="px-4 py-2 bg-[var(--surface-2)] hover:bg-[var(--surface-2)] text-[var(--text-2)] rounded-lg font-medium transition-colors"

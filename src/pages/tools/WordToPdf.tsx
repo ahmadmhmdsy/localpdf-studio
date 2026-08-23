@@ -1,17 +1,16 @@
 import React, { useState } from 'react';
-import { FileText, FileCheck, AlertCircle } from 'lucide-react';
+import { FileText, AlertCircle } from 'lucide-react';
 import ToolLayout from '../../components/tools/ToolLayout';
 import FileUploadZone from '../../components/tools/FileUploadZone';
 import ProcessingState from '../../components/tools/ProcessingState';
 import { convertWordToPdf } from '../../lib/office-word';
-import { saveAs } from 'file-saver';
 
 type Step = 'upload' | 'processing' | 'done' | 'error';
 
 export default function WordToPdf() {
   const [step, setStep] = useState<Step>('upload');
-  const [file, setFile] = useState<File | null>(null);
-  const [resultData, setResultData] = useState<Uint8Array | null>(null);
+  const [downloadUrl, setDownloadUrl] = useState<string | null>(null);
+  const [downloadName, setDownloadName] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
 
   const handleFilesSelected = (files: File[]) => {
@@ -22,7 +21,6 @@ export default function WordToPdf() {
         setStep('error');
         return;
       }
-      setFile(selectedFile);
       handleConvert(selectedFile);
     }
   };
@@ -32,8 +30,11 @@ export default function WordToPdf() {
     setError(null);
 
     try {
-      const result = await convertWordToPdf(selectedFile);
-      setResultData(result);
+      const data = await convertWordToPdf(selectedFile);
+      const blob = new Blob([data], { type: 'application/pdf' });
+      const newName = selectedFile.name.replace(/\.(docx|doc)$/i, '.pdf');
+      setDownloadName(newName);
+      setDownloadUrl(URL.createObjectURL(blob));
       setStep('done');
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to convert Word to PDF');
@@ -41,18 +42,13 @@ export default function WordToPdf() {
     }
   };
 
-  const handleDownload = () => {
-    if (resultData && file) {
-      const blob = new Blob([resultData], { type: 'application/pdf' });
-      const newName = file.name.replace(/\.(docx|doc)$/i, '.pdf');
-      saveAs(blob, newName);
-    }
-  };
-
   const reset = () => {
+    if (downloadUrl) {
+      URL.revokeObjectURL(downloadUrl);
+    }
     setStep('upload');
-    setFile(null);
-    setResultData(null);
+    setDownloadUrl(null);
+    setDownloadName('');
     setError(null);
   };
 
@@ -82,26 +78,27 @@ export default function WordToPdf() {
         />
       )}
 
-      {step === 'done' && (
+      {step === 'done' && downloadUrl && (
         <div className="flex flex-col items-center gap-6 py-12">
           <div className="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center">
-            <FileText className="w-10 h-10 text-green-600" />
+            <FileText className="w-10 h-10 text-green-600" aria-hidden="true" />
           </div>
           <div className="text-center">
             <h3 className="text-xl font-semibold text-[var(--text)]">Conversion Successful!</h3>
             <p className="text-[var(--text-3)] mt-2">Your Word document has been converted to PDF.</p>
           </div>
-          <button
-            onClick={handleDownload}
-            className="px-8 py-4 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors"
+          <a
+            href={downloadUrl}
+            download={downloadName}
+            className="px-8 py-4 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors no-underline"
           >
-            Download PDF
-          </button>
+            Download {downloadName}
+          </a>
           <button
             onClick={reset}
             className="text-blue-600 hover:text-blue-700 font-medium"
           >
-            Convert Another Document
+            Start over
           </button>
         </div>
       )}
@@ -109,7 +106,7 @@ export default function WordToPdf() {
       {step === 'error' && (
         <div className="flex flex-col items-center gap-6 py-12">
           <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center">
-            <AlertCircle className="w-10 h-10 text-red-600" />
+            <AlertCircle className="w-10 h-10 text-red-600" aria-hidden="true" />
           </div>
           <div className="text-center max-w-md">
             <h3 className="text-xl font-semibold text-[var(--text)]">Conversion Failed</h3>
