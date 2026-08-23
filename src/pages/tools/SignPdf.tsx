@@ -1,6 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { File as FileIcon, X, PenTool, ChevronLeft, ChevronRight, Check } from 'lucide-react';
-import SignatureCanvas from 'react-signature-canvas';
+import SignaturePad from 'signature_pad';
 import ToolLayout from '../../components/tools/ToolLayout';
 import FileUploadZone from '../../components/tools/FileUploadZone';
 import ProcessingState from '../../components/tools/ProcessingState';
@@ -21,12 +21,26 @@ export default function SignPdf() {
   
   const [isDrawing, setIsDrawing] = useState(false);
   const [currentSignatureData, setCurrentSignatureData] = useState<string | null>(null);
-  const sigCanvas = useRef<SignatureCanvas>(null);
+  const sigCanvasRef = useRef<HTMLCanvasElement>(null);
+  const sigPadRef = useRef<SignaturePad | null>(null);
   const imgRef = useRef<HTMLImageElement>(null);
 
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [resultSize, setResultSize] = useState<string>('');
   const { showToast } = useToast();
+
+  // Initialize signature_pad whenever the drawing canvas mounts.
+  useEffect(() => {
+    if (!isDrawing) return;
+    const canvas = sigCanvasRef.current;
+    if (!canvas) return;
+    const pad = new SignaturePad(canvas, { backgroundColor: 'rgba(255,255,255,0)' });
+    sigPadRef.current = pad;
+    return () => {
+      pad.off();
+      sigPadRef.current = null;
+    };
+  }, [isDrawing]);
 
   const handleFilesSelected = async (newFiles: File[]) => {
     if (newFiles.length > 0) {
@@ -55,16 +69,14 @@ export default function SignPdf() {
   };
 
   const saveSignature = () => {
-    if (sigCanvas.current && !sigCanvas.current.isEmpty()) {
-      setCurrentSignatureData(sigCanvas.current.getTrimmedCanvas().toDataURL('image/png'));
+    if (sigPadRef.current && !sigPadRef.current.isEmpty()) {
+      setCurrentSignatureData(sigPadRef.current.toDataURL('image/png'));
       setIsDrawing(false);
     }
   };
 
   const clearSignature = () => {
-    if (sigCanvas.current) {
-      sigCanvas.current.clear();
-    }
+    sigPadRef.current?.clear();
     setCurrentSignatureData(null);
   };
 
@@ -188,9 +200,10 @@ export default function SignPdf() {
                 ) : isDrawing ? (
                   <div className="space-y-3">
                     <div className="border border-gray-300 rounded-xl overflow-hidden bg-gray-50">
-                      <SignatureCanvas 
-                        ref={sigCanvas}
-                        canvasProps={{ className: 'w-full h-40 cursor-crosshair' }}
+                      <canvas
+                        ref={sigCanvasRef}
+                        className="signature-pad-canvas w-full h-40 cursor-crosshair"
+                        aria-label="Signature drawing area"
                       />
                     </div>
                     <div className="flex gap-2">

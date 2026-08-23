@@ -15,25 +15,15 @@ vi.mock('../../lib/image', () => ({
   getPdfPageThumbnails: vi.fn(async () => ['data:image/jpeg;base64,mock-thumbnail']),
 }));
 
-vi.mock('react-signature-canvas', () => {
-  // Mock SignatureCanvas instance with the methods the component uses.
-  const makeInstance = () => ({
-    clear: vi.fn(),
-    isEmpty: vi.fn(() => true),
-    getTrimmedCanvas: vi.fn(() => ({
-      toDataURL: vi.fn(() => 'data:image/png;base64,mock-trimmed-signature'),
+vi.mock('signature_pad', () => {
+  return {
+    default: vi.fn().mockImplementation(() => ({
+      isEmpty: () => false,
+      clear: vi.fn(),
+      toDataURL: () => 'data:image/png;base64,mock-signature',
+      off: vi.fn(),
     })),
-    fromDataURL: vi.fn(),
-    toDataURL: vi.fn(() => 'data:image/png;base64,mock-signature'),
-    on: vi.fn(),
-    off: vi.fn(),
-  });
-  const MockSignatureCanvas = vi.fn(({ forwardRef }: any) => {
-    if (typeof forwardRef === 'function') forwardRef(makeInstance());
-    else if (forwardRef) forwardRef.current = makeInstance();
-    return <canvas data-testid="mock-signature-canvas" />;
-  });
-  return { default: MockSignatureCanvas };
+  };
 });
 
 describe('SignPdf', () => {

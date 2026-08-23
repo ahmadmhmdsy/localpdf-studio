@@ -283,3 +283,10 @@
     color: #facc15;
   }
 }
+
+/* ── SIGNATURE PAD ── */
+.signature-pad-canvas {
+  background: var(--surface);
+  border-radius: var(--radius-md);
+  touch-action: none;
+}
