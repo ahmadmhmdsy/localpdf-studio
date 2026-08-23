@@ -16,8 +16,19 @@ export default tseslint.config(
       ...reactHooks.configs.recommended.rules,
       'react-hooks/set-state-in-effect': 'off',
       'react-refresh/only-export-components': ['warn', { allowConstantExport: true }],
-      '@typescript-eslint/no-explicit-any': 'warn',
+      // App code: explicit `any` is forbidden. Tests are exempted below
+      // because partial store mocks (`vi.spyOn(useStore, 'useStore').mockReturnValue({...} as any)`)
+      // legitimately need an escape hatch.
+      '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+    },
+  },
+  {
+    // Test files: relaxed `any` to support partial mocks, jsdom polyfills,
+    // and third-party test fixture shapes (e.g. pdfjs textContent.items).
+    files: ['**/*.test.{ts,tsx}', 'src/tests/**'],
+    rules: {
+      '@typescript-eslint/no-explicit-any': 'warn',
     },
   },
 );

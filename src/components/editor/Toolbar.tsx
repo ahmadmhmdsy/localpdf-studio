@@ -2,7 +2,7 @@ import { TextAnnotation, ImageAnnotation, RedactAnnotation, CropAnnotation, Draw
 import { useDocumentStore, useAnnotationsStore, useToolsStore } from '../../store';
 import { useToast } from '../../contexts/ToastContext';
 import { Moon, Sun, Trash2 } from 'lucide-react';
-import { PDFDocument, degrees, rgb, StandardFonts } from 'pdf-lib';
+import { PDFDocument, PDFPage, PDFFont, degrees, rgb, StandardFonts } from 'pdf-lib';
 import { useState, useRef } from 'react';
 import { hexToRgb } from '../../lib/color';
 import SignatureModal from './SignatureModal';
@@ -64,7 +64,7 @@ export default function Toolbar() {
     }
   };
 
-  const renderAnnotations = async (newPdf: PDFDocument, copiedPages: any[], pageMetas: typeof pages, helveticaFont: any) => {
+  const renderAnnotations = async (newPdf: PDFDocument, copiedPages: PDFPage[], pageMetas: typeof pages, helveticaFont: PDFFont) => {
     for (let index = 0; index < copiedPages.length; index++) {
       const page = copiedPages[index];
       const pageMeta = pageMetas[index];

@@ -16,7 +16,7 @@ export async function ocrPdf(
   const Tesseract = await import('tesseract.js');
   const { createWorker } = Tesseract;
   
-  let worker: any = null;
+  let worker: Awaited<ReturnType<typeof createWorker>> | null = null;
   
   try {
     worker = await createWorker('eng');
@@ -50,7 +50,7 @@ export async function ocrPdf(
         canvasContext: context,
         viewport: viewport,
         canvas: canvas,
-      } as any).promise);
+      }).promise);
       
       onProgress?.({ page: i + 1, totalPages, status: 'recognizing' });
       

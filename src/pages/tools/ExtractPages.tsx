@@ -41,7 +41,7 @@ export default function ExtractPages() {
       setResultUrl(url);
       setResultSize((blob.size / 1024 / 1024).toFixed(2) + ' MB');
       setStep('download');
-    } catch (error: any) {
+    } catch (error) {
       logError('Error extracting pages:', error);
       showToast({
         message: error.message || 'An error occurred while extracting pages. Please check your page ranges and try again.',

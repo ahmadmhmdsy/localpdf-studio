@@ -14,7 +14,7 @@ export async function convertPdfToExcel(file: File): Promise<Blob> {
 
     const lineMap = new Map<number, Array<{ text: string; x: number }>>();
 
-    for (const item of textContent.items as any[]) {
+    for (const item of textContent.items as Array<{ str: string; transform: number[] }>) {
       const y = Math.round(item.transform[5] / 5) * 5;
 
       if (!lineMap.has(y)) {

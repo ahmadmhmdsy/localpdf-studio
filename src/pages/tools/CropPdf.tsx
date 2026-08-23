@@ -92,7 +92,7 @@ export default function CropPdf() {
       setResultUrl(url);
       setResultSize((blob.size / 1024 / 1024).toFixed(2) + ' MB');
       setStep('download');
-    } catch (error: any) {
+    } catch (error) {
       logError('Error cropping PDF:', error);
       showToast({
         message: 'An error occurred. Please try again.',

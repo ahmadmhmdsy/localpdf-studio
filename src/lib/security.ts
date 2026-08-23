@@ -101,7 +101,7 @@ async function rasterizePageToPngBytes(
     canvas.toBlob((b) => (b ? resolve(b) : reject(new Error('Canvas toBlob returned null.'))), 'image/png');
   });
   const png = new Uint8Array(await blob.arrayBuffer());
-  await pdf.destroy();
+  // pdfjs 6.x removed PDFDocumentProxy.destroy(); worker cleanup is automatic.
   return { png, width: viewport1.width, height: viewport1.height };
 }
 

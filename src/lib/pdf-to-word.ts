@@ -9,7 +9,8 @@ export async function convertPdfToWord(file: File): Promise<Blob> {
   const arrayBuffer = await file.arrayBuffer();
   const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
   
-  const paragraphs: any[] = [];
+  type DocxParagraph = InstanceType<typeof import('docx').Paragraph>;
+  const paragraphs: DocxParagraph[] = [];
   
   for (let i = 1; i <= pdf.numPages; i++) {
     const page = await pdf.getPage(i);
@@ -18,7 +19,7 @@ export async function convertPdfToWord(file: File): Promise<Blob> {
     // Group text items by y-position to form paragraphs
     const lines = new Map<number, string[]>();
     
-    for (const item of textContent.items as any[]) {
+    for (const item of textContent.items as Array<{ str: string; transform: number[] }>) {
       const y = Math.round(item.transform[5] / 10) * 10; // Group by approximate y position
       if (!lines.has(y)) {
         lines.set(y, []);

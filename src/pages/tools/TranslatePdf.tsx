@@ -59,7 +59,7 @@ export default function TranslatePdf() {
         // Group text by paragraphs (approximate by Y position)
         const paragraphs = new Map<number, string[]>();
         
-        for (const item of textContent.items as any[]) {
+        for (const item of textContent.items as Array<{ str: string; transform: number[] }>) {
           const y = Math.round(item.transform[5] / 20) * 20;
           if (!paragraphs.has(y)) {
             paragraphs.set(y, []);

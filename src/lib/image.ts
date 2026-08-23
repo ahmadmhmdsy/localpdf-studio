@@ -29,8 +29,9 @@ export async function pdfToJpgs(file: File): Promise<Blob> {
 
     await page.render({
       canvasContext: context,
-      viewport: viewport
-    } as any).promise;
+      viewport: viewport,
+      canvas: canvas
+    }).promise;
 
     // Convert canvas to blob
     const blob = await new Promise<Blob | null>((resolve) => {
@@ -65,7 +66,8 @@ export async function getPdfPageThumbnail(
   await page.render({
     canvasContext: context,
     viewport,
-  } as any).promise;
+    canvas: canvas
+  }).promise;
 
   return canvas.toDataURL(THUMBNAIL_FORMAT, THUMBNAIL_QUALITY);
 }
@@ -96,8 +98,9 @@ export async function getPdfPageThumbnails(
 
     await page.render({
       canvasContext: context,
-      viewport: viewport
-    } as any).promise;
+      viewport: viewport,
+      canvas: canvas
+    }).promise;
 
     const dataUrl = canvas.toDataURL(THUMBNAIL_FORMAT, THUMBNAIL_QUALITY);
     thumbnails.push(dataUrl);

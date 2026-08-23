@@ -1,4 +1,5 @@
 import {
+  type LucideIcon,
   Combine, Split, FileMinus, FileOutput, LayoutGrid, Scan,
   Minimize, Wrench, ScanText,
   Image, FileText, Presentation, FileSpreadsheet, Globe,
@@ -16,7 +17,7 @@ export type Tool = {
   id: string;
   name: string;
   description: string;
-  icon: any;
+  icon: LucideIcon;
   color: string;
   isMVP: boolean;
 };

@@ -25,11 +25,11 @@ export async function convertExcelToPdf(file: File): Promise<Uint8Array> {
     const worksheet = workbook.getWorksheet(sheetName);
     if (!worksheet) continue;
 
-    const data: any[][] = [];
+    const data: unknown[][] = [];
     let maxColCount = 0;
 
     worksheet.eachRow({ includeEmpty: true }, (row) => {
-      const rowData: any[] = [];
+      const rowData: unknown[] = [];
       row.eachCell({ includeEmpty: true }, (cell) => {
         rowData.push(cell.value);
       });

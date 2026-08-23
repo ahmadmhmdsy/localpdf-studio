@@ -39,7 +39,7 @@ export default function AddPageNumbers() {
       setResultUrl(url);
       setResultSize((blob.size / 1024 / 1024).toFixed(2) + ' MB');
       setStep('download');
-    } catch (error: any) {
+    } catch (error) {
       logError('Error adding page numbers:', error);
       showToast({
         message: 'An error occurred. Please try again.',

@@ -53,8 +53,9 @@ function SortableThumbnailInner({
                 
                 renderTask = pdfPage.render({
                   canvasContext: context,
-                  viewport: viewport
-                } as any);
+                  viewport: viewport,
+                  canvas: canvas
+                });
                 
                 await renderTask.promise;
                 
@@ -62,7 +63,7 @@ function SortableThumbnailInner({
                   setThumbnailUrl(canvas.toDataURL('image/jpeg', 0.5));
                   hasLoadedRef.current = true;
                 }
-              } catch (error: any) {
+              } catch (error) {
                 if (error.name !== 'RenderingCancelledException') {
                   logError(`Error generating thumbnail for page ${page.originalIndex + 1}:`, error);
                 }

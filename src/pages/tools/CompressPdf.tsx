@@ -43,7 +43,7 @@ export default function CompressPdf() {
       setResultSize((blob.size / 1024 / 1024).toFixed(2) + ' MB');
       setResultNotes(result.notes);
       setStep('download');
-    } catch (error: any) {
+    } catch (error) {
       logError('Error compressing PDF:', error);
       showToast({
         message: 'An error occurred. Please try again.',
