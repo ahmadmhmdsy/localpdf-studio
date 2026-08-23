@@ -97,29 +97,42 @@ describe('PdfToWord', () => {
   });
 
   describe('Download State', () => {
-    it('displays download button for DOCX file', async () => {
+    it('displays download link for DOCX file', async () => {
       renderWithProviders(<PdfToWord />);
-      
+
       const pdfFile = await generateDummyPdf(3, 'test.pdf');
       const input = screen.getByLabelText(/select PDF file/i);
-      
+
       await user.upload(input, pdfFile);
-      
+
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /download docx/i })).toBeInTheDocument();
+        expect(screen.getByRole('link', { name: /download.*\.docx/i })).toBeInTheDocument();
       }, { timeout: 3000 });
     });
 
     it('provides .docx file for download', async () => {
       renderWithProviders(<PdfToWord />);
-      
+
       const pdfFile = await generateDummyPdf(3, 'document.pdf');
       const input = screen.getByLabelText(/select PDF file/i);
-      
+
       await user.upload(input, pdfFile);
-      
+
       await waitFor(() => {
-        expect(screen.getByText(/converted to Word format/i)).toBeInTheDocument();
+        expect(screen.getByText(/converted to Word/i)).toBeInTheDocument();
+      }, { timeout: 3000 });
+    });
+
+    it('allows starting over after conversion', async () => {
+      renderWithProviders(<PdfToWord />);
+
+      const pdfFile = await generateDummyPdf(3, 'test.pdf');
+      const input = screen.getByLabelText(/select PDF file/i);
+
+      await user.upload(input, pdfFile);
+
+      await waitFor(() => {
+        expect(screen.getByRole('button', { name: /start over/i })).toBeInTheDocument();
       }, { timeout: 3000 });
     });
   });

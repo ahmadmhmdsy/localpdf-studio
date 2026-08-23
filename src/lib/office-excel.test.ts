@@ -136,7 +136,7 @@ describe('convertExcelToPdf', () => {
 
     await convertExcelToPdf(file);
 
-    const textArg = mockDrawText.mock.calls.find((c) => typeof c[0] === 'string' && c[0].startsWith('A'))?.[0];
+    const textArg = mockDrawText.mock.calls.find((c: unknown[]) => typeof c[0] === 'string' && c[0].startsWith('A'))?.[0];
     expect(typeof textArg).toBe('string');
     expect((textArg as string).length).toBeLessThan(500);
   });

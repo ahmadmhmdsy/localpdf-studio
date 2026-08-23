@@ -1,4 +1,4 @@
-import { useRef, useState, useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 import { useEditor, TextAnnotation, ImageAnnotation, RedactAnnotation, CropAnnotation, DrawAnnotation, Point } from '../../contexts/EditorContext';
 import { ANNOTATION_COLORS } from '../../constants/colors';
 import TextAnnotationItem from './annotations/TextAnnotationItem';
@@ -24,10 +24,6 @@ export default function AnnotationLayer() {
   const currentDrawingRef = useRef<Point[]>([]);
   const cleanupRef = useRef<(() => void) | null>(null);
   const pageMeta = pages[currentPage - 1];
-  
-  if (!pageMeta) return null;
-
-  const pageAnnotations = annotations.filter(a => a.pageId === pageMeta.id);
 
   useEffect(() => {
     return () => {
@@ -36,6 +32,10 @@ export default function AnnotationLayer() {
       }
     };
   }, []);
+
+  if (!pageMeta) return null;
+
+  const pageAnnotations = annotations.filter(a => a.pageId === pageMeta.id);
 
   const handlePointerDown = (e: React.PointerEvent) => {
     if (activeTool === 'draw') {

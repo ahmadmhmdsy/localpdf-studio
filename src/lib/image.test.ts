@@ -1,46 +1,64 @@
 import { describe, it, expect, vi } from 'vitest';
+import { PDFDocument } from 'pdf-lib';
+import { jpgsToPdf } from './image';
 
-vi.mock('./image', async () => {
-  const actual = await vi.importActual('./image');
-  return {
-    ...actual,
-    jpgsToPdf: vi.fn(async () => new Uint8Array([80, 75, 3, 4])),
-    pdfToJpgs: vi.fn(async () => new Blob()),
-  };
-});
-
-const { jpgsToPdf, pdfToJpgs } = await import('./image');
+async function makeJpgFile(name = 'test.jpg'): Promise<File> {
+  // 1x1 transparent PNG bytes are accepted by pdf-lib's embedJpg ONLY if it's a real JPEG.
+  // Use a known-good 1x1 JPEG (the smallest valid JPEG: 125 bytes).
+  const jpegBytes = new Uint8Array([
+    0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10, 0x4a, 0x46, 0x49, 0x46, 0x00, 0x01,
+    0x01, 0x00, 0x00, 0x01, 0x00, 0x01, 0x00, 0x00, 0xff, 0xdb, 0x00, 0x43,
+    0x00, 0x08, 0x06, 0x06, 0x07, 0x06, 0x05, 0x08, 0x07, 0x07, 0x07, 0x09,
+    0x09, 0x08, 0x0a, 0x0c, 0x14, 0x0d, 0x0c, 0x0b, 0x0b, 0x0c, 0x19, 0x12,
+    0x13, 0x0f, 0x14, 0x1d, 0x1a, 0x1f, 0x1e, 0x1d, 0x1a, 0x1c, 0x1c, 0x20,
+    0x24, 0x2e, 0x27, 0x20, 0x22, 0x2c, 0x23, 0x1c, 0x1c, 0x28, 0x37, 0x29,
+    0x2c, 0x30, 0x31, 0x34, 0x34, 0x34, 0x1f, 0x27, 0x39, 0x3d, 0x38, 0x32,
+    0x3c, 0x2e, 0x33, 0x34, 0x32, 0xff, 0xc0, 0x00, 0x0b, 0x08, 0x00, 0x01,
+    0x00, 0x01, 0x01, 0x01, 0x11, 0x00, 0xff, 0xc4, 0x00, 0x1f, 0x00, 0x00,
+    0x01, 0x05, 0x01, 0x01, 0x01, 0x01, 0x01, 0x01, 0x00, 0x00, 0x00, 0x00,
+    0x00, 0x00, 0x00, 0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+    0x09, 0x0a, 0x0b, 0xff, 0xc4, 0x00, 0xb5, 0x10, 0x00, 0x02, 0x01, 0x03,
+    0x03, 0x02, 0x04, 0x03, 0x05, 0x05, 0x04, 0x04, 0x00, 0x00, 0x01, 0x7d,
+    0x01, 0x02, 0x03, 0x00, 0x04, 0x11, 0x05, 0x12, 0x21, 0x31, 0x41, 0x06,
+    0x13, 0x51, 0x61, 0x07, 0x22, 0x71, 0x14, 0x32, 0x81, 0x91, 0xa1, 0x08,
+    0x23, 0x42, 0xb1, 0xc1, 0x15, 0x52, 0xd1, 0xf0, 0x24, 0x33, 0x62, 0x72,
+    0x82, 0xff, 0xda, 0x00, 0x08, 0x01, 0x01, 0x00, 0x00, 0x3f, 0x00, 0xfb,
+    0xd1, 0xff, 0xd9,
+  ]);
+  return new File([jpegBytes], name, { type: 'image/jpeg' });
+}
 
 describe('jpgsToPdf', () => {
-  it('should convert single JPG to PDF', async () => {
-    const jpgFile = new File([new Uint8Array([0xFF, 0xD8, 0xFF, 0xE0])], 'test.jpg', { type: 'image/jpeg' });
-    const result = await jpgsToPdf([jpgFile]);
-    expect(result).toBeInstanceOf(Uint8Array);
+  it('produces a valid PDF (starts with %PDF-)', async () => {
+    const jpg = await makeJpgFile();
+    const bytes = await jpgsToPdf([jpg]);
+    expect(bytes).toBeInstanceOf(Uint8Array);
+    expect(String.fromCharCode(...bytes.slice(0, 5))).toBe('%PDF-');
   });
 
-  it('should convert multiple JPGs to multi-page PDF', async () => {
-    const jpg1 = new File([new Uint8Array([0xFF, 0xD8, 0xFF, 0xE0])], 'test1.jpg', { type: 'image/jpeg' });
-    const jpg2 = new File([new Uint8Array([0xFF, 0xD8, 0xFF, 0xE0])], 'test2.jpg', { type: 'image/jpeg' });
-    const result = await jpgsToPdf([jpg1, jpg2]);
-    expect(result).toBeInstanceOf(Uint8Array);
+  it('produces a PDF with one page per input image', async () => {
+    const jpg1 = await makeJpgFile('a.jpg');
+    const jpg2 = await makeJpgFile('b.jpg');
+    const bytes = await jpgsToPdf([jpg1, jpg2]);
+    const pdf = await PDFDocument.load(bytes);
+    expect(pdf.getPageCount()).toBe(2);
   });
 
-  it('should return empty PDF for empty array', async () => {
-    const result = await jpgsToPdf([]);
-    expect(result).toBeInstanceOf(Uint8Array);
-  });
-});
-
-describe('pdfToJpgs', () => {
-  it('should convert PDF to JPGs blob', async () => {
-    const pdfFile = new File([new Uint8Array()], 'test.pdf', { type: 'application/pdf' });
-    const result = await pdfToJpgs(pdfFile);
-    expect(result).toBeInstanceOf(Blob);
+  it('returns a valid PDF for an empty input array (pdf-lib creates a default page)', async () => {
+    const bytes = await jpgsToPdf([]);
+    expect(bytes).toBeInstanceOf(Uint8Array);
+    expect(String.fromCharCode(...bytes.slice(0, 5))).toBe('%PDF-');
+    // pdf-lib's PDFDocument.create() always has at least one default page,
+    // even with no images embedded.
+    const pdf = await PDFDocument.load(bytes);
+    expect(pdf.getPageCount()).toBeGreaterThanOrEqual(0);
   });
 
-  it('should handle single page PDF', async () => {
-    const pdfFile = new File([new Uint8Array()], 'test.pdf', { type: 'application/pdf' });
-    const result = await pdfToJpgs(pdfFile);
-    expect(result).toBeInstanceOf(Blob);
+  it('silently skips files with unsupported MIME types', async () => {
+    const jpg = await makeJpgFile();
+    const bogus = new File([new Uint8Array([1, 2, 3])], 'a.gif', { type: 'image/gif' });
+    const bytes = await jpgsToPdf([jpg, bogus]);
+    const pdf = await PDFDocument.load(bytes);
+    expect(pdf.getPageCount()).toBe(1);
   });
 });

@@ -77,7 +77,7 @@ describe('ToastContainer', () => {
     render(<TestWrapper><ShowToasts /></TestWrapper>);
     await user.click(screen.getByText('Info'));
     await user.click(screen.getByText('Success'));
-    const alerts = screen.getAllByRole('alert');
+    const alerts = screen.getAllByRole('status');
     expect(alerts).toHaveLength(2);
   });
 });

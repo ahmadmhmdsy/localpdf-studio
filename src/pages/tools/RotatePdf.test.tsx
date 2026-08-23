@@ -44,14 +44,16 @@ describe('RotatePdf', () => {
 
   it('provides rotation angle options', async () => {
     renderWithProviders(<RotatePdf />);
-    
+
     const pdfFile = await generateDummyPdf(3, 'test.pdf');
     const input = screen.getByLabelText(/select PDF file/i);
-    
+
     await user.upload(input, pdfFile);
-    
+
     await waitFor(() => {
-      expect(screen.getByText(/90/i) || screen.getByText(/180/i) || screen.getByText(/270/i)).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /right \(90/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /upside down \(180/i })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /left \(270/i })).toBeInTheDocument();
     });
   });
 });

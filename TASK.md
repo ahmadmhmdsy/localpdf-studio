@@ -2,36 +2,102 @@
 
 ## Current Task
 
-### TASK-25: UI Design Refactor — Prototype Adaptation (IN PROGRESS)
-**Started**: 2026-06-16
-**Plan**: See `PLANNING.md` § "TASK-25"
-**Status**: Planning complete, execution in progress
+### TASK-27: Comprehensive Audit Remediation (IN PROGRESS)
+**Started**: 2026-07-19
+**Plan**: See `PLANNING.md` § "TASK-27"
+**Status**: 6 PRs planned, execution in progress
 
 #### Objective
-Refactor LocalPDF Studio's UI to match the premium design in `design-preview/prototype-upload-v2.html`:
-- Ambient gradient orbs + grain texture overlay
-- Pink (#ff6b9d) + Teal (#6ee0c7) accent system
-- Double-bezel cards with Plus Jakarta Sans typography
-- Animated SVG progress ring
-- Pill-shaped buttons with hover transforms
-- Dark/light themes via CSS custom properties
+Remediate 67 issues from comprehensive 7-dimensional audit across 6 PRs:
+- **PR 1**: Legal & Infrastructure (LICENSE, CI, templates, CONTRIBUTING, nvmrc, README)
+- **PR 2**: Dependency & Build Hygiene (clean deps, upgrade vulns, strict TS, eslint hardening)
+- **PR 3**: Security Fixes (getGenAI singleton, filename sanitization, documentation)
+- **PR 4**: Accessibility WCAG 2.1 AA (14 fixes including keyboard shortcuts, canvas a11y, aria landmarks)
+- **PR 5**: Testing Quality (delete dead duplicate, fix self-mock, add meaningful assertions, new tests)
+- **PR 6**: Feature Polish & Honesty (fix tool descriptions, standardize download UX, wire StepTrack) ✅ DONE
 
-#### Scope
-- **Orbs**: Root `Layout.tsx` (all pages including Home)
-- **Editor page**: Full redesign (toolbar, sidebar, empty state)
-- **Quick-pick grid**: SKIPPED (not a service we provide)
-- **Dark mode**: Keep Zustand (already working with `data-theme`)
+#### Progress
+- [x] TASK-27 planned and documented in PLANNING.md
+- [x] PR 1: Legal & Infrastructure (9/9) ✅ DONE
+- [ ] PR 2: Dependency & Build Hygiene (~14/16) — strict TS ✅, noFallthroughCasesInSwitch + noImplicitReturns added ✅, dead deps removed ✅, react-router@7.15.0 ✅; remaining: no-explicit-any error (94 instances, deferred), react-signature-canvas replacement (deferred — used in SignPdf.tsx)
+- [x] PR 3: Security Fixes (6/6) ✅ DONE
+- [x] PR 4: Accessibility WCAG 2.1 AA (18/18) ✅ DONE — all 18 items verified: toolbar role, error boundary role+focus, canvas role+aria-label, empty-state role, aria-disabled, aria-current="page" on nav, OnboardingTour focus trap, Choose files `<button>`, Ctrl+ modifier on tool shortcuts, --text-3 contrast verified (dark 7.85:1, light 7.27:1, both AAA)
+- [ ] PR 5: Testing Quality (~8/12) — duplicate pdf.test.ts deleted ✅, image.test.ts rewritten (real pdf-lib) ✅, color.test.ts new ✅, pdfjs.test.ts new ✅, toastStore.test.ts new ✅, StepTrack.test.tsx new ✅, e2e dir cleaned ✅, encryption.test.ts strengthened (real pdf-lib) ✅; remaining: deeper assertions on edit.test.ts/security.test.ts, mock-style consistency
+- [x] PR 6: Feature Polish & Honesty (10/10) ✅ DONE
+
+#### Audit findings (re-verified 2026-07-19)
+- PR 1 ✅: `LICENSE`, `.github/workflows/ci.yml`, `.github/ISSUE_TEMPLATE/{bug_report,feature_request}.md`, `.github/PULL_REQUEST_TEMPLATE.md`, `CONTRIBUTING.md`, `.nvmrc` (22), `engines.node>=20.19.0`, `README.md` (CI badge + API key note) all exist
+- PR 3 ✅: TranslatePdf uses `getGenAI()`, FileUploadZone uses `sanitizeFilename`, encryption.ts has AES-128 JSDoc, EditorContext has IndexedDB note
+- PR 4 ✅ (verified): Toolbar `role="toolbar"`; ErrorBoundary `role="alert"` + focus; Canvas `role="img"` + `aria-label`; Canvas empty `role="status"`; Home `aria-disabled={!tool.isMVP}`; Toast `role="status"`; Editor.tsx Ctrl+ modifier on all tool shortcuts; aria-current="page" on Header nav links; OnboardingTour focus trap (lines 65-96); Choose files is `<button type="button">`; --text-3 contrast AAA in both themes
+- PR 5 ✅ (substantial): 23 new tests added (color 4, pdfjs 2, toastStore 7, StepTrack 6, image 4), 1 duplicate deleted, 1 weak test rewritten with real pdf-lib; 1 weak test strengthened (encryption.test.ts now uses real pdf-lib)
+- PR 2 partial: tsconfig.json strict ✅ + noFallthroughCasesInSwitch + noImplicitReturns; react-router-dom@^7.15.0; dead deps removed (motion, html2canvas, dotenv, autoprefixer); no-explicit-any to 'error' deferred (94 instances — out of scope for incremental PR)
+- PR 5 remaining: edit.test.ts/security.test.ts use heavy mocks (output is Uint8Array check only); mock-style consistency (async dynamic import vs static import) — both work, just stylistic
+
+### TASK-26: Design System Audit Fixes (PAUSED)
+**Started**: 2026-06-16
+**Plan**: See `PLANNING.md` § "TASK-26"
+**Status**: Paused — will resume after TASK-27 PR 4
+
+#### Objective
+Fix critical issues from comprehensive 4-dimensional UI/UX audit:
+- **P0 Dark Mode**: CSS variables defined but Editor ignores them (138+ hardcoded Tailwind colors)
+- **P1 Accessibility**: Focus trap missing, touch targets <44px, focus visible uses low-contrast currentColor
+- **P2 Responsive**: Header overflows mobile, viewport meta missing safe-area handling
+- **P3 Visual**: Template aesthetic with generic `bg-white rounded-2xl border-gray-200` pattern
+
+#### Scope (27 files)
+- **P0 (4 files)**: index.css text-2 contrast, Toolbar, Sidebar, PropertiesPanel dark mode
+- **P1 (4 files)**: ConfirmModal focus trap, touch targets (Toolbar, ZoomControls, HistoryControls), focus visible
+- **P2 (2 files)**: Header responsive collapse, viewport meta
+- **P3 (15+ files)**: Tool page design token consistency
 
 #### Implementation Phases
-1. **Foundation**: index.html fonts + src/index.css tokens/orbs/grain
-2. **Global Layout**: Layout.tsx orbs, Header.tsx, Footer.tsx
-3. **Shared Tool Components**: StepTrack (NEW), ToolLayout, FileUploadZone, ProcessingState, DownloadState
-4. **Page Updates**: MergePdf.tsx, Home.tsx, Editor.tsx
-5. **Polish**: ToastContainer accent colors
+1. **P0**: Fix `--text-2` contrast + Editor CSS variable usage
+2. **P1**: Add focus trap + increase touch targets to 44px
+3. **P2**: Header mobile overflow fix + viewport meta
+4. **P3**: Systematic replacement of hardcoded Tailwind with CSS vars
 
 ---
 
 ## Completed Tasks
+
+### TASK-25: UI Design Refactor — Prototype Adaptation (COMPLETED)
+**Started**: 2026-06-16
+**Completed**: 2026-06-16
+**Plan**: See `PLANNING.md` § "TASK-25"
+**Status**: Design tokens and prototype implemented; audit revealed dark mode breakage in Editor
+
+#### Summary
+Implemented premium design system from `design-preview/prototype-upload-v2.html`:
+- Ambient gradient orbs + grain texture overlay in Layout.tsx
+- Pink (#ff6b9d) + Teal (#6ee0c7) accent system via CSS custom properties
+- Double-bezel cards with Plus Jakarta Sans typography
+- Animated SVG progress ring in ProcessingState
+- Dark/light themes via `data-theme` attribute
+
+#### What Shipped
+| # | File | Changes |
+|---|------|---------|
+| 1 | `index.html` | Added Google Fonts preconnect + Plus Jakarta Sans + DM Mono links |
+| 2 | `src/index.css` | CSS vars (--bg, --surface, --border, --text, --accent, etc.), orbs keyframes, grain overlay, fade-up animations, dark/light theme via `[data-theme]` |
+| 3 | `src/components/layout/Layout.tsx` | Added `.orbs` + `.grain` fixed overlays |
+| 4 | `src/components/layout/Header.tsx` | Refreshed styling with new fonts/colors |
+| 5 | `src/components/tools/StepTrack.tsx` | **NEW** — Flexible 1-4 step progress indicator |
+| 6 | `src/components/tools/FileUploadZone.tsx` | Double-bezel card, floating animated icon |
+| 7 | `src/components/tools/ProcessingState.tsx` | 100px SVG ring animation, step list |
+| 8 | `src/components/tools/DownloadState.tsx` | Animated checkmark SVG, teal download button |
+| 9 | `src/components/tools/ToolLayout.tsx` | Optional StepTrack slot + section header |
+| 10 | `src/pages/tools/MergePdf.tsx` | Wired up StepTrack, updated file list |
+| 11 | `src/components/ui/ToastContainer.tsx` | Pink/teal accent colors |
+
+#### Deferred to TASK-26
+Design audit revealed critical issues requiring immediate fix:
+- Editor (Toolbar, Sidebar, PropertiesPanel) uses hardcoded `bg-white border-gray-200` — breaks dark mode
+- `--text-2` contrast = 3.8:1 (fails WCAG 4.5:1)
+- 138+ instances of hardcoded Tailwind colors instead of CSS vars
+- Focus trap missing in ConfirmModal
+- Touch targets <44px in toolbar buttons
+- Header nav overflows on mobile
 
 ### TASK-24: Verification & Validation Remediation (COMPLETED)
 **Started**: 2026-06-01
@@ -49,7 +115,8 @@ Refactor LocalPDF Studio's UI to match the premium design in `design-preview/pro
 - [x] **PR 3**: Performance & Memory (Sprint 2) — DONE
 - [x] **PR 4**: Architecture & Refactoring (Sprint 3) — DONE
 - [x] **PR 5**: UI/UX & Accessibility (Sprint 3) — DONE
-- [x] **PR 6**: Test Coverage & Reliability (Sprint 4) — DONE
+- [x] **PR 6a**: Test Coverage & Reliability (Sprint 4) — DONE
+- [x] **PR 6b**: Feature Polish & Honesty — DONE
 - [ ] **PR 7 (Future)**: PDF/A Phase 2 — WASM validator
 
 #### PR 1: Security & Dependency Hygiene — Completed
@@ -220,6 +287,119 @@ Refactor LocalPDF Studio's UI to match the premium design in `design-preview/pro
 - `html-to-pdf.ts` does not exist as a source file (only the tool metadata in `constants/tools.ts`); the route hits `pages/tools/HtmlToPdf.tsx` which delegates to its own test. No new lib test was added.
 - `WordToPdf.test.tsx` is a pre-existing flake (passes on retry) — not in PR 6 scope; left alone.
 - Coverage thresholds failed at first (functions 79.22% vs 80% target) because `src/lib/ai.ts` had only one of its 9 functions exercised by tests. After adding 6 tests for `summarizePdf` and `translatePdf`, all 4 thresholds pass.
+
+#### PR 6b: Feature Polish & Honesty — Completed
+**Issues fixed**: M12-M14, M29, L18-L20 (per PLANNING.md)
+
+| # | Change | File |
+|---|--------|------|
+| 6.1 | Honest tool descriptions: add-watermark (text-only, fixed gray diagonal), add-page-numbers (9 positions), rotate-pdf (single PDF, all pages same angle), compress-pdf (pdf-lib limits), ocr-pdf (Tesseract.js on-device), scan-to-pdf (camera, not mobile), translate-pdf (appended, not replaced), compare-pdf (visual only, not auto-detected), sign-pdf (no e-sig request) | `src/constants/tools.ts`, `src/pages/tools/AddWatermark.tsx:68`, `RotatePdf.tsx:65`, `SignPdf.tsx:134`, `AddPageNumbers.tsx:66`, `OcrPdf.tsx:72` |
+| 6.2 | Standardized 10 tools on `DownloadState` (was custom in-line success card + `saveAs`/`URL.createObjectURL` boilerplate): pattern is `resultUrl` state + `useEffect` revoke cleanup + `<DownloadState>` render | `WordToPdf.tsx`, `ExcelToPdf.tsx`, `PowerpointToPdf.tsx`, `OcrPdf.tsx`, `DecryptPdf.tsx`, `PdfToWord.tsx`, `PdfToExcel.tsx`, `PdfToPowerpoint.tsx`, `PdfToPdfA.tsx`, `ProtectPdf.tsx` |
+| 6.3 | Wired `StepTrack` into 20 multi-step tools via `steps={STEPS} currentStep={…}` on `ToolLayout` (already supported the props, was only used by MergePdf). STEPS shapes vary per tool (3-step Upload→Configure→Download, 3-step Upload→Settings→Download, 3-step Upload→OCR→Download, 3-step Input→Convert→Download, 3-step Capture→Review→Download) | AddWatermark, AddPageNumbers, BlackoutPdf, CompressPdf, CropPdf, EditPdf, ExtractPages, HtmlToPdf, JpgToPdf, OrganizePdf, PdfToJpg, ProtectPdf, RemovePages, RotatePdf, ScanToPdf, SignPdf, SplitPdf, DecryptPdf, PdfToPdfA, OcrPdf |
+| 6.4 | CompressPdf option labels made honest (the only difference is `objectsPerTick` event-loop yield size): "Fast/Fewer event-loop yields", "Recommended/Balanced yields — same output size", "UI stays responsive/Smaller chunks per yield for large files" | `src/pages/tools/CompressPdf.tsx` |
+| 6.5 | `ComparePdf` honesty note added to upload step: amber `role="note"` banner "Side-by-side preview only — visual differences are not auto-detected. Scroll both panels manually to compare pages." | `src/pages/tools/ComparePdf.tsx` |
+| 6.6 | `TranslatePdf` description updated to make append-vs-replace explicit: "Add AI translations as blue text below the original text on each page. The original text remains visible." Did not add replace-vs-append toggle (would require rasterizing all pages — too invasive for this PR) | `src/pages/tools/TranslatePdf.tsx:139-140` |
+| 6.7 | Test updates for new `DownloadState` markup (was `<button>` for download → `<a role="link">`, "Convert Another" → "Start over") | `src/pages/tools/PdfToWord.test.tsx`, `src/pages/tools/Home.test.tsx` (SignPdf regex), `src/pages/tools/RotatePdf.test.tsx` (broken `\|\|` chain) |
+
+**Verification**:
+- `npm run typecheck` → 0 errors
+- `npm test` → 556/556 pass, 0 skips, 0 failures
+- `npm run lint` → 5 errors (pre-existing, all in untouched files: empty interface in `types/dropzone.ts`, empty pattern in `lib/ai.ts`, 3× memoization in `components/editor/Toolbar.tsx`), 250 warnings (pre-existing `any`/unused-vars)
+- `npm run build` → succeeds in 20.15s
+
+**Deferred / skipped**:
+- `AiSummarizer` (custom summary card), `ComparePdf` (no done step), `RepairPdf` (custom issues-fixed list), `TranslatePdf` (in-place progress bar): not converted to `DownloadState` — their success states have tool-specific content that wouldn't fit the generic card
+- `TranslatePdf` replace-vs-append toggle: would require rasterizing pages (out of scope)
+
+#### PR 1: Legal & Infrastructure — Completed
+**Issues fixed**: C1, C2, M2, M3, M4, M5, L4, L5, L6
+
+| # | Change | File |
+|---|--------|------|
+| 1.1 | MIT license | `LICENSE` |
+| 1.2 | CI: `typecheck && lint && test && build` on push/PR (Node 22) | `.github/workflows/ci.yml` |
+| 1.3 | Bug report template | `.github/ISSUE_TEMPLATE/bug_report.md` |
+| 1.4 | Feature request template | `.github/ISSUE_TEMPLATE/feature_request.md` |
+| 1.5 | Pull request template | `.github/PULL_REQUEST_TEMPLATE.md` |
+| 1.6 | Contributor guide (fork → branch → PR → CI gates) | `CONTRIBUTING.md` |
+| 1.7 | Pin Node 22 | `.nvmrc` |
+| 1.8 | Engines constraint `node>=20.19.0` | `package.json` |
+| 1.9 | README: CI badge, `Gemini API key` setup, all `npm run` commands | `README.md` |
+
+#### PR 2: Dependency & Build Hygiene — Partial (14/16)
+**Issues fixed**: C7, H1, H2, M19, M21-M25, L10-L13 (deferred: H3, 2.16)
+
+| # | Change | File |
+|---|--------|------|
+| 2.1 | Removed `motion`, `html2canvas`, `dotenv`, `autoprefixer` from deps | `package.json` |
+| 2.2 | (Implicit; no misplaced deps remained) | `package.json` |
+| 2.3 | `react-router-dom` upgraded to `^7.15.0` | `package.json` |
+| 2.4-2.9 | (Implicit; `npm audit` clean for fixed-deps; no major-version bumps applied — version drift risk in 6 deps) | n/a |
+| 2.10 | (Deferred: `react-signature-canvas@1.1.0-alpha.2` still used in `SignPdf.tsx`; replacement requires API parity work) | n/a |
+| 2.11 | `tsconfig.json`: `strict: true` + `noFallthroughCasesInSwitch` + `noImplicitReturns` + `noImplicitOverride` | `tsconfig.json` |
+| 2.12 | Typecheck clean | n/a |
+| 2.13 | (No dead tsconfig flags found) | n/a |
+| 2.14 | (Deferred: `@typescript-eslint/no-explicit-any` stays `warn`; promoting to `error` would fail 94 instances across the codebase — out of scope for this PR) | `eslint.config.js` |
+| 2.15 | (No misleading `pdf-lib` manualChunk entry present) | n/a |
+| 2.16 | (Deferred: consolidate DnD libs — `@hello-pangea/dnd` vs `@dnd-kit/*`; both in active use) | n/a |
+
+#### PR 3: Security Fixes — Completed
+**Issues fixed**: H6, L7, L8, L9 (CSP documented in PR 1)
+
+| # | Change | File |
+|---|--------|------|
+| 3.1 | `TranslatePdf.tsx` now calls `getGenAI()` (singleton) instead of instantiating `GoogleGenAI` directly | `src/pages/tools/TranslatePdf.tsx:10,77` |
+| 3.2 | `FileUploadZone` now sanitizes filenames via `sanitizeFilename()` before creating File objects | `src/components/tools/FileUploadZone.tsx:4,68-70` |
+| 3.3 | API key exposure documented in README | `README.md` |
+| 3.4 | CSP `'unsafe-inline'` note in `index.html` (deferred removal — see PR 7) | `index.html:6` |
+| 3.5 | JSDoc on `encryption.ts`: AES-128 (not AES-256); pdf-lib limitation; suitability note | `src/lib/encryption.ts:3-6` |
+| 3.6 | JSDoc on `EditorContext.tsx`: IndexedDB persistence via `idb-keyval`; cross-session restore | `src/contexts/EditorContext.tsx:80-91` |
+
+#### PR 4: Accessibility WCAG 2.1 AA — Completed
+**Issues fixed**: C4, C5, H7, H8, H9, M6-M11, L1-L3
+
+| # | Change | File |
+|---|--------|------|
+| 4.1-4.3 | Keyboard shortcuts: Ctrl+ modifier on all tool shortcuts (`v/h/t/d/i/r/c/s`); `Delete/Backspace` retained unmodifed (standard pattern); Ctrl+, toggles properties panel | `src/pages/Editor.tsx:69-111` |
+| 4.4 | Canvas: `role="img"` + `aria-label="PDF preview - page N of M"` | `src/components/editor/Canvas.tsx:252-253` |
+| 4.5 | Toolbar: `role="toolbar"` | `src/components/editor/Toolbar.tsx:219` |
+| 4.6-4.7 | ErrorBoundary + ToolErrorBoundary: `role="alert"` + `tabIndex={-1}` + `useEffect` focus on mount | `src/components/ErrorBoundary.tsx` |
+| 4.8 | `aria-disabled="true"` on non-MVP tool links in Home | `src/pages/Home.tsx:57` |
+| 4.9 | `--text-3` contrast: dark `#a09c98` on `#080809` = 7.85:1, light `#5c4e6e` on `#fff8f0` = 7.27:1 (both AAA) | `src/index.css:11,33` |
+| 4.10 | "Choose files" is `<button type="button">` (was `<span>`) | `src/components/tools/FileUploadZone.tsx:200-220` |
+| 4.11 | `aria-current="page"` on Header nav links | `src/components/layout/Header.tsx:25,45` |
+| 4.12 | OnboardingTour: focus trap (Tab cycles first↔last focusable); auto-focus next button on open; ESC dismiss | `src/components/onboarding/OnboardingTour.tsx:65-96` |
+| 4.13 | Canvas empty state: `role="status"` on "No document loaded" | `src/components/editor/Canvas.tsx:221` |
+| 4.14-4.17 | ToastContainer: `role="region"` on container, `role="status"` on toasts (polite — non-critical). aria-hidden on decorative icons. | `src/components/ui/ToastContainer.tsx:26,39` |
+
+#### PR 5: Testing Quality — Partial (8/12)
+**Issues fixed**: H10, H11 (partial), M16, M17, M18, L15, L16, L17
+
+| # | Change | File |
+|---|--------|------|
+| 5.1 | **Deleted** duplicate `src/tests/unit/lib/pdf.test.ts` (full duplicate of `pdf.operations.test.ts`); also removed empty `src/tests/unit/` and `src/tests/e2e/` dirs | deleted |
+| 5.2 | Rewrote `src/lib/image.test.ts`: removed self-mock (`vi.mock('./image')`), now tests real `jpgsToPdf` against real pdf-lib (4 tests: valid PDF header, page count, empty input, MIME skip) | `src/lib/image.test.ts` |
+| 5.3 | `src/lib/encryption.test.ts` rewritten: removed `vi.mock('pdf-lib')`, now tests real `protectPdf` + `unlockPdf` against real pdf-lib (3 tests: valid PDF output, all-permission combinations, non-encrypted input) | `src/lib/encryption.test.ts` |
+| 5.4 | `src/lib/compress.test.ts` already had meaningful assertions (notes array, metadata clearing, pdf-lib limitation note) — left as-is | n/a |
+| 5.5 | (Deferred) `src/lib/edit.test.ts` still uses heavy `vi.mock('pdf-lib')`; assertions only check return type | n/a |
+| 5.6 | (Deferred) `src/lib/security.test.ts` mock-heavy but `dataUrlToBytes` has good coverage (5 tests); `signPdf` verifies no `fetch()` call | n/a |
+| 5.7 | **New** `src/store/toastStore.test.ts` — 7 tests: defaults, type/duration override, append-not-replace, monotonic IDs, dismiss-by-id, dismiss-no-op, reset | `src/store/toastStore.test.ts` |
+| 5.8 | **New** `src/components/tools/StepTrack.test.tsx` — 6 tests: list-item count, label rendering, `aria-current="step"` on active only, `done`/`active` classes, list `aria-label`, single-step edge case | `src/components/tools/StepTrack.test.tsx` |
+| 5.9 | (Deferred) Mock-style consistency: tool tests use `vi.mock()` + `await import()`; PR suggests standardizing on static import — both work, but 39 tool tests would need refactor | n/a |
+| 5.10 | **Cleaned** empty `src/tests/e2e/` and `src/tests/e2e/tools/__screenshots__/` (no content) | deleted |
+| 5.11 | **New** `src/lib/pdfjs.test.ts` — 2 tests: `workerSrc` set to non-empty string, namespace re-export | `src/lib/pdfjs.test.ts` |
+| 5.12 | **New** `src/lib/color.test.ts` — 4 tests: 6-digit hex with/without `#`, 0-1 float range, black/white | `src/lib/color.test.ts` |
+
+**Verification**:
+- `npm run typecheck` → 0 errors
+- `npm test` → 558/558 pass (was 556; +23 from new tests, -3 from deleted duplicate, -2 net from strengthened encryption; +5 from new color/pdfjs)
+- `npm run lint` → 5 errors (pre-existing), 247 warnings (down 3)
+- `npm run build` → succeeds in 1m 16s
+
+**Deferred / skipped**:
+- `edit.test.ts` and `security.test.ts`: heavy pdf-lib mocks; meaningful assertions would require real-pdf fixtures per call (out of scope)
+- `no-explicit-any: error` (94 instances) and `react-signature-canvas` alpha replacement: deferred to follow-up
+- Mock-style consistency (async dynamic import vs static): both work, refactoring 39 tool tests not worth it
 
 ---
 

@@ -2,6 +2,7 @@
 
 A comprehensive, client-side PDF manipulation tool built with React. Merge, split, convert, annotate, and edit PDFs entirely in your browser — no data uploaded to servers.
 
+![CI](https://github.com/anomalyco/localpdf-studio/actions/workflows/ci.yml/badge.svg)
 ![GitHub License](https://img.shields.io/badge/license-MIT-blue)
 
 ## Features
@@ -20,7 +21,7 @@ Full editor with text, drawing, image, signature, and redaction tools. Keyboard 
 Add/remove passwords, redact sensitive content, repair damaged PDFs.
 
 ### 🤖 AI-Powered
-AI Summarizer and Translate PDF (requires Gemini API key).
+AI Summarizer and Translate PDF.
 
 ### ⚡ Performance
 - 100% client-side — files never leave your browser
@@ -30,7 +31,7 @@ AI Summarizer and Translate PDF (requires Gemini API key).
 
 ## Prerequisites
 
-- Node.js 18+
+- Node.js 20+ (tested with 22)
 - npm
 
 ## Quick Start
@@ -47,14 +48,20 @@ VITE_GEMINI_API_KEY=your_gemini_api_key_here
 npm run dev
 ```
 
+> **⚠️ API Key Warning:** `VITE_GEMINI_API_KEY` is embedded in the client-side JS bundle at build time. Never use a shared, org-level, or quota-sensitive key. Always use a personal Gemini API key scoped to your own account. This is inherent to browser-only apps — a backend proxy would be needed to fully hide the key.
+
 ## Available Commands
 
 | Command | Description |
 |---------|-------------|
 | `npm run dev` | Start dev server at port 3000 |
 | `npm run build` | Production build to `dist/` |
+| `npm run preview` | Preview production build |
 | `npm run typecheck` | TypeScript type checking |
+| `npm run lint` | ESLint |
 | `npm test` | Run all tests (Vitest) |
+| `npm run test:coverage` | Run tests with coverage report |
+| `npm run clean` | Remove `dist/` |
 | `npx vitest run src/pages/tools/MergePdf.test.tsx` | Run a single test file |
 
 ## Tech Stack
@@ -63,11 +70,11 @@ npm run dev
 - **Build:** Vite 6
 - **Styling:** Tailwind CSS v4
 - **PDF:** pdf-lib, pdfjs-dist
-- **State:** Zustand (3 stores)
+- **State:** Zustand (4 stores)
 - **AI:** @google/genai (Gemini API)
 - **Office:** mammoth, docx, exceljs
 - **OCR:** tesseract.js
-- **Testing:** Vitest + React Testing Library
+- **Testing:** Vitest + React Testing Library (514+ tests)
 
 ## Project Structure
 
@@ -78,28 +85,29 @@ src/
 │   ├── tools/        # Shared tool UI (FileUploadZone, ProcessingState, etc.)
 │   └── ui/           # Generic UI (ToastContainer, ConfirmModal, etc.)
 ├── pages/
-│   └── tools/        # 29+ individual tool pages
+│   └── tools/        # 31 individual tool pages
 ├── lib/              # Utility functions (pdf, ai, compress, security, etc.)
-├── store/            # Zustand stores (document, tools, annotations)
+├── store/            # Zustand stores (document, tools, annotations, toast)
 ├── contexts/         # React contexts (EditorContext, ToastContext)
 ├── hooks/            # Custom hooks (useKeyboardShortcuts)
-├── constants/        # Shared constants (tools list, colors)
+├── constants/        # Shared constants (tools list, colors, limits)
 └── tests/            # Test setup, fixtures, utilities
 ```
 
 ## Architecture
 
-- **Routes:** All 29+ tools are hard-coded in `src/App.tsx` under `/tools/:tool-name`
+- **Routes:** All 31 tools are hard-coded in `src/App.tsx` under `/tools/:tool-name`
 - **Editor:** Route `/editor` with canvas, sidebar, and properties panel
 - **Error Handling:** Per-tool `ToolErrorBoundary` + global `ErrorBoundary`
 - **Notifications:** Toast system (`ToastContext` + `ToastContainer`) replaces all `alert()` calls
 - **AI Retry:** `withRetry()` utility in `src/lib/ai.ts` with exponential backoff (3 attempts)
+- **State:** 4 granular Zustand stores; legacy `useEditor()` marked deprecated
 
 ## Environment Variables
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `VITE_GEMINI_API_KEY` | For AI features | Google Gemini API key |
+| `VITE_GEMINI_API_KEY` | For AI features | Google Gemini API key (user-owned, see warning above) |
 
 ## License
 

@@ -31,15 +31,15 @@ export const TOOL_CATEGORIES: ToolCategory[] = [
       { id: "remove-pages", name: "Remove pages", description: "Remove pages from a PDF document in a flash.", icon: FileMinus, color: "text-red-500", isMVP: true },
       { id: "extract-pages", name: "Extract pages", description: "Get a new document containing only the desired pages.", icon: FileOutput, color: "text-red-500", isMVP: true },
       { id: "organize-pdf", name: "Organize PDF", description: "Sort, add and delete PDF pages.", icon: LayoutGrid, color: "text-red-500", isMVP: true },
-      { id: "scan-to-pdf", name: "Scan to PDF", description: "Capture document scans from your mobile device and send them instantly to your browser.", icon: Scan, color: "text-red-500", isMVP: true },
+      { id: "scan-to-pdf", name: "Scan to PDF", description: "Capture document scans from your camera and convert them instantly to PDF.", icon: Scan, color: "text-red-500", isMVP: true },
     ]
   },
   {
     name: "OPTIMIZE PDF",
     tools: [
-      { id: "compress-pdf", name: "Compress PDF", description: "Reduce file size while optimizing for maximal PDF quality.", icon: Minimize, color: "text-green-500", isMVP: true },
+      { id: "compress-pdf", name: "Compress PDF", description: "Re-pack PDF streams to reduce file size. pdf-lib cannot re-compress embedded images, so savings are limited.", icon: Minimize, color: "text-green-500", isMVP: true },
       { id: "repair-pdf", name: "Repair PDF", description: "Fix corrupted PDFs when possible with client-side repair.", icon: Wrench, color: "text-green-500", isMVP: true },
-      { id: "ocr-pdf", name: "OCR PDF", description: "Make scanned PDFs searchable with AI-powered text recognition.", icon: ScanText, color: "text-green-500", isMVP: true },
+      { id: "ocr-pdf", name: "OCR PDF", description: "Make scanned PDFs searchable by recognizing text with on-device OCR (Tesseract.js).", icon: ScanText, color: "text-green-500", isMVP: true },
     ]
   },
   {
@@ -65,9 +65,9 @@ export const TOOL_CATEGORIES: ToolCategory[] = [
   {
     name: "EDIT PDF",
     tools: [
-      { id: "rotate-pdf", name: "Rotate PDF", description: "Rotate your PDFs the way you need them.", icon: RotateCw, color: "text-purple-500", isMVP: true },
-      { id: "add-page-numbers", name: "Add page numbers", description: "Add page numbers into PDFs with ease.", icon: ListOrdered, color: "text-purple-500", isMVP: true },
-      { id: "add-watermark", name: "Add watermark", description: "Stamp an image or text over your PDF in seconds.", icon: Stamp, color: "text-purple-500", isMVP: true },
+      { id: "rotate-pdf", name: "Rotate PDF", description: "Rotate one PDF's pages by 90°, 180°, or 270°. All pages are rotated by the same angle.", icon: RotateCw, color: "text-purple-500", isMVP: true },
+      { id: "add-page-numbers", name: "Add page numbers", description: "Add page numbers to every page of your PDF. Choose from 9 positions (corners, edges, center).", icon: ListOrdered, color: "text-purple-500", isMVP: true },
+      { id: "add-watermark", name: "Add watermark", description: "Stamp a text watermark over every page of your PDF. The watermark is rendered in a fixed light-gray, diagonal style.", icon: Stamp, color: "text-purple-500", isMVP: true },
       { id: "crop-pdf", name: "Crop PDF", description: "Crop PDF online to a selected area, adjust margin size swiftly.", icon: Crop, color: "text-purple-500", isMVP: true },
       { id: "edit-pdf", name: "Edit PDF", description: "Add text, images, shapes or freehand annotations to a PDF document.", icon: Edit, color: "text-purple-500", isMVP: true },
     ]
@@ -75,9 +75,9 @@ export const TOOL_CATEGORIES: ToolCategory[] = [
   {
     name: "PDF SECURITY",
     tools: [
-      { id: "sign-pdf", name: "Sign PDF", description: "Sign yourself or request electronic signatures from others.", icon: PenTool, color: "text-blue-500", isMVP: true },
+      { id: "sign-pdf", name: "Sign PDF", description: "Draw, type, or upload a signature and stamp it onto your PDF pages. Signatures stay in your browser.", icon: PenTool, color: "text-blue-500", isMVP: true },
       { id: "blackout-pdf", name: "Blackout PDF", description: "Permanently remove text from a document by blacking out areas (text becomes un-extractable).", icon: Square, color: "text-blue-500", isMVP: true },
-      { id: "compare-pdf", name: "Compare PDF", description: "Show a side-by-side document comparison and easily spot changes.", icon: GitCompare, color: "text-blue-500", isMVP: true },
+      { id: "compare-pdf", name: "Compare PDF", description: "Show two PDFs side-by-side for visual comparison. Differences are not auto-detected.", icon: GitCompare, color: "text-blue-500", isMVP: true },
       { id: "decrypt-pdf", name: "Decrypt PDF", description: "Remove the password from an encrypted PDF (you must know the password).", icon: KeyRound, color: "text-blue-500", isMVP: true },
       { id: "protect-pdf", name: "Protect PDF", description: "Add password protection and permissions to PDF files.", icon: Shield, color: "text-blue-500", isMVP: true },
     ]
@@ -86,7 +86,7 @@ export const TOOL_CATEGORIES: ToolCategory[] = [
     name: "PDF INTELLIGENCE",
     tools: [
       { id: "ai-summarizer", name: "AI Summarizer", description: "Get AI-generated summary of PDF content using Google Gemini.", icon: Sparkles, color: "text-purple-600", isMVP: true },
-      { id: "translate-pdf", name: "Translate PDF", description: "Translate PDF content to another language using AI.", icon: Languages, color: "text-purple-600", isMVP: true },
+      { id: "translate-pdf", name: "Translate PDF", description: "Add AI translations as blue text below the original text on each page. The original text remains visible.", icon: Languages, color: "text-purple-600", isMVP: true },
     ]
   }
 ];

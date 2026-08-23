@@ -2,6 +2,8 @@ import { Link } from 'react-router-dom';
 import { TOOL_CATEGORIES } from '../constants/tools';
 import { cn } from '../lib/utils';
 import { useToast } from '../contexts/ToastContext';
+import { useToolsStore } from '../store/toolsStore';
+import HomeBento from './home/HomeBento';
 
 const EDITOR_INTEGRATED_TOOLS = [
   'organize-pdf',
@@ -16,7 +18,14 @@ const EDITOR_INTEGRATED_TOOLS = [
 ];
 
 export default function Home() {
+  const skin = useToolsStore((s) => s.skin);
   const { showToast } = useToast();
+
+  // Bento skin has its own topbar / hero / privacy block inside the
+  // main column (the sidebar is rendered by Layout.tsx). Render it whole.
+  if (skin === 'bento') {
+    return <HomeBento />;
+  }
 
   return (
     <div className="container mx-auto px-4 pt-24 pb-12">
@@ -54,6 +63,7 @@ export default function Home() {
                         "group relative rounded-[28px] border border-white/5 bg-[var(--surface)]/5 p-1.5 transition-all hover:bg-[var(--surface)]/10",
                         !tool.isMVP && "opacity-60 grayscale cursor-not-allowed hover:bg-[var(--surface)]/5"
                       )}
+                      aria-disabled={!tool.isMVP ? true : undefined}
                       onClick={(e) => {
                         if (!tool.isMVP) {
                           e.preventDefault();

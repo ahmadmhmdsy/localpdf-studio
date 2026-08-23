@@ -54,4 +54,28 @@ describe('Layout', () => {
     );
     expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
   });
+
+  it('sets data-skin="glass" by default and renders Header', async () => {
+    useToolsStore.setState({ skin: 'glass', hydrated: true });
+    render(
+      <BrowserRouter>
+        <Layout />
+      </BrowserRouter>
+    );
+    expect(document.documentElement.getAttribute('data-skin')).toBe('glass');
+    expect(screen.getByText('LocalPDF Studio')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Primary')).toBeNull();
+  });
+
+  it('sets data-skin="bento" and renders Sidebar when skin is bento', async () => {
+    useToolsStore.setState({ skin: 'bento', hydrated: true });
+    render(
+      <BrowserRouter>
+        <Layout />
+      </BrowserRouter>
+    );
+    expect(document.documentElement.getAttribute('data-skin')).toBe('bento');
+    expect(screen.getByLabelText('Primary')).toBeInTheDocument();
+    expect(screen.getByText('All Tools')).toBeInTheDocument();
+  });
 });

@@ -5,6 +5,7 @@ import { BrowserRouter } from 'react-router-dom';
 import Home from '../pages/Home';
 import { ToastProvider } from '../contexts/ToastContext';
 import ToastContainer from '../components/ui/ToastContainer';
+import { useToolsStore } from '../store/toolsStore';
 
 vi.mock('../contexts/ToastContext', async () => {
   const actual = await vi.importActual('../contexts/ToastContext');
@@ -34,6 +35,7 @@ describe('Home', () => {
 
   beforeEach(() => {
     user = userEvent.setup();
+    useToolsStore.setState({ skin: 'glass' });
   });
 
   describe('Header', () => {
@@ -132,7 +134,7 @@ describe('Home', () => {
 
     it('links Sign PDF to /editor?tool=sign-pdf', () => {
       renderHome();
-      const link = screen.getByRole('link', { name: /sign PDF sign yourself/i });
+      const link = screen.getByRole('link', { name: /sign PDF draw/i });
       expect(link).toHaveAttribute('href', '/editor?tool=sign-pdf');
     });
   });

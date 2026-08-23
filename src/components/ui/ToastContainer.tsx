@@ -36,9 +36,9 @@ export default function ToastContainer() {
           <div
             key={toast.id}
             className={`${styles.container} border rounded-[var(--radius-md)] shadow-lg p-4 flex items-start gap-3 sm:min-w-[300px] animate-in slide-in-from-right fade-in duration-200 pointer-events-auto`}
-            role="alert"
+            role="status"
           >
-            <Icon className={`w-5 h-5 ${iconColor} flex-shrink-0 mt-0.5`} />
+            <Icon className={`w-5 h-5 ${iconColor} flex-shrink-0 mt-0.5`} aria-hidden="true" />
             <div className="flex-1 text-sm" style={{ color: 'var(--text)' }}>{toast.message}</div>
             <button
               onClick={() => dismissToast(toast.id)}

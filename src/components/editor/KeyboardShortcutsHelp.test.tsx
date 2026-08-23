@@ -46,14 +46,14 @@ describe('KeyboardShortcutsHelp', () => {
   it('displays Tools shortcuts', () => {
     render(<KeyboardShortcutsHelp isOpen={true} onClose={mockOnClose} />);
     expect(screen.getByText('Tools')).toBeInTheDocument();
-    expect(screen.getByText('V')).toBeInTheDocument();
-    expect(screen.getByText('H')).toBeInTheDocument();
-    expect(screen.getByText('T')).toBeInTheDocument();
-    expect(screen.getByText('D')).toBeInTheDocument();
-    expect(screen.getByText('I')).toBeInTheDocument();
-    expect(screen.getByText('R')).toBeInTheDocument();
-    expect(screen.getByText('C')).toBeInTheDocument();
-    expect(screen.getByText('S')).toBeInTheDocument();
+    expect(screen.getByText('Ctrl+V')).toBeInTheDocument();
+    expect(screen.getByText('Ctrl+H')).toBeInTheDocument();
+    expect(screen.getByText('Ctrl+T')).toBeInTheDocument();
+    expect(screen.getByText('Ctrl+D')).toBeInTheDocument();
+    expect(screen.getByText('Ctrl+I')).toBeInTheDocument();
+    expect(screen.getByText('Ctrl+R')).toBeInTheDocument();
+    expect(screen.getByText('Ctrl+C')).toBeInTheDocument();
+    expect(screen.getByText('Ctrl+S')).toBeInTheDocument();
   });
 
   it('calls onClose when close button clicked', async () => {

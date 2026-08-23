@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { cn } from './utils';
+import { cn, sanitizeFilename } from './utils';
 
 describe('cn', () => {
   it('merges class names', () => {
@@ -36,5 +36,27 @@ describe('cn', () => {
 
   it('handles mixed types', () => {
     expect(cn('base', ['a', 'b'], { 'c': true, 'd': false }, null, undefined)).toBe('base a b c');
+  });
+});
+
+describe('sanitizeFilename', () => {
+  it('strips leading directory traversal on Unix', () => {
+    expect(sanitizeFilename('../../../etc/passwd')).toBe('passwd');
+  });
+
+  it('strips leading directory traversal on Windows', () => {
+    expect(sanitizeFilename('..\\..\\Windows\\system32\\evil.exe')).toBe('evil.exe');
+  });
+
+  it('preserves normal filenames', () => {
+    expect(sanitizeFilename('report.pdf')).toBe('report.pdf');
+  });
+
+  it('preserves filenames with spaces', () => {
+    expect(sanitizeFilename('my report (2).pdf')).toBe('my report (2).pdf');
+  });
+
+  it('removes null bytes', () => {
+    expect(sanitizeFilename('file\x00.pdf')).toBe('file.pdf');
   });
 });

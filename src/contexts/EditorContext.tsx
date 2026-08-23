@@ -77,6 +77,10 @@ export interface DrawAnnotation {
 
 export type Annotation = TextAnnotation | ImageAnnotation | RedactAnnotation | CropAnnotation | DrawAnnotation;
 
+/** Persists editor state (file buffer, annotations history) to IndexedDB.
+ *  On mount, restores the previous session from IndexedDB if available.
+ *  Uses `idb-keyval` for simple key-value storage. Data persists across
+ *  browser sessions until cleared (no automatic expiry). */
 export function EditorProvider({ children }: { children: ReactNode }) {
   const setDocument = useDocumentStore(state => state.setFile);
   const setPdfDocs = useDocumentStore(state => state.setPdfDocs);

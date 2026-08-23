@@ -71,7 +71,7 @@ global.Blob = class MockBlob extends Blob {
   constructor(parts?: any, options?: any) {
     super(parts, options);
   }
-  bytes() { return Promise.resolve(new Uint8Array()); }
+  override bytes() { return Promise.resolve(new Uint8Array()); }
 } as any;
 
 // Mock canvas context

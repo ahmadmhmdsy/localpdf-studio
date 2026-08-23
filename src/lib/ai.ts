@@ -8,7 +8,7 @@ interface TextItemWithString extends TextItem {
 
 let genAI: GoogleGenAI | null = null;
 
-function getGenAI(): GoogleGenAI {
+export function getGenAI(): GoogleGenAI {
   if (!genAI) {
     const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
     if (!apiKey) {

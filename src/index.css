@@ -7,7 +7,7 @@
   --border: rgba(255,255,255,0.07);
   --border-glow: rgba(255,107,157,0.35);
   --text: #f0ece6;
-  --text-2: #a8a4a0;
+  --text-2: #b8b4b0;
   --text-3: #a09c98;
   --accent: #ff6b9d;
   --accent-dim: rgba(255,107,157,0.15);
@@ -34,7 +34,7 @@
   --border-glow: rgba(255,107,157,0.4);
   --text: #2a1a3a;
   --text-2: #4a3a5a;
-  --text-3: #7d7290;
+  --text-3: #5c4e6e;
   --accent: #ff6b9d;
   --accent-dim: rgba(255,107,157,0.12);
   --accent-2: #3ab89a;
@@ -142,7 +142,9 @@
 header.fixed { padding-top: max(0.5rem, var(--safe-top)); }
 footer { padding-bottom: max(0.5rem, var(--safe-bottom)); }
 
+
 @import "tailwindcss";
+@import "./theme/skins/index.css";
 
 /* Enable class-based dark mode (toggled via data-theme on <html>) */
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));

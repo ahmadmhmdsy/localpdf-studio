@@ -104,27 +104,27 @@ describe('WordToPdf', () => {
   });
 
   describe('Download State', () => {
-    it('displays download button for PDF file', async () => {
+    it('displays download link for PDF file', async () => {
       renderWithProviders(<WordToPdf />);
-      
+
       const docxFile = generateDummyDocx('test.docx');
       const input = screen.getByLabelText(/select Word file/i);
-      
+
       await user.upload(input, docxFile);
-      
+
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /download pdf/i })).toBeInTheDocument();
+        expect(screen.getByRole('link', { name: /download.*\.pdf/i })).toBeInTheDocument();
       }, { timeout: 3000 });
     });
 
     it('provides .pdf file for download', async () => {
       renderWithProviders(<WordToPdf />);
-      
+
       const docxFile = generateDummyDocx('document.docx');
       const input = screen.getByLabelText(/select Word file/i);
-      
+
       await user.upload(input, docxFile);
-      
+
       await waitFor(() => {
         expect(screen.getByText(/converted to PDF/i)).toBeInTheDocument();
       }, { timeout: 3000 });
@@ -132,18 +132,18 @@ describe('WordToPdf', () => {
 
     it('allows starting over after conversion', async () => {
       renderWithProviders(<WordToPdf />);
-      
+
       const docxFile = generateDummyDocx('test.docx');
       const input = screen.getByLabelText(/select Word file/i);
-      
+
       await user.upload(input, docxFile);
-      
+
       await waitFor(() => {
-        expect(screen.getByRole('button', { name: /Convert Another Document/i })).toBeInTheDocument();
+        expect(screen.getByRole('button', { name: /start over/i })).toBeInTheDocument();
       }, { timeout: 3000 });
-      
-      await user.click(screen.getByRole('button', { name: /Convert Another Document/i }));
-      
+
+      await user.click(screen.getByRole('button', { name: /start over/i }));
+
       await waitFor(() => {
         expect(screen.getByText(/select a Word document/i)).toBeInTheDocument();
       });

@@ -1,5 +1,9 @@
 import { PDFDocument, LoadOptions, SaveOptions } from 'pdf-lib';
 
+/** AES-128 encryption via pdf-lib's built-in protection (not AES-256).
+ *  pdf-lib does not support AES-256 encryption — keys are derived with
+ *  AES-128 via the standard PDF 2.0 encryption handler. Suitable for
+ *  basic access control; not appropriate for classified or regulated data. */
 export interface PdfPermissions {
   printing?: boolean;
   modifying?: boolean;

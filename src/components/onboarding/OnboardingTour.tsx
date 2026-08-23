@@ -90,8 +90,11 @@ export default function OnboardingTour({ forceShow = false }: OnboardingTourProp
       }
     };
     document.addEventListener('keydown', handleKey);
-    // Focus the close button on open
-    requestAnimationFrame(() => closeButtonRef.current?.focus());
+    // Focus the next/finish button on open
+    requestAnimationFrame(() => {
+      const nextBtn = dialogRef.current?.querySelector<HTMLButtonElement>('[data-tour-primary]');
+      nextBtn?.focus();
+    });
     return () => document.removeEventListener('keydown', handleKey);
     // handleComplete is stable (see below) so it does not need to be a dep.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -194,6 +197,7 @@ export default function OnboardingTour({ forceShow = false }: OnboardingTourProp
               onClick={next}
               className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
               aria-label={step + 1 >= TOTAL_STEPS ? 'Finish tour' : 'Next step'}
+              data-tour-primary
             >
               {step + 1 >= TOTAL_STEPS ? (
                 <>

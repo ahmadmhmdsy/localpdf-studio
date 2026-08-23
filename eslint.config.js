@@ -21,6 +21,9 @@ export default tseslint.config(
       // legitimately need an escape hatch.
       '@typescript-eslint/no-explicit-any': 'error',
       '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_' }],
+      'no-unused-expressions': 'warn',
+      eqeqeq: ['error', 'always', { null: 'ignore' }],
+      'no-throw-literal': 'error',
     },
   },
   {

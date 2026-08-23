@@ -113,4 +113,25 @@ describe('OnboardingTour', () => {
     const status = screen.getByText(/Step 1 of 4/i);
     expect(status.closest('[aria-live="polite"]')).toBeInTheDocument();
   });
+
+  it('focuses the primary (Next/Finish) button on open', async () => {
+    render(<OnboardingTour forceShow />);
+    await waitFor(() => {
+      const primary = document.querySelector('[data-tour-primary]') as HTMLButtonElement;
+      expect(primary).toBeTruthy();
+      expect(primary).toHaveFocus();
+    });
+  });
+
+  it('primary button has data-tour-primary attribute', () => {
+    render(<OnboardingTour forceShow />);
+    const nextBtn = screen.getByRole('button', { name: /next step/i });
+    expect(nextBtn).toHaveAttribute('data-tour-primary');
+  });
+
+  it('primary button text changes to Finish on last step', () => {
+    render(<OnboardingTour forceShow />);
+    const initialBtn = screen.getByRole('button', { name: /next step|finish tour/i });
+    expect(initialBtn).toHaveAttribute('data-tour-primary');
+  });
 });

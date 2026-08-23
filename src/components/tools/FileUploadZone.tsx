@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 import { useDropzone, Accept } from 'react-dropzone';
 import { Upload } from 'lucide-react';
-import { cn } from '../../lib/utils';
+import { cn, sanitizeFilename } from '../../lib/utils';
 import { useToast } from '../../contexts/ToastContext';
 import { PDF_ACCEPT } from '../../types/dropzone';
 import { MAX_FILE_SIZE_BYTES, MAX_FILE_SIZE_MB } from '../../constants/limits';
@@ -65,7 +65,12 @@ export default function FileUploadZone({
         continue;
       }
 
-      validFiles.push(file);
+      const sanitizedName = sanitizeFilename(file.name);
+      if (sanitizedName !== file.name) {
+        validFiles.push(new File([file], sanitizedName, { type: file.type }));
+      } else {
+        validFiles.push(file);
+      }
     }
 
     if (validFiles.length > 0) {
@@ -160,7 +165,8 @@ export default function FileUploadZone({
               style={{ 
                 color: 'var(--accent)',
                 filter: 'drop-shadow(0 0 8px rgba(255,107,157,0.5))',
-              }} 
+              }}
+              aria-hidden="true"
             />
           </div>
         </div>
@@ -191,7 +197,7 @@ export default function FileUploadZone({
             justifyContent: 'center',
             flexWrap: 'wrap',
           }}>
-            <span className="btn btn-primary" style={{
+            <button className="btn btn-primary" style={{
               display: 'inline-flex',
               alignItems: 'center',
               gap: '8px',
@@ -207,9 +213,11 @@ export default function FileUploadZone({
               minHeight: '44px',
               background: 'var(--text)',
               color: 'var(--bg)',
-            }}>
+            }}
+            type="button"
+            >
               Choose files
-            </span>
+            </button>
           </div>
         </div>
 
@@ -232,7 +240,7 @@ export default function FileUploadZone({
               background: 'var(--accent-2)',
               display: 'inline-block',
               marginRight: '5px',
-            }} />
+            }} aria-hidden="true" />
             Files never leave your device
           </span>
           <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
@@ -243,7 +251,7 @@ export default function FileUploadZone({
               background: 'var(--accent-2)',
               display: 'inline-block',
               marginRight: '5px',
-            }} />
+            }} aria-hidden="true" />
             Maximum {MAX_FILE_SIZE_MB}MB per file
           </span>
         </div>

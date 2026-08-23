@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import ErrorBoundary from './ErrorBoundary';
 
@@ -58,5 +58,39 @@ describe('ErrorBoundary', () => {
     );
     const reloadBtn = screen.getByRole('button', { name: /reload page/i });
     await user.click(reloadBtn);
+  });
+
+  it('error container has role="alert" for assistive tech', () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    render(
+      <ErrorBoundary>
+        <Thrower />
+      </ErrorBoundary>
+    );
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+  });
+
+  it('error container is focusable (tabIndex={-1}) so it can receive programmatic focus', () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    render(
+      <ErrorBoundary>
+        <Thrower />
+      </ErrorBoundary>
+    );
+    const alert = screen.getByRole('alert');
+    expect(alert).toHaveAttribute('tabindex', '-1');
+  });
+
+  it('moves focus to the error container when error is caught', async () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    render(
+      <ErrorBoundary>
+        <Thrower />
+      </ErrorBoundary>
+    );
+    await waitFor(() => {
+      const alert = screen.getByRole('alert');
+      expect(alert).toHaveFocus();
+    });
   });
 });

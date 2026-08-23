@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useDocumentStore, useToolsStore, useAnnotationsStore } from '../store';
+import { cn } from '../lib/utils';
 import { useShallow } from 'zustand/react/shallow';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { useToast } from '../contexts/ToastContext';
@@ -95,14 +96,14 @@ export default function Editor() {
     { key: '-', ctrl: true, handler: () => setZoom(zoom - 0.1) },
 
     // Tools
-    { key: 'v', handler: () => setActiveTool('select') },
-    { key: 'h', handler: () => setActiveTool('pan') },
-    { key: 't', handler: () => setActiveTool('text') },
-    { key: 'd', handler: () => setActiveTool('draw') },
-    { key: 'i', handler: () => setActiveTool('image') },
-    { key: 'r', handler: () => setActiveTool('redact') },
-    { key: 'c', handler: () => setActiveTool('crop') },
-    { key: 's', handler: () => setActiveTool('signature') },
+    { key: 'v', ctrl: true, handler: () => setActiveTool('select') },
+    { key: 'h', ctrl: true, handler: () => setActiveTool('pan') },
+    { key: 't', ctrl: true, handler: () => setActiveTool('text') },
+    { key: 'd', ctrl: true, handler: () => setActiveTool('draw') },
+    { key: 'i', ctrl: true, handler: () => setActiveTool('image') },
+    { key: 'r', ctrl: true, handler: () => setActiveTool('redact') },
+    { key: 'c', ctrl: true, handler: () => setActiveTool('crop') },
+    { key: 's', ctrl: true, handler: () => setActiveTool('signature') },
     // Help
     { key: '/', shift: true, handler: () => setShowShortcuts((prev) => !prev) },
     { key: '?', handler: () => setShowShortcuts((prev) => !prev) },
@@ -135,8 +136,13 @@ export default function Editor() {
     }
   };
 
+  const skin = useToolsStore((s) => s.skin);
+  // Bento skin: full-screen workspace (no floating header to subtract).
+  // Glass skin: keep the original 64px top offset so the floating pill doesn't overlap content.
+  const wrapperHeight = skin === 'bento' ? 'h-screen' : 'h-[calc(100vh-64px)]';
+
   return (
-    <div className="flex flex-col h-[calc(100vh-64px)] bg-[var(--bg)] overflow-hidden">
+    <div className={cn('flex flex-col bg-[var(--bg)] overflow-hidden', wrapperHeight)}>
       {!file ? (
         <EditorEmptyState
           isLoading={isLoading}

@@ -15,7 +15,7 @@ vi.mock('pdf-lib', () => ({
   },
 }));
 
-vi.mock('./pdfjs', () => ({
+vi.mock('../lib/pdfjs', () => ({
   pdfjsLib: {
     getDocument: vi.fn(() => ({
       promise: Promise.resolve({ numPages: 3 }),
@@ -146,6 +146,76 @@ describe('documentStore', () => {
     it('wraps rotation at 360', () => {
       useDocumentStore.getState().rotatePage(0, 400);
       expect(useDocumentStore.getState().pages[0].rotation).toBe(40);
+    });
+  });
+
+  describe('setPdfDocs', () => {
+    it('sets pdfLibDoc and pdfJsDoc together', () => {
+      const pdfLibDoc = { getPageCount: () => 3 } as any;
+      const pdfJsDoc = { numPages: 3 } as any;
+      useDocumentStore.getState().setPdfDocs(pdfLibDoc, pdfJsDoc);
+      expect(useDocumentStore.getState().pdfLibDoc).toBe(pdfLibDoc);
+      expect(useDocumentStore.getState().pdfJsDoc).toBe(pdfJsDoc);
+    });
+
+    it('clears both docs when set to null', () => {
+      useDocumentStore.getState().setPdfDocs({} as any, {} as any);
+      useDocumentStore.getState().setPdfDocs(null, null);
+      expect(useDocumentStore.getState().pdfLibDoc).toBeNull();
+      expect(useDocumentStore.getState().pdfJsDoc).toBeNull();
+    });
+  });
+
+  describe('loadFile', () => {
+    it('loads file and sets up pages from PDF.js numPages', async () => {
+      const file = new File(['dummy'], 'test.pdf', { type: 'application/pdf' });
+      await useDocumentStore.getState().loadFile(file);
+      const state = useDocumentStore.getState();
+      expect(state.file).toBe(file);
+      expect(state.isLoading).toBe(false);
+      expect(state.pages.length).toBe(3);
+      expect(state.pdfLibDoc).toBeTruthy();
+      expect(state.pdfJsDoc).toBeTruthy();
+    });
+
+    it('persists file buffer to IndexedDB', async () => {
+      const { set } = await import('idb-keyval');
+      const file = new File(['dummy'], 'test.pdf', { type: 'application/pdf' });
+      await useDocumentStore.getState().loadFile(file);
+      expect(vi.mocked(set)).toHaveBeenCalledWith('editor-file-buffer', expect.any(ArrayBuffer));
+      expect(vi.mocked(set)).toHaveBeenCalledWith('editor-file-name', 'test.pdf');
+    });
+
+    it('resets loading state and re-throws on PDF load error', async () => {
+      const { PDFDocument } = await import('pdf-lib');
+      vi.mocked(PDFDocument.load).mockRejectedValueOnce(new Error('Bad PDF'));
+      const file = new File(['bad'], 'bad.pdf', { type: 'application/pdf' });
+      await expect(useDocumentStore.getState().loadFile(file)).rejects.toThrow('Bad PDF');
+      expect(useDocumentStore.getState().isLoading).toBe(false);
+      expect(useDocumentStore.getState().file).toBeNull();
+    });
+  });
+
+  describe('clearFile', () => {
+    beforeEach(async () => {
+      const file = new File(['dummy'], 'test.pdf', { type: 'application/pdf' });
+      await useDocumentStore.getState().loadFile(file);
+    });
+
+    it('clears file and docs', async () => {
+      await useDocumentStore.getState().clearFile();
+      const state = useDocumentStore.getState();
+      expect(state.file).toBeNull();
+      expect(state.pdfLibDoc).toBeNull();
+      expect(state.pdfJsDoc).toBeNull();
+      expect(state.pages).toEqual([]);
+    });
+
+    it('clears IndexedDB keys', async () => {
+      const { set } = await import('idb-keyval');
+      await useDocumentStore.getState().clearFile();
+      expect(vi.mocked(set)).toHaveBeenCalledWith('editor-file-buffer', undefined);
+      expect(vi.mocked(set)).toHaveBeenCalledWith('editor-file-name', undefined);
     });
   });
 });

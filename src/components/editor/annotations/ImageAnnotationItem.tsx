@@ -1,7 +1,7 @@
 import React, { useRef, useEffect } from 'react';
 import { useEditor, ImageAnnotation } from '../../../contexts/EditorContext';
 
-const ImageAnnotationItem = React.memo(function ImageAnnotationItem({ annotation, containerRef }: { annotation: ImageAnnotation, containerRef: React.RefObject<HTMLDivElement> }) {
+const ImageAnnotationItem = React.memo(function ImageAnnotationItem({ annotation, containerRef }: { annotation: ImageAnnotation, containerRef: React.RefObject<HTMLDivElement | null> }) {
   const { updateAnnotation, selectedAnnotationId, setSelectedAnnotationId, activeTool } = useEditor();
   const isSelected = selectedAnnotationId === annotation.id;
   const cleanupRef = useRef<(() => void)[]>([]);

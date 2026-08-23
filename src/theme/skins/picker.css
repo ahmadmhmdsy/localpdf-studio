@@ -1,0 +1,75 @@
+/* ─────────────────────────────────────────────────────────────
+   SKIN PICKER — small dropdown used by the Header (and any future
+   design-system UI). All rules use the unprefixed `.skin-picker`
+   namespace so they're available in every skin.
+   ───────────────────────────────────────────────────────────── */
+
+.skin-picker { position: relative; }
+
+.skin-picker > button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.85rem;
+  border-radius: 0.65rem;
+  background: var(--surface-2);
+  color: var(--text-2);
+  font-size: 0.85rem;
+  font-weight: 500;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font-family: inherit;
+}
+.skin-picker > button:hover {
+  color: var(--text);
+  border-color: var(--border);
+}
+.skin-picker[data-open="true"] > button,
+.skin-picker > button:focus-visible {
+  color: var(--accent);
+  border-color: var(--accent);
+}
+
+.skin-picker .menu {
+  position: absolute;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  min-width: 220px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.75rem;
+  padding: 0.4rem;
+  box-shadow: 0 12px 32px -10px rgba(0, 0, 0, 0.18);
+  z-index: 60;
+}
+
+.skin-picker .menu button {
+  width: 100%;
+  text-align: left;
+  padding: 0.55rem 0.75rem;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: var(--text);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  font-size: 0.88rem;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: inherit;
+}
+.skin-picker .menu button:hover { background: var(--bg-2); }
+.skin-picker .menu button[aria-pressed="true"] {
+  background: var(--accent-dim);
+  color: var(--accent);
+}
+.skin-picker .menu .hint {
+  font-size: 0.7rem;
+  color: var(--text-3);
+  font-weight: 400;
+}
+.skin-picker .menu .check {
+  font-size: 0.85rem;
+  color: var(--accent);
+}
