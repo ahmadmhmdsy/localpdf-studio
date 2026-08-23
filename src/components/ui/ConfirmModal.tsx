@@ -1,5 +1,5 @@
 import { AlertTriangle, X } from 'lucide-react';
-import { useEffect, useRef } from 'react';
+import { useFocusTrap } from '../../hooks/useFocusTrap';
 
 interface ConfirmModalProps {
   isOpen: boolean;
@@ -22,17 +22,15 @@ export default function ConfirmModal({
   onConfirm,
   onCancel,
 }: ConfirmModalProps) {
-  const confirmRef = useRef<HTMLButtonElement>(null);
+  const dialogRef = useFocusTrap<HTMLDivElement>(isOpen);
 
-  useEffect(() => {
-    if (isOpen) {
-      confirmRef.current?.focus();
-    }
-  }, [isOpen]);
-
+  // Enter on the focused element calls its handler (Confirm/Cancel buttons handle their own clicks).
+  // Escape is handled here at the dialog level so it works regardless of focus position.
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Escape') onCancel();
-    if (e.key === 'Enter') onConfirm();
+    if (e.key === 'Escape') {
+      e.stopPropagation();
+      onCancel();
+    }
   };
 
   if (!isOpen) return null;
@@ -43,6 +41,7 @@ export default function ConfirmModal({
 
   return (
     <div
+      ref={dialogRef}
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
@@ -76,7 +75,6 @@ export default function ConfirmModal({
             {cancelLabel}
           </button>
           <button
-            ref={confirmRef}
             onClick={onConfirm}
             className={`px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors ${accentClass}`}
           >

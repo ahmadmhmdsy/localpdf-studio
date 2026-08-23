@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { useState } from 'react';
 import ConfirmModal from './ConfirmModal';
 
 describe('ConfirmModal', () => {
@@ -68,14 +69,6 @@ describe('ConfirmModal', () => {
     expect(mockOnCancel).toHaveBeenCalledTimes(1);
   });
 
-  it('calls onConfirm on Enter key when confirm button is focused', async () => {
-    render(<ConfirmModal {...defaultProps} />);
-    const confirmBtn = screen.getByText('Proceed');
-    confirmBtn.focus();
-    await user.keyboard('{Enter}');
-    expect(mockOnConfirm).toHaveBeenCalled();
-  });
-
   it('displays message content', () => {
     render(
       <ConfirmModal
@@ -116,18 +109,85 @@ describe('ConfirmModal', () => {
     expect(screen.getByText('Test Title')).toBeInTheDocument();
   });
 
-  it('displays message content', () => {
-    render(
-      <ConfirmModal
-        {...defaultProps}
-        message="Important message here"
-      />
-    );
-    expect(screen.getByText('Important message here')).toBeInTheDocument();
+  it('focuses first focusable element (close button) when opened', () => {
+    render(<ConfirmModal {...defaultProps} />);
+    expect(screen.getByLabelText('Close')).toHaveFocus();
   });
 
-  it('focuses confirm button when opened', () => {
+  // ----- Focus trap (a11y) -----
+
+  it('traps Tab focus inside the dialog (cycles last -> first)', async () => {
     render(<ConfirmModal {...defaultProps} />);
+    const confirmBtn = screen.getByText('Proceed');
+    confirmBtn.focus();
+    expect(confirmBtn).toHaveFocus();
+    await user.keyboard('{Tab}');
+    // Tab from the last focusable (confirm) should wrap to the first (close).
+    expect(screen.getByLabelText('Close')).toHaveFocus();
+  });
+
+  it('traps Shift+Tab focus inside the dialog (cycles first -> last)', async () => {
+    render(<ConfirmModal {...defaultProps} />);
+    const closeBtn = screen.getByLabelText('Close');
+    closeBtn.focus();
+    expect(closeBtn).toHaveFocus();
+    await user.keyboard('{Shift>}{Tab}{/Shift}');
+    // Shift+Tab from the first focusable (close) should wrap to the last (confirm).
     expect(screen.getByText('Proceed')).toHaveFocus();
+  });
+
+  it('Tab through middle items cycles within the dialog', async () => {
+    render(<ConfirmModal {...defaultProps} />);
+    // Initial focus: close button (first).
+    expect(screen.getByLabelText('Close')).toHaveFocus();
+    await user.keyboard('{Tab}');
+    expect(screen.getByText('Cancel')).toHaveFocus();
+    await user.keyboard('{Tab}');
+    expect(screen.getByText('Proceed')).toHaveFocus();
+    await user.keyboard('{Tab}');
+    // Wraps back to close.
+    expect(screen.getByLabelText('Close')).toHaveFocus();
+  });
+
+  it('does not move focus outside the dialog on Tab', async () => {
+    render(
+      <div>
+        <button>outside-before</button>
+        <ConfirmModal {...defaultProps} />
+        <button>outside-after</button>
+      </div>
+    );
+    // Focus the last dialog element and Tab.
+    screen.getByText('Proceed').focus();
+    await user.keyboard('{Tab}');
+    // Should wrap to close button (inside dialog), NOT escape to outer buttons.
+    expect(screen.getByLabelText('Close')).toHaveFocus();
+  });
+
+  it('restores focus to the trigger element when closed', async () => {
+    function Harness() {
+      const [open, setOpen] = useState(false);
+      return (
+        <div>
+          <button onClick={() => setOpen(true)}>Open Modal</button>
+          <ConfirmModal
+            {...defaultProps}
+            isOpen={open}
+            onConfirm={() => { mockOnConfirm(); setOpen(false); }}
+            onCancel={() => { mockOnCancel(); setOpen(false); }}
+          />
+        </div>
+      );
+    }
+    render(<Harness />);
+    const trigger = screen.getByText('Open Modal');
+    trigger.focus();
+    await user.click(trigger);
+    // Modal is now open; trigger is no longer focused.
+    expect(screen.getByLabelText('Close')).toHaveFocus();
+    // Close it.
+    await user.click(screen.getByText('Cancel'));
+    // Focus should be restored to the trigger.
+    expect(trigger).toHaveFocus();
   });
 });
