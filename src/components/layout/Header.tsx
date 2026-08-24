@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { useToolsStore } from '../../store';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
 import ApiKeySettings from '../settings/ApiKeySettings';
+import SkinPicker from './SkinPicker';
 import { isTauri } from '../../lib/native';
 
 const NAV_LINKS = [
@@ -60,6 +61,7 @@ export default function Header() {
           >
             {darkMode ? <Sun size={18} /> : <Moon size={18} />}
           </button>
+          <SkinPicker />
           {showSettingsButton && (
             <button
               type="button"
