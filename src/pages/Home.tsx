@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom';
 import { TOOL_CATEGORIES } from '../constants/tools';
+import { getToolAvailability, isToolAvailable, type ReleaseState } from '../config/featureRegistry';
 import { cn } from '../lib/utils';
 import { useToast } from '../contexts/ToastContext';
 import { useToolsStore } from '../store/toolsStore';
@@ -48,6 +49,8 @@ export default function Home() {
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
               {category.tools.map((tool, toolIndex) => {
                 const Icon = tool.icon;
+                const availability = getToolAvailability(tool.id);
+                const unavailable = !isToolAvailable(tool.id);
                 const isIntegrated = EDITOR_INTEGRATED_TOOLS.includes(tool.id);
                 const targetPath = isIntegrated ? `/editor?tool=${tool.id}` : `/tools/${tool.id}`;
 
@@ -59,16 +62,16 @@ export default function Home() {
                   >
                     <Link
                       to={tool.isMVP ? targetPath : '#'}
+                      aria-disabled={unavailable ? true : undefined}
                       className={cn(
                         "group relative rounded-[28px] border border-white/5 bg-[var(--surface)]/5 p-1.5 transition-all hover:bg-[var(--surface)]/10",
-                        !tool.isMVP && "opacity-60 grayscale cursor-not-allowed hover:bg-[var(--surface)]/5"
+                        (unavailable || !tool.isMVP) && "opacity-60 grayscale cursor-not-allowed hover:bg-[var(--surface)]/5"
                       )}
-                      aria-disabled={!tool.isMVP ? true : undefined}
                       onClick={(e) => {
-                        if (!tool.isMVP) {
+                        if (unavailable || !tool.isMVP) {
                           e.preventDefault();
                           showToast({
-                            message: "This feature is not available in the local MVP version yet.",
+                            message: unavailable ? "This tool is unavailable while known defects are being remedied." : "This feature is not available in the local MVP version yet.",
                             type: 'warning',
                             duration: 3000,
                           });
@@ -76,6 +79,7 @@ export default function Home() {
                       }}
                     >
                       <div className="rounded-[calc(28px-4px)] bg-[var(--surface)] p-6 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)]">
+                        <StatusBadge releaseState={availability.releaseState} />
                         <div className={cn("rounded-[var(--radius-md)] p-2 bg-[var(--surface-2)] group-hover:animate-icon-float transition-transform", tool.color)}>
                           <Icon size={32} strokeWidth={1.5} />
                         </div>
@@ -98,4 +102,24 @@ export default function Home() {
       </div>
     </div>
   );
+}
+
+
+// Release-status badge rendered so users can see how far each tool can be trusted.
+function StatusBadge({ releaseState }: { releaseState: ReleaseState }) {
+  if (releaseState === 'disabled') {
+    return (
+      <span className="absolute right-3 top-3 rounded-full bg-red-500/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-red-500" aria-label="Unavailable">
+        Unavailable
+      </span>
+    );
+  }
+  if (releaseState === 'limited' || releaseState === 'experimental') {
+    return (
+      <span className="absolute right-3 top-3 rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-500" aria-label="Limited">
+        Limited
+      </span>
+    );
+  }
+  return null;
 }

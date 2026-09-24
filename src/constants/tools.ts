@@ -1,3 +1,5 @@
+import { type ToolId } from '../config/featureRegistry';
+
 import {
   type LucideIcon,
   Combine, Split, FileMinus, FileOutput, LayoutGrid, Scan,
@@ -14,7 +16,7 @@ export type ToolCategory = {
 };
 
 export type Tool = {
-  id: string;
+  id: ToolId;
   name: string;
   description: string;
   icon: LucideIcon;

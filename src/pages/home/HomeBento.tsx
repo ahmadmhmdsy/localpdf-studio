@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, Settings } from 'lucide-react';
 import { TOOL_CATEGORIES, Tool } from '../../constants/tools';
+import { getToolAvailability, isToolAvailable, type ReleaseState } from '../../config/featureRegistry';
 import { useToolsStore } from '../../store/toolsStore';
 import { cn } from '../../lib/utils';
 
@@ -130,15 +131,15 @@ export default function HomeBento() {
           <Link to="/tools/merge-pdf" className="bento-chip">
             <span className="ic-s" /> Merge — Q3 investor update
           </Link>
-          <Link to="/tools/compress-pdf" className="bento-chip">
-            <span className="ic-s" style={{ background: 'var(--accent-2)' }} /> Compress — scan_2025
-          </Link>
+          <span className="bento-chip" aria-disabled="true" style={{ opacity: 0.55 }}>
+            <span className="ic-s" style={{ background: 'var(--accent-2)' }} /> Compress — unavailable
+          </span>
           <Link to="/tools/sign-pdf" className="bento-chip">
             <span className="ic-s" style={{ background: 'var(--accent-4)' }} /> Sign — proposal
           </Link>
-          <Link to="/tools/translate-pdf" className="bento-chip">
-            <span className="ic-s" style={{ background: 'var(--accent-3)' }} /> Translate — brochure
-          </Link>
+          <span className="bento-chip" aria-disabled="true" style={{ opacity: 0.55 }}>
+            <span className="ic-s" style={{ background: 'var(--accent-3)' }} /> Translate — unavailable
+          </span>
         </div>
       </div>
 
@@ -226,28 +227,79 @@ export default function HomeBento() {
 
 function BentoToolCard({ tool }: { tool: Tool }) {
   const Icon = tool.icon;
+  const availability = getToolAvailability(tool.id);
+  const unavailable = !isToolAvailable(tool.id);
   const targetPath = tool.isMVP ? `/tools/${tool.id}` : '#';
+
+  if (unavailable) {
+    // Unavailable tools must not activate a workflow from Home.
+    return (
+      <div
+        className="bento-tool relative"
+        aria-label={`${tool.name} — ${tool.description}`}
+        aria-disabled="true"
+        style={{ opacity: 0.55 }}
+      >
+        <CardIcon icon={Icon} />
+        <div className="name">{tool.name}</div>
+        <div className="desc">{tool.description}</div>
+        <StatusBadge releaseState={availability.releaseState} />
+      </div>
+    );
+  }
 
   return (
     <Link
       to={targetPath}
-      className="bento-tool"
+      className="bento-tool relative"
       aria-label={`${tool.name} — ${tool.description}`}
       aria-disabled={!tool.isMVP ? true : undefined}
     >
-      <div
-        className={cn(
-          'flex h-9 w-9 items-center justify-center rounded-md text-white',
-          'bg-[var(--bg-2)]'
-        )}
-        style={{
-          background: 'var(--bg-2)',
-        }}
-      >
-        <Icon size={18} strokeWidth={1.75} aria-hidden="true" />
-      </div>
+      <CardIcon icon={Icon} />
       <div className="name">{tool.name}</div>
       <div className="desc">{tool.description}</div>
+      <StatusBadge releaseState={availability.releaseState} />
     </Link>
   );
+}
+
+function CardIcon({ icon: Icon }: { icon: Tool['icon'] }) {
+  return (
+    <div
+      className={cn(
+        'flex h-9 w-9 items-center justify-center rounded-md text-white',
+        'bg-[var(--bg-2)]'
+      )}
+      style={{
+        background: 'var(--bg-2)',
+      }}
+    >
+      <Icon size={18} strokeWidth={1.75} aria-hidden="true" />
+    </div>
+  );
+}
+
+// Release-status badge so both Home skins disclose how far each tool can be trusted.
+function StatusBadge({ releaseState }: { releaseState: ReleaseState }) {
+  if (releaseState === 'disabled') {
+    return (
+      <span
+        className="absolute right-2 top-2 rounded-full bg-red-500/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-red-500"
+        aria-label="Unavailable"
+      >
+        Unavailable
+      </span>
+    );
+  }
+  if (releaseState === 'limited' || releaseState === 'experimental') {
+    return (
+      <span
+        className="absolute right-2 top-2 rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-500"
+        aria-label="Limited"
+      >
+        Limited
+      </span>
+    );
+  }
+  return null;
 }
