@@ -2,9 +2,16 @@ import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Search, Settings } from 'lucide-react';
 import { TOOL_CATEGORIES, Tool } from '../../constants/tools';
-import { getToolAvailability, isToolAvailable, type ReleaseState } from '../../config/featureRegistry';
+import {
+  getToolAvailability,
+  isToolAvailable,
+  type ReleaseState,
+  type ToolId,
+} from '../../config/featureRegistry';
 import { useToolsStore } from '../../store/toolsStore';
 import { cn } from '../../lib/utils';
+
+const ALL_TOOLS = TOOL_CATEGORIES.flatMap((category) => category.tools);
 
 /**
  * Home page rendered when the user picks the "bento" skin. Sidebar nav is
@@ -20,6 +27,26 @@ export default function HomeBento() {
   const [query, setQuery] = useState('');
   const darkMode = useToolsStore((s) => s.darkMode);
   const toggleDarkMode = useToolsStore((s) => s.toggleDarkMode);
+
+  // Derived from the release registry so availability changes keep Home truthful.
+  const availabilitySummary = useMemo(() => {
+    const availableStates = ALL_TOOLS.map((tool) => getToolAvailability(tool.id)).filter(
+      (availability) => availability.releaseState !== 'disabled'
+    );
+    const stateSummary = (['stable', 'limited', 'experimental'] as const)
+      .map((state) => ({
+        state,
+        count: availableStates.filter((availability) => availability.releaseState === state).length,
+      }))
+      .filter(({ count }) => count > 0)
+      .map(({ state, count }) => `${count} ${state}`)
+      .join(' · ');
+
+    return {
+      count: availableStates.length,
+      stateSummary: stateSummary || 'No tools currently available',
+    };
+  }, []);
 
   // Filter tools across all categories by name + description (case-insensitive).
   const filteredCategories = useMemo(() => {
@@ -44,7 +71,7 @@ export default function HomeBento() {
           <Search aria-hidden="true" />
           <input
             type="search"
-            placeholder="Search 31 tools — e.g. compress, redact, watermark…"
+            placeholder={`Search ${availabilitySummary.count} tools — e.g. compress, redact, watermark…`}
             aria-label="Search tools"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
@@ -81,7 +108,7 @@ export default function HomeBento() {
             A complete <span>PDF workspace</span> that lives in your browser.
           </h1>
           <p style={{ color: 'var(--text-2)', fontSize: '1rem', maxWidth: '30em', marginBottom: '1.5rem' }}>
-            31 tools, 7 categories, zero servers touched. Open a file, do the work, close the tab. Nothing persists, nothing phones home.
+            {availabilitySummary.count} tools, 7 categories, zero servers touched. Open a file, do the work, close the tab. Nothing persists, nothing phones home.
           </p>
           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
             <Link to="/tools/merge-pdf" className="btn btn--pri">
@@ -94,12 +121,14 @@ export default function HomeBento() {
         </article>
 
         <article className="bento-tile" style={{ padding: '1.25rem' }}>
-          <div style={{ fontSize: '1.8rem', fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1 }}>31</div>
+          <div style={{ fontSize: '1.8rem', fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1 }}>
+            {availabilitySummary.count}
+          </div>
           <div style={{ color: 'var(--text-3)', fontSize: '0.78rem', fontFamily: 'ui-monospace, "JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: '0.5rem' }}>
             Tools available
           </div>
           <div style={{ fontFamily: 'ui-monospace, "JetBrains Mono", monospace', fontSize: '0.7rem', color: 'var(--ok)', marginTop: '0.4rem' }}>
-            ▲ 2 this month
+            {availabilitySummary.stateSummary}
           </div>
         </article>
 
@@ -131,15 +160,11 @@ export default function HomeBento() {
           <Link to="/tools/merge-pdf" className="bento-chip">
             <span className="ic-s" /> Merge — Q3 investor update
           </Link>
-          <span className="bento-chip" aria-disabled="true" style={{ opacity: 0.55 }}>
-            <span className="ic-s" style={{ background: 'var(--accent-2)' }} /> Compress — unavailable
-          </span>
+          <RecentChip toolId="compress-pdf" swatch="var(--accent-2)" context="Q3 asset brief" />
           <Link to="/tools/sign-pdf" className="bento-chip">
             <span className="ic-s" style={{ background: 'var(--accent-4)' }} /> Sign — proposal
           </Link>
-          <span className="bento-chip" aria-disabled="true" style={{ opacity: 0.55 }}>
-            <span className="ic-s" style={{ background: 'var(--accent-3)' }} /> Translate — unavailable
-          </span>
+          <RecentChip toolId="translate-pdf" swatch="var(--accent-3)" context="paper notes" />
         </div>
       </div>
 
@@ -276,6 +301,40 @@ function CardIcon({ icon: Icon }: { icon: Tool['icon'] }) {
     >
       <Icon size={18} strokeWidth={1.75} aria-hidden="true" />
     </div>
+  );
+}
+
+// A recently-used chip whose state is read from the release registry, so a
+// remediation cannot leave a stale "unavailable" label behind. Disabled tools
+// stay non-interactive; anything available keeps its normal link behavior.
+function RecentChip({
+  toolId,
+  swatch,
+  context,
+}: {
+  toolId: ToolId;
+  swatch: string;
+  context: string;
+}) {
+  const availability = getToolAvailability(toolId);
+  const unavailable = !isToolAvailable(toolId);
+  const entry = ALL_TOOLS.find((tool) => tool.id === toolId);
+  const shortName = entry ? entry.name.replace(/\s+PDF$/i, '') : toolId;
+
+  if (unavailable) {
+    return (
+      <span className="bento-chip" aria-disabled="true" style={{ opacity: 0.55 }}>
+        <span className="ic-s" style={{ background: swatch }} /> {shortName} — unavailable
+      </span>
+    );
+  }
+
+  const stateSuffix = availability.releaseState === 'stable' ? '' : ` (${availability.releaseState})`;
+  return (
+    <Link to={`/tools/${toolId}`} className="bento-chip">
+      <span className="ic-s" style={{ background: swatch }} /> {shortName} — {context}
+      {stateSuffix}
+    </Link>
   );
 }
 
