@@ -25,6 +25,7 @@ test-results/
 .gstack/
 
 # Local scratch / debug output
+.superpowers/
 .superpowers/sdd/*.txt
 .superpowers/sdd/*.log
 
