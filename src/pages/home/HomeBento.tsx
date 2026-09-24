@@ -250,24 +250,35 @@ export default function HomeBento() {
   );
 }
 
+function getReleaseStateLabel(releaseState: ReleaseState): string | null {
+  if (releaseState === 'disabled') return 'Unavailable';
+  if (releaseState === 'limited') return 'Limited';
+  if (releaseState === 'experimental') return 'Experimental';
+  return null;
+}
+
 function BentoToolCard({ tool }: { tool: Tool }) {
   const Icon = tool.icon;
   const availability = getToolAvailability(tool.id);
   const unavailable = !isToolAvailable(tool.id);
   const targetPath = tool.isMVP ? `/tools/${tool.id}` : '#';
+  const stateLabel = getReleaseStateLabel(availability.releaseState);
+  const accessibleLabel = stateLabel
+    ? `${tool.name} — ${tool.description} — ${stateLabel}`
+    : `${tool.name} — ${tool.description}`;
 
   if (unavailable) {
     // Unavailable tools must not activate a workflow from Home.
     return (
       <div
         className="bento-tool relative"
-        aria-label={`${tool.name} — ${tool.description}`}
+        role="group"
+        aria-label={accessibleLabel}
         aria-disabled="true"
-        style={{ opacity: 0.55 }}
       >
-        <CardIcon icon={Icon} />
-        <div className="name">{tool.name}</div>
-        <div className="desc">{tool.description}</div>
+        <CardIcon icon={Icon} dimmed />
+        <div className="name" style={{ opacity: 0.55 }}>{tool.name}</div>
+        <div className="desc" style={{ opacity: 0.55 }}>{tool.description}</div>
         <StatusBadge releaseState={availability.releaseState} />
       </div>
     );
@@ -277,7 +288,7 @@ function BentoToolCard({ tool }: { tool: Tool }) {
     <Link
       to={targetPath}
       className="bento-tool relative"
-      aria-label={`${tool.name} — ${tool.description}`}
+      aria-label={accessibleLabel}
       aria-disabled={!tool.isMVP ? true : undefined}
     >
       <CardIcon icon={Icon} />
@@ -288,16 +299,16 @@ function BentoToolCard({ tool }: { tool: Tool }) {
   );
 }
 
-function CardIcon({ icon: Icon }: { icon: Tool['icon'] }) {
+function CardIcon({ icon: Icon, dimmed = false }: { icon: Tool['icon']; dimmed?: boolean }) {
   return (
     <div
       className={cn(
         'flex h-9 w-9 items-center justify-center rounded-md text-white',
         'bg-[var(--bg-2)]'
       )}
-      style={{
-        background: 'var(--bg-2)',
-      }}
+      style={dimmed
+        ? { background: 'var(--bg-2)', opacity: 0.55 }
+        : { background: 'var(--bg-2)' }}
     >
       <Icon size={18} strokeWidth={1.75} aria-hidden="true" />
     </div>
@@ -323,7 +334,11 @@ function RecentChip({
 
   if (unavailable) {
     return (
-      <span className="bento-chip" aria-disabled="true" style={{ opacity: 0.55 }}>
+      <span
+        className="bento-chip"
+        aria-disabled="true"
+        style={{ color: 'var(--text-2)', textDecoration: 'line-through' }}
+      >
         <span className="ic-s" style={{ background: swatch }} /> {shortName} — unavailable
       </span>
     );
@@ -340,25 +355,21 @@ function RecentChip({
 
 // Release-status badge so both Home skins disclose how far each tool can be trusted.
 function StatusBadge({ releaseState }: { releaseState: ReleaseState }) {
-  if (releaseState === 'disabled') {
-    return (
-      <span
-        className="absolute right-2 top-2 rounded-full bg-red-500/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-red-500"
-        aria-label="Unavailable"
-      >
-        Unavailable
-      </span>
-    );
-  }
-  if (releaseState === 'limited' || releaseState === 'experimental') {
-    return (
-      <span
-        className="absolute right-2 top-2 rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-500"
-        aria-label="Limited"
-      >
-        Limited
-      </span>
-    );
-  }
-  return null;
+  const label = getReleaseStateLabel(releaseState);
+  if (!label) return null;
+
+  const isUnavailable = releaseState === 'disabled';
+  return (
+    <span
+      className={cn(
+        'absolute right-2 top-2 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide',
+        isUnavailable
+          ? 'bg-red-500/15 text-red-700 dark:text-red-300'
+          : 'bg-amber-500/15 text-amber-800 dark:text-amber-300'
+      )}
+      aria-label={label}
+    >
+      {label}
+    </span>
+  );
 }

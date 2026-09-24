@@ -56,6 +56,39 @@ describe('HomeBento availability messaging', () => {
     expect(tile).not.toHaveTextContent(/▲|this month/i);
   });
 
+  it('includes the registry state in a limited tool link accessible name', () => {
+    renderBento();
+
+    const limitedLink = screen.getByRole('link', {
+      name: (accessibleName) =>
+        /repair pdf/i.test(accessibleName) && /limited/i.test(accessibleName),
+    });
+    expect(limitedLink).toHaveAttribute('href', '/tools/repair-pdf');
+  });
+
+  it('names the non-interactive unavailable card with its registry state', () => {
+    renderBento();
+
+    const unavailableCard = screen.getByRole('group', {
+      name: (accessibleName) =>
+        /compress pdf/i.test(accessibleName) && /unavailable/i.test(accessibleName),
+    });
+    expect(unavailableCard).toHaveAttribute('aria-disabled', 'true');
+    expect(unavailableCard.tagName).toBe('DIV');
+    expect(within(unavailableCard).getByLabelText('Unavailable').closest('[style*="opacity"]')).toBeNull();
+  });
+
+  it('uses theme-specific WCAG AA foregrounds for availability badges', () => {
+    renderBento();
+
+    for (const badge of screen.getAllByLabelText('Limited')) {
+      expect(badge).toHaveClass('text-amber-800', 'dark:text-amber-300');
+    }
+    for (const badge of screen.getAllByLabelText('Unavailable')) {
+      expect(badge).toHaveClass('text-red-700', 'dark:text-red-300');
+    }
+  });
+
   it('recomputes the hero metrics when registry availability changes', () => {
     const before = getRegistrySummary().count;
     TOOL_RELEASE_REGISTRY['compress-pdf'] = {
@@ -101,6 +134,7 @@ describe('HomeBento availability messaging', () => {
     expect(chip).toBeTruthy();
     expect(chip!.tagName).toBe('SPAN');
     expect(chip).toHaveAttribute('aria-disabled', 'true');
+    expect(chip).not.toHaveStyle({ opacity: '0.55' });
   });
 
   it('renders a disabled Translate chip as a non-interactive element from the registry', () => {

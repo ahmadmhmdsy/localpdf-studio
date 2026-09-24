@@ -74,8 +74,19 @@ const BANNED_PHRASES = [
   'completely',
   'fully',
   '100% local',
+  'local processing',
+  'process locally',
+  'processes locally',
+  'processed locally',
+  'on-device',
+  'on device',
   'never leave',
 ];
+
+function containsBannedDisabledClaim(message: string): boolean {
+  const normalized = message.toLowerCase();
+  return BANNED_PHRASES.some((phrase) => normalized.includes(phrase));
+}
 
 describe('TOOL_RELEASE_REGISTRY', () => {
   it('contains exactly the 31 known tool ids', () => {
@@ -126,13 +137,20 @@ describe('TOOL_RELEASE_REGISTRY', () => {
     }
   });
 
-  it('does not claim success, security, completeness, or local processing in disabled messaging', () => {
+  it('does not claim success, security, completeness, or local/on-device processing in disabled messaging', () => {
     for (const id of ALL_IDS.filter((i) => TOOL_RELEASE_REGISTRY[i].releaseState === 'disabled')) {
       const message = `- ${TOOL_RELEASE_REGISTRY[id].support} - ${TOOL_RELEASE_REGISTRY[id].limitation}`;
-      for (const phrase of BANNED_PHRASES) {
-        expect(message.toLowerCase(), `${id} must not contain "${phrase}"`).not.toContain(phrase);
-      }
+      expect(
+        containsBannedDisabledClaim(message),
+        `${id} contains a banned disabled-state claim: ${message}`
+      ).toBe(false);
     }
+  });
+
+  it('rejects local/on-device claims case-insensitively without banning the product name', () => {
+    expect(containsBannedDisabledClaim('FILES ARE PROCESSED LOCALLY.')).toBe(true);
+    expect(containsBannedDisabledClaim('All work is 100% on-device.')).toBe(true);
+    expect(containsBannedDisabledClaim('LocalPDF Studio is currently unavailable.')).toBe(false);
   });
 });
 

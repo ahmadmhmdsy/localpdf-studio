@@ -51,6 +51,7 @@ export default function Home() {
                 const Icon = tool.icon;
                 const availability = getToolAvailability(tool.id);
                 const unavailable = !isToolAvailable(tool.id);
+                const isDimmed = unavailable || !tool.isMVP;
                 const isIntegrated = EDITOR_INTEGRATED_TOOLS.includes(tool.id);
                 const targetPath = isIntegrated ? `/editor?tool=${tool.id}` : `/tools/${tool.id}`;
 
@@ -65,7 +66,7 @@ export default function Home() {
                       aria-disabled={unavailable ? true : undefined}
                       className={cn(
                         "group relative rounded-[28px] border border-white/5 bg-[var(--surface)]/5 p-1.5 transition-all hover:bg-[var(--surface)]/10",
-                        (unavailable || !tool.isMVP) && "opacity-60 grayscale cursor-not-allowed hover:bg-[var(--surface)]/5"
+                        isDimmed && "cursor-not-allowed hover:bg-[var(--surface)]/5"
                       )}
                       onClick={(e) => {
                         if (unavailable || !tool.isMVP) {
@@ -80,14 +81,14 @@ export default function Home() {
                     >
                       <div className="rounded-[calc(28px-4px)] bg-[var(--surface)] p-6 shadow-[inset_0_1px_1px_rgba(255,255,255,0.08)]">
                         <StatusBadge releaseState={availability.releaseState} />
-                        <div className={cn("rounded-[var(--radius-md)] p-2 bg-[var(--surface-2)] group-hover:animate-icon-float transition-transform", tool.color)}>
+                        <div className={cn("rounded-[var(--radius-md)] p-2 bg-[var(--surface-2)] group-hover:animate-icon-float transition-transform", tool.color, isDimmed && "opacity-60 grayscale")}>
                           <Icon size={32} strokeWidth={1.5} />
                         </div>
                         <div>
-                          <h3 className="mb-2 font-semibold text-[var(--text)] group-hover:text-[var(--accent)] transition-colors">
+                          <h3 className={cn("mb-2 font-semibold text-[var(--text)] group-hover:text-[var(--accent)] transition-colors", isDimmed && "opacity-60 grayscale")}>
                             {tool.name}
                           </h3>
-                          <p className="text-sm text-[var(--text-3)] line-clamp-3">
+                          <p className={cn("text-sm text-[var(--text-3)] line-clamp-3", isDimmed && "opacity-60 grayscale")}>
                             {tool.description}
                           </p>
                         </div>
@@ -105,21 +106,30 @@ export default function Home() {
 }
 
 
+function getReleaseStateLabel(releaseState: ReleaseState): string | null {
+  if (releaseState === 'disabled') return 'Unavailable';
+  if (releaseState === 'limited') return 'Limited';
+  if (releaseState === 'experimental') return 'Experimental';
+  return null;
+}
+
 // Release-status badge rendered so users can see how far each tool can be trusted.
 function StatusBadge({ releaseState }: { releaseState: ReleaseState }) {
-  if (releaseState === 'disabled') {
-    return (
-      <span className="absolute right-3 top-3 rounded-full bg-red-500/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-red-500" aria-label="Unavailable">
-        Unavailable
-      </span>
-    );
-  }
-  if (releaseState === 'limited' || releaseState === 'experimental') {
-    return (
-      <span className="absolute right-3 top-3 rounded-full bg-amber-500/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-amber-500" aria-label="Limited">
-        Limited
-      </span>
-    );
-  }
-  return null;
+  const label = getReleaseStateLabel(releaseState);
+  if (!label) return null;
+
+  const isUnavailable = releaseState === 'disabled';
+  return (
+    <span
+      className={cn(
+        'absolute right-3 top-3 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide',
+        isUnavailable
+          ? 'bg-red-500/15 text-red-700 dark:text-red-300'
+          : 'bg-amber-500/15 text-amber-800 dark:text-amber-300'
+      )}
+      aria-label={label}
+    >
+      {label}
+    </span>
+  );
 }

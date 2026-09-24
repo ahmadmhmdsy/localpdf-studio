@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { BrowserRouter } from 'react-router-dom';
 import Home from '../pages/Home';
@@ -7,12 +7,14 @@ import { ToastProvider } from '../contexts/ToastContext';
 import ToastContainer from '../components/ui/ToastContainer';
 import { useToolsStore } from '../store/toolsStore';
 
+const { showToastMock } = vi.hoisted(() => ({ showToastMock: vi.fn() }));
+
 vi.mock('../contexts/ToastContext', async () => {
   const actual = await vi.importActual('../contexts/ToastContext');
   return {
     ...actual,
     useToast: () => ({
-      showToast: vi.fn(),
+      showToast: showToastMock,
       toasts: [],
       dismissToast: vi.fn(),
     }),
@@ -35,6 +37,8 @@ describe('Home', () => {
 
   beforeEach(() => {
     user = userEvent.setup();
+    showToastMock.mockReset();
+    window.history.pushState({}, '', '/');
     useToolsStore.setState({ skin: 'glass' });
   });
 
@@ -111,6 +115,17 @@ describe('Home', () => {
       expect(screen.getByText(/reduce file size/i)).toBeInTheDocument();
       expect(screen.getByText(/get AI-generated summary/i)).toBeInTheDocument();
     });
+
+    it('uses theme-specific WCAG AA foregrounds for availability badges', () => {
+      renderHome();
+
+      for (const badge of screen.getAllByLabelText('Limited')) {
+        expect(badge).toHaveClass('text-amber-800', 'dark:text-amber-300');
+      }
+      for (const badge of screen.getAllByLabelText('Unavailable')) {
+        expect(badge).toHaveClass('text-red-700', 'dark:text-red-300');
+      }
+    });
   });
 
   describe('Links', () => {
@@ -136,6 +151,35 @@ describe('Home', () => {
       renderHome();
       const link = screen.getByRole('link', { name: /sign PDF draw/i });
       expect(link).toHaveAttribute('href', '/editor?tool=sign-pdf');
+    });
+
+    it('keeps unavailable status text outside the dimmed card subtree', () => {
+      renderHome();
+      const unavailableLink = screen.getByRole('link', {
+        name: (accessibleName) =>
+          /compress pdf/i.test(accessibleName) && /unavailable/i.test(accessibleName),
+      });
+      const unavailableBadge = within(unavailableLink).getByLabelText('Unavailable');
+
+      expect(unavailableBadge.closest('.opacity-60')).toBeNull();
+    });
+
+    it('keeps unavailable tool links non-navigating and explains why', async () => {
+      renderHome();
+      const link = screen.getByRole('link', {
+        name: (accessibleName) =>
+          /compress pdf/i.test(accessibleName) && /unavailable/i.test(accessibleName),
+      });
+
+      expect(link).toHaveAttribute('aria-disabled', 'true');
+      await user.click(link);
+
+      expect(window.location.pathname).toBe('/');
+      expect(showToastMock).toHaveBeenCalledWith({
+        message: 'This tool is unavailable while known defects are being remedied.',
+        type: 'warning',
+        duration: 3000,
+      });
     });
   });
 });

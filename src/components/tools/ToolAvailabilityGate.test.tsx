@@ -10,7 +10,18 @@ const DISABLED_IDS = [
 ] as const;
 
 const BANNED_PHRASES = [
-  'success', 'secure', 'security', 'complet', '100% local', 'never leave',
+  'success',
+  'secure',
+  'security',
+  'complet',
+  '100% local',
+  'local processing',
+  'process locally',
+  'processes locally',
+  'processed locally',
+  'on-device',
+  'on device',
+  'never leave',
 ];
 
 describe('ToolAvailabilityGate', () => {
