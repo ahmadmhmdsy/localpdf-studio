@@ -31,14 +31,23 @@ AI Summarizer and Translate PDF.
 
 ## Prerequisites
 
-- Node.js 20+ (tested with 22)
-- npm
+- [fnm](https://github.com/Schniz/fnm)
+- Node.js `22.14.0` (exact supported runtime)
+- npm `11.16.0` (exact supported runtime, activated with Corepack)
 
 ## Quick Start
 
 ```sh
-# Install dependencies
-npm install
+# Activate the exact supported runtime
+fnm install 22.14.0
+fnm use 22.14.0
+corepack enable npm
+corepack prepare npm@11.16.0 --activate
+node --version        # must print v22.14.0
+npm --version         # must print 11.16.0
+
+# Install the exact locked dependency graph
+npm ci
 
 # Set up your Gemini API key (for AI features)
 # Edit .env and add:

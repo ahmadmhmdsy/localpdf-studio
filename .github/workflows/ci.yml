@@ -11,13 +11,21 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [22]
+        node-version: [22.14.0]
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
           cache: npm
+      - name: Enable Corepack and activate npm
+        run: |
+          corepack enable npm
+          corepack prepare npm@11.16.0 --activate
+      - name: Verify pinned runtime
+        run: |
+          test "$(node --version)" = "v22.14.0"
+          test "$(npm --version)" = "11.16.0"
       - run: npm ci
       - run: npm run typecheck
       - run: npm run lint

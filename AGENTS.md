@@ -2,8 +2,21 @@
 
 ## Quick start
 
+Use the exact supported runtime before installing or validating the project:
+
 ```sh
-npm install          # inst
+fnm install 22.14.0
+fnm use 22.14.0
+corepack enable npm
+corepack prepare npm@11.16.0 --activate
+node --version        # must print v22.14.0
+npm --version         # must print 11.16.0
+npm ci                # reproducible install from package-lock.json
+```
+
+Then use the normal project scripts:
+
+```sh
 npm run dev          # dev server at port 3000 (set DISABLE_HMR=true for AI Studio)
 npm run build        # production build to dist/
 npm run preview      # preview production build
