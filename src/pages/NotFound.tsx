@@ -10,7 +10,7 @@ export default function NotFound() {
       <p className="mt-4 text-[var(--text-2)]">The requested page is not available.</p>
       <Link
         to="/"
-        className="mt-8 inline-flex rounded-md bg-[var(--accent)] px-4 py-2 font-semibold text-white"
+        className="mt-8 inline-flex rounded-md bg-[var(--accent-solid)] px-4 py-2 font-semibold text-white"
       >
         Return home
       </Link>

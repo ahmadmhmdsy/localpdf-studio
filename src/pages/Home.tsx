@@ -84,7 +84,7 @@ export default function Home() {
                           <Icon size={32} strokeWidth={1.5} />
                         </div>
                         <div>
-                          <h3 className={cn("mb-2 font-semibold text-[var(--text)] group-hover:text-[var(--accent)] transition-colors", isDimmed && "opacity-60 grayscale")}>
+                          <h3 className={cn("mb-2 font-semibold text-[var(--text)] group-hover:text-[var(--accent-text)] transition-colors", isDimmed && "opacity-60 grayscale")}>
                             {tool.name}
                           </h3>
                           <p className={cn("text-sm text-[var(--text-3)] line-clamp-3", isDimmed && "opacity-60 grayscale")}>

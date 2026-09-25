@@ -12,7 +12,7 @@ const iconColors: Record<ToastType, string> = {
   info: 'text-[var(--accent-4)]',
   success: 'text-[var(--accent-2)]',
   warning: 'text-[var(--accent-3)]',
-  error: 'text-[var(--accent)]',
+  error: 'text-[var(--accent-text)]',
 };
 
 export default function ToastContainer() {

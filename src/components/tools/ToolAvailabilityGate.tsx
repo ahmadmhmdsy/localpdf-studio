@@ -52,7 +52,7 @@ export default function ToolAvailabilityGate({
           </div>
           <Link
             to="/"
-            className="mt-6 inline-flex items-center gap-2 rounded-[var(--radius-md,6px)] bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-85"
+            className="mt-6 inline-flex items-center gap-2 rounded-[var(--radius-md,6px)] bg-[var(--accent-solid)] px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-85"
           >
             <Home size={16} aria-hidden="true" />
             Home

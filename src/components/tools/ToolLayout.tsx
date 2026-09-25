@@ -48,7 +48,7 @@ export default function ToolLayout({
                 fontSize: '11px',
                 letterSpacing: '0.12em',
                 textTransform: 'uppercase',
-                color: 'var(--accent)',
+                color: 'var(--accent-text)',
                 marginBottom: '12px',
               }}
             >

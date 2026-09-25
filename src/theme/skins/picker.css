@@ -26,7 +26,7 @@
 }
 .skin-picker[data-open="true"] > button,
 .skin-picker > button:focus-visible {
-  color: var(--accent);
+  color: var(--accent-text);
   border-color: var(--accent);
 }
 
@@ -62,7 +62,7 @@
 .skin-picker .menu button:hover { background: var(--bg-2); }
 .skin-picker .menu button[aria-pressed="true"] {
   background: var(--accent-dim);
-  color: var(--accent);
+  color: var(--accent-text);
 }
 .skin-picker .menu .hint {
   font-size: 0.7rem;

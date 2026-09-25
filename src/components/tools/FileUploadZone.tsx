@@ -200,7 +200,7 @@ export default function FileUploadZone({
             <Upload 
               size={40} 
               style={{ 
-                color: 'var(--accent)',
+                color: 'var(--accent-text)',
                 filter: 'drop-shadow(0 0 8px rgba(255,107,157,0.5))',
               }}
               aria-hidden="true"

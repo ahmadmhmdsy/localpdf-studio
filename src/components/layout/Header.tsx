@@ -39,7 +39,7 @@ export default function Header() {
           <Link
             to="/editor"
             className="hidden md:inline-block text-sm font-semibold px-3.5 py-1.5 rounded-md transition-colors"
-            style={{ color: 'var(--accent)', background: 'var(--accent-dim)' }}
+            style={{ color: 'var(--accent-text)', background: 'var(--accent-dim)' }}
           >
             Visual Editor
           </Link>
@@ -49,7 +49,7 @@ export default function Header() {
                 {link.label}
               </Link>
             ))}
-            <Link to="/" className="text-sm font-medium transition-colors" style={{ color: 'var(--accent)' }}>
+            <Link to="/" className="text-sm font-medium transition-colors" style={{ color: 'var(--accent-text)' }}>
               All PDF Tools
             </Link>
           </div>
@@ -117,7 +117,7 @@ export default function Header() {
               to="/editor"
               onClick={closeMobile}
               className="text-base font-semibold px-4 py-3 rounded-lg"
-              style={{ color: 'var(--accent)', background: 'var(--accent-dim)' }}
+              style={{ color: 'var(--accent-text)', background: 'var(--accent-dim)' }}
             >
               Visual Editor
             </Link>
@@ -136,7 +136,7 @@ export default function Header() {
               to="/"
               onClick={closeMobile}
               className="text-base font-medium px-4 py-3 rounded-lg transition-colors hover:bg-[var(--surface-2)]"
-              style={{ color: 'var(--accent)' }}
+              style={{ color: 'var(--accent-text)' }}
             >
               All PDF Tools
             </Link>

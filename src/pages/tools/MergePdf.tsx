@@ -132,7 +132,7 @@ export default function MergePdf() {
                 {...getRootProps()}
                 className={cn(
                   "flex items-center gap-2 px-4 py-2 rounded-[var(--radius-md)] border-2 border-dashed cursor-pointer transition-colors",
-                  isDragActive ? "border-[var(--accent)] bg-[var(--accent-dim)] text-[var(--accent)]" : "border-[var(--border)] hover:border-[var(--accent)] hover:text-[var(--accent)] text-[var(--text-2)]"
+                  isDragActive ? "border-[var(--accent)] bg-[var(--accent-dim)] text-[var(--accent-text)]" : "border-[var(--border)] hover:border-[var(--accent)] hover:text-[var(--accent-text)] text-[var(--text-2)]"
                 )}
               >
                 <input {...getInputProps()} />
@@ -222,7 +222,7 @@ export default function MergePdf() {
             <button
               onClick={handleMerge}
               disabled={files.length < 2}
-              className="bg-[var(--accent)] hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-4 px-10 rounded-[var(--radius-xl)] text-lg transition-all shadow-lg shadow-[var(--accent)]/25"
+              className="bg-[var(--accent-solid)] hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-4 px-10 rounded-[var(--radius-xl)] text-lg transition-all shadow-lg shadow-[var(--accent)]/25"
             >
               Merge PDFs
             </button>
