@@ -1,22 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import SplitPdf from './SplitPdf';
-import { renderWithProviders } from '../../tests/utils';
+import { createDeferred, renderWithProviders } from '../../tests/utils';
 import { generateDummyPdf } from '../../tests/fixtures/pdfGenerator';
 
-// Mock pdf-lib operations
+const { extractPagesMock } = vi.hoisted(() => ({
+  extractPagesMock: vi.fn(),
+}));
+
 vi.mock('../../lib/pdf', () => ({
-  extractPages: vi.fn(async (file: File, ranges: string) => {
-    await new Promise(r => setTimeout(r, 200));
-    if (!ranges.trim()) {
-      throw new Error('No page ranges specified');
-    }
-    if (ranges === 'invalid-range') {
-      throw new Error('Invalid page range');
-    }
-    return new Uint8Array([1, 2, 3, 4, 5]);
-  }),
+  extractPages: extractPagesMock,
 }));
 
 describe('SplitPdf', () => {
@@ -24,6 +18,16 @@ describe('SplitPdf', () => {
 
   beforeEach(() => {
     user = userEvent.setup();
+    extractPagesMock.mockReset();
+    extractPagesMock.mockImplementation(async (_file: File, ranges: string) => {
+      if (!ranges.trim()) {
+        throw new Error('No page ranges specified');
+      }
+      if (ranges === 'invalid-range') {
+        throw new Error('Invalid page range');
+      }
+      return new Uint8Array([1, 2, 3, 4, 5]);
+    });
     vi.clearAllMocks();
   });
 
@@ -159,27 +163,33 @@ describe('SplitPdf', () => {
   });
 
   describe('Split Operation', () => {
-    it('shows processing state during split', async () => {
+    it('shows processing and completes when the split resolves', async () => {
       renderWithProviders(<SplitPdf />);
-      
+
       const pdfFile = await generateDummyPdf(5, 'test.pdf');
       const input = screen.getByLabelText(/select PDF file/i);
-      
+      const split = createDeferred<Uint8Array>();
+      extractPagesMock.mockReturnValueOnce(split.promise);
+
       await user.upload(input, pdfFile);
-      
-      await waitFor(() => {
-        expect(screen.getByLabelText(/pages to extract/i)).toBeInTheDocument();
-      });
-      
-      const rangeInput = screen.getByPlaceholderText(/e\.g\., 1-5, 8, 11-13/i);
+
+      const rangeInput = await screen.findByLabelText(/pages to extract/i);
       await user.type(rangeInput, '1-3');
-      
+
       const splitButton = screen.getByRole('button', { name: /split PDF/i });
       await user.click(splitButton);
-      
-      await waitFor(() => {
-        expect(screen.getByText(/splitting PDF/i)).toBeInTheDocument();
+
+      expect(await screen.findByText(/splitting PDF/i)).toBeInTheDocument();
+      expect(extractPagesMock).toHaveBeenCalledWith(pdfFile, '1-3');
+
+      await act(async () => {
+        split.resolve(new Uint8Array([1, 2, 3, 4, 5]));
+        await split.promise;
       });
+
+      expect(
+        await screen.findByRole('link', { name: /download split_test\.pdf/i })
+      ).toHaveAttribute('href', 'mock-url');
     });
 
     it('shows download state after successful split', async () => {

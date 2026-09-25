@@ -1,15 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import PowerpointToPdf from './PowerpointToPdf';
-import { renderWithProviders } from '../../tests/utils';
+import { createDeferred, renderWithProviders } from '../../tests/utils';
 import { generateDummyPptx } from '../../tests/fixtures/officeGenerator';
 
+const { convertPowerpointToPdfMock } = vi.hoisted(() => ({
+  convertPowerpointToPdfMock: vi.fn(),
+}));
+
 vi.mock('../../lib/office-pptx', () => ({
-  convertPowerpointToPdf: vi.fn(async (file: File) => {
-    await new Promise(r => setTimeout(r, 200));
-    return new Uint8Array([1, 2, 3, 4, 5]);
-  }),
+  convertPowerpointToPdf: convertPowerpointToPdfMock,
 }));
 
 describe('PowerpointToPdf', () => {
@@ -17,6 +18,7 @@ describe('PowerpointToPdf', () => {
 
   beforeEach(() => {
     user = userEvent.setup();
+    convertPowerpointToPdfMock.mockReset();
     vi.clearAllMocks();
   });
 
@@ -30,16 +32,26 @@ describe('PowerpointToPdf', () => {
     expect(screen.getByRole('heading', { name: /POWERPOINT to PDF/i })).toBeInTheDocument();
   });
 
-  it('accepts PPTX file upload', async () => {
+  it('shows processing and completes when conversion resolves', async () => {
     renderWithProviders(<PowerpointToPdf />);
-    
+
     const pptxFile = generateDummyPptx('presentation.pptx');
     const input = screen.getByLabelText(/select PowerPoint file/i);
-    
+    const conversion = createDeferred<Uint8Array>();
+    const result = new Uint8Array([1, 2, 3, 4, 5]);
+    convertPowerpointToPdfMock.mockReturnValueOnce(conversion.promise);
+
     await user.upload(input, pptxFile);
-    
-    await waitFor(() => {
-      expect(screen.getByText(/converting presentation/i)).toBeInTheDocument();
-    }, { timeout: 3000 });
+
+    expect(await screen.findByText(/converting presentation/i)).toBeInTheDocument();
+    expect(convertPowerpointToPdfMock).toHaveBeenCalledWith(pptxFile);
+
+    await act(async () => {
+      conversion.resolve(result);
+      await conversion.promise;
+    });
+
+    expect(await screen.findByText(/conversion successful!/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /download pdf/i })).toBeInTheDocument();
   });
 });

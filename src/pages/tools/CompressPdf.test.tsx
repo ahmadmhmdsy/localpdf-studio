@@ -1,19 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import CompressPdf from './CompressPdf';
-import { renderWithProviders } from '../../tests/utils';
+import { createDeferred, renderWithProviders } from '../../tests/utils';
 import { generateDummyPdf, generateLargePdf } from '../../tests/fixtures/pdfGenerator';
 
-// Mock compression library
+const { compressPdfMock } = vi.hoisted(() => ({
+  compressPdfMock: vi.fn(),
+}));
+
 vi.mock('../../lib/compress', () => ({
-  compressPdf: vi.fn(async (file: File, quality: string) => {
-    await new Promise(r => setTimeout(r, 200));
-    return {
-      bytes: new Uint8Array([1, 2, 3]),
-      notes: ['Test note: best-effort compression only.'],
-    };
-  }),
+  compressPdf: compressPdfMock,
 }));
 
 describe('CompressPdf', () => {
@@ -21,6 +18,11 @@ describe('CompressPdf', () => {
 
   beforeEach(() => {
     user = userEvent.setup();
+    compressPdfMock.mockReset();
+    compressPdfMock.mockResolvedValue({
+      bytes: new Uint8Array([1, 2, 3]),
+      notes: ['Test note: best-effort compression only.'],
+    });
     vi.clearAllMocks();
   });
 
@@ -110,25 +112,34 @@ describe('CompressPdf', () => {
   });
 
   describe('Compression Process', () => {
-    it('shows processing state during compression', async () => {
+    it('shows processing and completes when compression resolves', async () => {
       renderWithProviders(<CompressPdf />);
-      
+
       const pdfFile = await generateDummyPdf(5, 'test.pdf');
       const input = screen.getByLabelText(/select PDF file/i);
-      
+      const compressionResult = {
+        bytes: new Uint8Array([1, 2, 3]),
+        notes: ['Test note: best-effort compression only.'],
+      };
+      const compression = createDeferred<typeof compressionResult>();
+      compressPdfMock.mockReturnValueOnce(compression.promise);
+
       await user.upload(input, pdfFile);
-      
-      await waitFor(() => {
-        const compressButton = screen.getByRole('button', { name: /compress PDF/i });
-        expect(compressButton).toBeInTheDocument();
-      });
-      
-      const compressButton = screen.getByRole('button', { name: /compress PDF/i });
+
+      const compressButton = await screen.findByRole('button', { name: /compress PDF/i });
       await user.click(compressButton);
-      
-      await waitFor(() => {
-        expect(screen.getByText(/compressing/i)).toBeInTheDocument();
+
+      expect(await screen.findByText('Compressing PDF...')).toBeInTheDocument();
+      expect(compressPdfMock).toHaveBeenCalledWith(pdfFile, 'medium');
+
+      await act(async () => {
+        compression.resolve(compressionResult);
+        await compression.promise;
       });
+
+      expect(
+        await screen.findByRole('link', { name: /download compressed_test\.pdf/i })
+      ).toHaveAttribute('href', 'mock-url');
     });
 
     it('shows compression results after processing', async () => {

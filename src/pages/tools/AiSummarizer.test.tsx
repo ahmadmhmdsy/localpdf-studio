@@ -1,19 +1,18 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import AiSummarizer from './AiSummarizer';
-import { renderWithProviders } from '../../tests/utils';
+import { createDeferred, renderWithProviders } from '../../tests/utils';
 import { generateDummyPdf } from '../../tests/fixtures/pdfGenerator';
 
+const { extractPdfTextMock, summarizePdfMock } = vi.hoisted(() => ({
+  extractPdfTextMock: vi.fn(),
+  summarizePdfMock: vi.fn(),
+}));
+
 vi.mock('../../lib/ai', () => ({
-  extractPdfText: vi.fn(async (file: File, onProgress?: (page: number, total: number) => void) => {
-    await new Promise(r => setTimeout(r, 200));
-    return 'Extracted text content from PDF.';
-  }),
-  summarizePdf: vi.fn(async (text: string, onProgress?: (chunk: number, total: number) => void) => {
-    await new Promise(r => setTimeout(r, 200));
-    return 'This is a test summary of the PDF document.';
-  }),
+  extractPdfText: extractPdfTextMock,
+  summarizePdf: summarizePdfMock,
 }));
 
 describe('AiSummarizer', () => {
@@ -21,6 +20,10 @@ describe('AiSummarizer', () => {
 
   beforeEach(() => {
     user = userEvent.setup();
+    extractPdfTextMock.mockReset();
+    extractPdfTextMock.mockResolvedValue('Extracted text content from PDF.');
+    summarizePdfMock.mockReset();
+    summarizePdfMock.mockResolvedValue('This is a test summary of the PDF document.');
     vi.clearAllMocks();
   });
 
@@ -36,32 +39,56 @@ describe('AiSummarizer', () => {
 
   it('transitions to processing after file upload', async () => {
     renderWithProviders(<AiSummarizer />);
-    
+
     const pdfFile = await generateDummyPdf(3, 'document.pdf');
     const input = screen.getByLabelText(/select PDF file/i);
-    
+    const extraction = createDeferred<string>();
+    extractPdfTextMock.mockReturnValueOnce(extraction.promise);
+
     await user.upload(input, pdfFile);
-    
-    await waitFor(() => {
-      expect(screen.getByText(/extracting text/i)).toBeInTheDocument();
+
+    expect(await screen.findByText(/extracting text/i)).toBeInTheDocument();
+    expect(extractPdfTextMock).toHaveBeenCalledWith(pdfFile, expect.any(Function));
+
+    await act(async () => {
+      extraction.resolve('Extracted text content from PDF.');
+      await extraction.promise;
     });
+
+    expect(await screen.findByText(/AI Summary Generated/i)).toBeInTheDocument();
   });
 
-  it('shows AI processing indicator', async () => {
+  it('shows each AI processing stage before completion', async () => {
     renderWithProviders(<AiSummarizer />);
-    
+
     const pdfFile = await generateDummyPdf(3, 'document.pdf');
     const input = screen.getByLabelText(/select PDF file/i);
-    
+    const extraction = createDeferred<string>();
+    const summarization = createDeferred<string>();
+    extractPdfTextMock.mockReturnValueOnce(extraction.promise);
+    summarizePdfMock.mockReturnValueOnce(summarization.promise);
+
     await user.upload(input, pdfFile);
-    
-    await waitFor(() => {
-      expect(screen.getByText(/extracting text/i)).toBeInTheDocument();
+
+    expect(await screen.findByText(/extracting text/i)).toBeInTheDocument();
+
+    await act(async () => {
+      extraction.resolve('Extracted text content from PDF.');
+      await extraction.promise;
     });
-    
-    await waitFor(() => {
-      expect(screen.getByText(/generating summary/i)).toBeInTheDocument();
-    }, { timeout: 3000 });
+
+    expect(await screen.findByText(/generating summary/i)).toBeInTheDocument();
+    expect(summarizePdfMock).toHaveBeenCalledWith(
+      'Extracted text content from PDF.',
+      expect.any(Function)
+    );
+
+    await act(async () => {
+      summarization.resolve('This is a test summary of the PDF document.');
+      await summarization.promise;
+    });
+
+    expect(await screen.findByText(/AI Summary Generated/i)).toBeInTheDocument();
   });
 
   it('displays summary results', async () => {

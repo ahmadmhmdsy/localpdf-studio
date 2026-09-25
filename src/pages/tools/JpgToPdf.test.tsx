@@ -1,16 +1,17 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import JpgToPdf from './JpgToPdf';
-import { renderWithProviders } from '../../tests/utils';
+import { createDeferred, renderWithProviders } from '../../tests/utils';
 import { generateDummyImage, generateDummyImages } from '../../tests/fixtures/imageGenerator';
+
+const { jpgsToPdfMock } = vi.hoisted(() => ({
+  jpgsToPdfMock: vi.fn(),
+}));
 
 // Mock image conversion library
 vi.mock('../../lib/image', () => ({
-  jpgsToPdf: vi.fn(async (files: File[]) => {
-    await new Promise(r => setTimeout(r, 200));
-    return new Uint8Array([1, 2, 3, 4, 5]);
-  }),
+  jpgsToPdf: jpgsToPdfMock,
 }));
 
 describe('JpgToPdf', () => {
@@ -18,6 +19,8 @@ describe('JpgToPdf', () => {
 
   beforeEach(() => {
     user = userEvent.setup();
+    jpgsToPdfMock.mockReset();
+    jpgsToPdfMock.mockResolvedValue(new Uint8Array([1, 2, 3, 4, 5]));
     vi.clearAllMocks();
   });
 
@@ -108,25 +111,30 @@ describe('JpgToPdf', () => {
   });
 
   describe('Conversion Process', () => {
-    it('shows processing state during conversion', async () => {
+    it('shows processing and completes when conversion resolves', async () => {
       renderWithProviders(<JpgToPdf />);
-      
+
       const image = generateDummyImage('test.jpg');
       const input = screen.getByLabelText(/select JPG images/i);
-      
+      const conversion = createDeferred<Uint8Array>();
+      const result = new Uint8Array([1, 2, 3, 4, 5]);
+      jpgsToPdfMock.mockReturnValueOnce(conversion.promise);
+
       await user.upload(input, [image]);
-      
-      await waitFor(() => {
-        const convertButton = screen.getByRole('button', { name: /convert to PDF/i });
-        expect(convertButton).toBeInTheDocument();
-      });
-      
-      const convertButton = screen.getByRole('button', { name: /convert to PDF/i });
+
+      const convertButton = await screen.findByRole('button', { name: /convert to PDF/i });
       await user.click(convertButton);
-      
-      await waitFor(() => {
-        expect(screen.getByText(/converting to PDF/i)).toBeInTheDocument();
+
+      expect(await screen.findByText('Converting to PDF...')).toBeInTheDocument();
+      expect(jpgsToPdfMock).toHaveBeenCalledWith([image]);
+
+      await act(async () => {
+        conversion.resolve(result);
+        await conversion.promise;
       });
+
+      expect(await screen.findByText('PDF created successfully!')).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: /download images\.pdf/i })).toHaveAttribute('href', 'mock-url');
     });
 
     it('shows download state after conversion', async () => {

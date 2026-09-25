@@ -1,15 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import PdfToPowerpoint from './PdfToPowerpoint';
-import { renderWithProviders } from '../../tests/utils';
+import { createDeferred, renderWithProviders } from '../../tests/utils';
 import { generateDummyPdf } from '../../tests/fixtures/pdfGenerator';
 
+const { convertPdfToPowerpointMock } = vi.hoisted(() => ({
+  convertPdfToPowerpointMock: vi.fn(),
+}));
+
 vi.mock('../../lib/pdf-to-pptx', () => ({
-  convertPdfToPowerpoint: vi.fn(async (file: File) => {
-    await new Promise(r => setTimeout(r, 200));
-    return new Uint8Array([1, 2, 3, 4, 5]);
-  }),
+  convertPdfToPowerpoint: convertPdfToPowerpointMock,
 }));
 
 describe('PdfToPowerpoint', () => {
@@ -17,6 +18,7 @@ describe('PdfToPowerpoint', () => {
 
   beforeEach(() => {
     user = userEvent.setup();
+    convertPdfToPowerpointMock.mockReset();
     vi.clearAllMocks();
   });
 
@@ -30,16 +32,28 @@ describe('PdfToPowerpoint', () => {
     expect(screen.getByRole('heading', { name: /PDF to POWERPOINT/i })).toBeInTheDocument();
   });
 
-  it('transitions to processing after file upload', async () => {
+  it('shows processing and completes when conversion resolves', async () => {
     renderWithProviders(<PdfToPowerpoint />);
-    
+
     const pdfFile = await generateDummyPdf(5, 'slides.pdf');
     const input = screen.getByLabelText(/select PDF file/i);
-    
+    const conversion = createDeferred<Blob>();
+    const resultBlob = new Blob([new Uint8Array([1, 2, 3, 4, 5])], {
+      type: 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    });
+    convertPdfToPowerpointMock.mockReturnValueOnce(conversion.promise);
+
     await user.upload(input, pdfFile);
-    
-    await waitFor(() => {
-      expect(screen.getByText(/creating presentation/i)).toBeInTheDocument();
-    }, { timeout: 3000 });
+
+    expect(await screen.findByText(/creating presentation/i)).toBeInTheDocument();
+    expect(convertPdfToPowerpointMock).toHaveBeenCalledWith(pdfFile);
+
+    await act(async () => {
+      conversion.resolve(resultBlob);
+      await conversion.promise;
+    });
+
+    expect(await screen.findByText(/conversion successful!/i)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: /download pptx/i })).toBeInTheDocument();
   });
 });

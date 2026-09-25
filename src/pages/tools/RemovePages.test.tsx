@@ -1,15 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import RemovePages from './RemovePages';
-import { renderWithProviders } from '../../tests/utils';
+import { createDeferred, renderWithProviders } from '../../tests/utils';
 import { generateDummyPdf } from '../../tests/fixtures/pdfGenerator';
 
+const { removePagesMock } = vi.hoisted(() => ({
+  removePagesMock: vi.fn(),
+}));
+
 vi.mock('../../lib/pdf', () => ({
-  removePages: vi.fn(async (file: File, ranges: string) => {
-    await new Promise(r => setTimeout(r, 200));
-    return new Uint8Array([1, 2, 3, 4, 5]);
-  }),
+  removePages: removePagesMock,
 }));
 
 describe('RemovePages', () => {
@@ -17,6 +18,7 @@ describe('RemovePages', () => {
 
   beforeEach(() => {
     user = userEvent.setup();
+    removePagesMock.mockReset();
     vi.clearAllMocks();
   });
 
@@ -43,28 +45,36 @@ describe('RemovePages', () => {
     });
   });
 
-  it('allows entering page ranges and processes removal', async () => {
+  it('processes removal and exposes the completed PDF', async () => {
     renderWithProviders(<RemovePages />);
-    
+
     const pdfFile = await generateDummyPdf(5, 'test.pdf');
     const input = screen.getByLabelText(/select PDF file/i);
-    
+    const removal = createDeferred<Uint8Array>();
+    removePagesMock.mockReturnValueOnce(removal.promise);
+
     await user.upload(input, pdfFile);
-    
-    await waitFor(() => {
-      expect(screen.getByLabelText(/pages to remove/i)).toBeInTheDocument();
-    });
-    
-    const rangeInput = screen.getByPlaceholderText(/e\.g\., 1-5, 8/i);
+
+    const rangeInput = await screen.findByLabelText(/pages to remove/i);
     await user.type(rangeInput, '1-2');
-    
+
     const removeButton = screen.getByRole('button', { name: /remove pages/i });
-    expect(removeButton).not.toBeDisabled();
-    
+    expect(removeButton).toBeEnabled();
+
     await user.click(removeButton);
-    
-    await waitFor(() => {
-      expect(screen.getByText(/removing pages/i)).toBeInTheDocument();
+
+    expect(await screen.findByText(/removing pages/i)).toBeInTheDocument();
+    expect(removePagesMock).toHaveBeenCalledWith(pdfFile, '1-2');
+
+    await act(async () => {
+      removal.resolve(new Uint8Array([1, 2, 3, 4, 5]));
+      await removal.promise;
     });
+
+    expect(await screen.findByText(/pages removed successfully/i)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /download removed_test\.pdf/i })).toHaveAttribute(
+      'href',
+      'mock-url'
+    );
   });
 });

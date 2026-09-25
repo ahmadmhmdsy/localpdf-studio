@@ -58,12 +58,17 @@ export function mockFileDrop(files: File[]): () => { acceptedFiles: File[] } {
 }
 
 /**
- * Waits for processing state to complete
+ * Creates a promise whose settlement is controlled by the test.
  */
-export async function waitForProcessing(
-  timeout: number = 100
-): Promise<void> {
-  return new Promise((resolve) => setTimeout(resolve, timeout));
+export function createDeferred<T>() {
+  let resolve!: (value: T | PromiseLike<T>) => void;
+  let reject!: (reason?: unknown) => void;
+  const promise = new Promise<T>((resolvePromise, rejectPromise) => {
+    resolve = resolvePromise;
+    reject = rejectPromise;
+  });
+
+  return { promise, resolve, reject };
 }
 
 /**

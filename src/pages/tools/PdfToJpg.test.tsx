@@ -1,16 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import PdfToJpg from './PdfToJpg';
-import { renderWithProviders } from '../../tests/utils';
+import { createDeferred, renderWithProviders } from '../../tests/utils';
 import { generateDummyPdf } from '../../tests/fixtures/pdfGenerator';
 
-// Mock pdf conversion
+const { pdfToJpgsMock } = vi.hoisted(() => ({
+  pdfToJpgsMock: vi.fn(),
+}));
+
 vi.mock('../../lib/image', () => ({
-  pdfToJpgs: vi.fn(async (file: File) => {
-    await new Promise(r => setTimeout(r, 200));
-    return new Blob(['zip']);
-  }),
+  pdfToJpgs: pdfToJpgsMock,
 }));
 
 vi.mock('jszip', () => {
@@ -27,6 +27,8 @@ describe('PdfToJpg', () => {
 
   beforeEach(() => {
     user = userEvent.setup();
+    pdfToJpgsMock.mockReset();
+    pdfToJpgsMock.mockResolvedValue(new Blob(['zip'], { type: 'application/zip' }));
     vi.clearAllMocks();
   });
 
@@ -102,25 +104,31 @@ describe('PdfToJpg', () => {
   });
 
   describe('Extraction Process', () => {
-    it('shows processing state during extraction', async () => {
+    it('shows processing and completes when extraction resolves', async () => {
       renderWithProviders(<PdfToJpg />);
-      
+
       const pdfFile = await generateDummyPdf(3, 'test.pdf');
       const input = screen.getByLabelText(/select PDF file/i);
-      
+      const extraction = createDeferred<Blob>();
+      const resultBlob = new Blob(['zip'], { type: 'application/zip' });
+      pdfToJpgsMock.mockReturnValueOnce(extraction.promise);
+
       await user.upload(input, pdfFile);
-      
-      await waitFor(() => {
-        const extractButton = screen.getByRole('button', { name: /convert to jpg/i });
-        expect(extractButton).toBeInTheDocument();
-      });
-      
-      const extractButton = screen.getByRole('button', { name: /convert to jpg/i });
+
+      const extractButton = await screen.findByRole('button', { name: /convert to jpg/i });
       await user.click(extractButton);
-      
-      await waitFor(() => {
-        expect(screen.getByText(/converting pdf to jpg/i)).toBeInTheDocument();
+
+      expect(await screen.findByText(/converting pdf to jpg/i)).toBeInTheDocument();
+      expect(pdfToJpgsMock).toHaveBeenCalledWith(pdfFile);
+
+      await act(async () => {
+        extraction.resolve(resultBlob);
+        await extraction.promise;
       });
+
+      expect(
+        await screen.findByRole('link', { name: /download test_jpgs\.zip/i })
+      ).toHaveAttribute('href', 'mock-url');
     });
 
     it('shows download state after extraction', async () => {

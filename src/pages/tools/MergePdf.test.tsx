@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { act, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import MergePdf from './MergePdf';
-import { renderWithProviders, mockSaveAs, waitForProcessing } from '../../tests/utils';
+import { createDeferred, renderWithProviders } from '../../tests/utils';
 import { generateDummyPdf } from '../../tests/fixtures/pdfGenerator';
 
 // Mock file-saver
@@ -10,12 +10,13 @@ vi.mock('file-saver', () => ({
   saveAs: vi.fn(),
 }));
 
+const { mergePdfsMock } = vi.hoisted(() => ({
+  mergePdfsMock: vi.fn(),
+}));
+
 // Mock pdf-lib operations
 vi.mock('../../lib/pdf', () => ({
-  mergePdfs: vi.fn(async (files: File[]) => {
-    await new Promise(r => setTimeout(r, 200));
-    return new Uint8Array([1, 2, 3, 4, 5]);
-  }),
+  mergePdfs: mergePdfsMock,
 }));
 
 describe('MergePdf', () => {
@@ -23,6 +24,8 @@ describe('MergePdf', () => {
 
   beforeEach(() => {
     user = userEvent.setup();
+    mergePdfsMock.mockReset();
+    mergePdfsMock.mockResolvedValue(new Uint8Array([1, 2, 3, 4, 5]));
     vi.clearAllMocks();
   });
 
@@ -188,27 +191,36 @@ describe('MergePdf', () => {
       });
     });
 
-    it('shows processing state during merge', async () => {
-      const { mergePdfs } = await import('../../lib/pdf');
+    it('shows processing and completes when merging resolves', async () => {
       renderWithProviders(<MergePdf />);
-      
+
       const file1 = await generateDummyPdf(2, 'first.pdf');
       const file2 = await generateDummyPdf(2, 'second.pdf');
       const input = screen.getByLabelText(/select PDF files/i);
-      
+      const merge = createDeferred<Uint8Array>();
+      const result = new Uint8Array([1, 2, 3, 4, 5]);
+      mergePdfsMock.mockReturnValueOnce(merge.promise);
+
       await user.upload(input, [file1, file2]);
-      
+
       await waitFor(() => {
         const mergeButton = screen.getByRole('button', { name: /merge PDF/i });
         expect(mergeButton).not.toBeDisabled();
       });
-      
+
       const mergeButton = screen.getByRole('button', { name: /merge PDF/i });
       await user.click(mergeButton);
-      
-      await waitFor(() => {
-        expect(screen.getByText(/merging PDFs/i)).toBeInTheDocument();
+
+      expect(await screen.findByText(/merging PDFs/i)).toBeInTheDocument();
+      expect(mergePdfsMock).toHaveBeenCalledWith([file1, file2]);
+
+      await act(async () => {
+        merge.resolve(result);
+        await merge.promise;
       });
+
+      expect(await screen.findByText(/merged successfully/i)).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: /download/i })).toBeInTheDocument();
     });
 
     it('shows download state after successful merge', async () => {
@@ -286,8 +298,7 @@ describe('MergePdf', () => {
 
   describe('Error Handling', () => {
     it('handles merge errors gracefully', async () => {
-      const { mergePdfs } = await import('../../lib/pdf');
-      vi.mocked(mergePdfs).mockRejectedValueOnce(new Error('Merge failed'));
+      mergePdfsMock.mockRejectedValueOnce(new Error('Merge failed'));
       
       renderWithProviders(<MergePdf />);
       

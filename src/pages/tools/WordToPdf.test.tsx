@@ -1,16 +1,16 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
+import { act, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import WordToPdf from './WordToPdf';
-import { renderWithProviders } from '../../tests/utils';
+import { createDeferred, renderWithProviders } from '../../tests/utils';
 import { generateDummyDocx } from '../../tests/fixtures/officeGenerator';
 
-// Mock PDF conversion library
+const { convertWordToPdfMock } = vi.hoisted(() => ({
+  convertWordToPdfMock: vi.fn(),
+}));
+
 vi.mock('../../lib/office-word', () => ({
-  convertWordToPdf: vi.fn(async (file: File) => {
-    await new Promise(r => setTimeout(r, 100));
-    return new Uint8Array([1, 2, 3, 4, 5]);
-  }),
+  convertWordToPdf: convertWordToPdfMock,
 }));
 
 describe('WordToPdf', () => {
@@ -18,6 +18,8 @@ describe('WordToPdf', () => {
 
   beforeEach(() => {
     user = userEvent.setup();
+    convertWordToPdfMock.mockReset();
+    convertWordToPdfMock.mockResolvedValue(new Uint8Array([1, 2, 3, 4, 5]));
     vi.clearAllMocks();
   });
 
@@ -39,15 +41,23 @@ describe('WordToPdf', () => {
   describe('File Upload', () => {
     it('transitions to processing after DOCX selection', async () => {
       renderWithProviders(<WordToPdf />);
-      
+
       const docxFile = generateDummyDocx('document.docx');
       const input = screen.getByLabelText(/select Word file/i);
-      
+      const conversion = createDeferred<Uint8Array>();
+      convertWordToPdfMock.mockReturnValueOnce(conversion.promise);
+
       await user.upload(input, docxFile);
-      
-      await waitFor(() => {
-        expect(screen.getByText(/converting to pdf/i)).toBeInTheDocument();
-      }, { timeout: 3000 });
+
+      expect(await screen.findByText(/converting to pdf/i)).toBeInTheDocument();
+      expect(convertWordToPdfMock).toHaveBeenCalledWith(docxFile);
+
+      await act(async () => {
+        conversion.resolve(new Uint8Array([1, 2, 3, 4, 5]));
+        await conversion.promise;
+      });
+
+      expect(await screen.findByText(/conversion successful/i)).toBeInTheDocument();
     });
 
     it('completes conversion successfully', async () => {
@@ -74,19 +84,22 @@ describe('WordToPdf', () => {
   describe('Conversion Process', () => {
     it('shows processing state during conversion', async () => {
       renderWithProviders(<WordToPdf />);
-      
+
       const docxFile = generateDummyDocx('test.docx');
       const input = screen.getByLabelText(/select Word file/i);
-      
+      const conversion = createDeferred<Uint8Array>();
+      convertWordToPdfMock.mockReturnValueOnce(conversion.promise);
+
       await user.upload(input, docxFile);
-      
-      await waitFor(() => {
-        expect(screen.getByText(/converting to pdf/i)).toBeInTheDocument();
-      }, { timeout: 3000 });
-      
-      await waitFor(() => {
-        expect(screen.getByText(/Conversion Successful/i)).toBeInTheDocument();
+
+      expect(await screen.findByText(/converting to pdf/i)).toBeInTheDocument();
+
+      await act(async () => {
+        conversion.resolve(new Uint8Array([1, 2, 3, 4, 5]));
+        await conversion.promise;
       });
+
+      expect(await screen.findByText(/conversion successful/i)).toBeInTheDocument();
     });
 
     it('shows download state after conversion', async () => {
