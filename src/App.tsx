@@ -7,6 +7,7 @@ import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/layout/Layout';
 import Home from './pages/Home';
+import NotFound from './pages/NotFound';
 import Editor from './pages/Editor';
 import { EditorProvider } from './contexts/EditorContext';
 import { ToastProvider } from './contexts/ToastContext';
@@ -108,6 +109,7 @@ export default function App() {
             <Route path="tools/powerpoint-to-pdf" element={<ToolRoute element={<PowerpointToPdf />} name="PowerPoint to PDF" toolId="powerpoint-to-pdf" />} />
             <Route path="tools/pdf-to-powerpoint" element={<ToolRoute element={<PdfToPowerpoint />} name="PDF to PowerPoint" toolId="pdf-to-powerpoint" />} />
             <Route path="tools/translate-pdf" element={<ToolRoute element={<TranslatePdf />} name="Translate PDF" toolId="translate-pdf" />} />
+            <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>
         </Suspense>

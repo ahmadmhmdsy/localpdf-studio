@@ -176,6 +176,19 @@ describe('HomeBento availability messaging', () => {
     expect(chip!.textContent).not.toMatch(/unavailable/i);
   });
 
+  it('links the privacy note to the real privacy block without an absolute local-only claim', () => {
+    renderBento();
+
+    const privacyBlock = screen.getByRole('complementary', { name: 'Privacy guarantee' });
+    expect(privacyBlock).toHaveAttribute('id', 'privacy');
+    expect(within(privacyBlock).getByRole('link', { name: /read the privacy note/i })).toHaveAttribute(
+      'href',
+      '#privacy'
+    );
+    expect(privacyBlock).not.toHaveTextContent(/files never leave/i);
+    expect(privacyBlock).toHaveTextContent(/AI, OCR, and camera tools are currently unavailable/i);
+  });
+
   it('preserves link behavior for available recent chips (Merge, Sign)', () => {
     renderBento();
     const recent = recentChips();
