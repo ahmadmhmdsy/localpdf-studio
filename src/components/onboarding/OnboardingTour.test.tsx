@@ -18,6 +18,15 @@ describe('OnboardingTour', () => {
     expect(screen.getByText(/Step 1 of 4/i)).toBeInTheDocument();
   });
 
+  it('describes browser processing without absolute no-upload claims', () => {
+    render(<OnboardingTour forceShow />);
+
+    const description = document.getElementById('onboarding-description');
+    expect(description).toHaveTextContent(/processes most tools in your browser/i);
+    expect(description).not.toHaveTextContent(/entirely in your browser/i);
+    expect(description).not.toHaveTextContent(/never uploaded/i);
+  });
+
   it('does not open when the onboarded flag is set', async () => {
     window.localStorage.setItem('pdf_studio_onboarded', 'true');
     render(<OnboardingTour />);
