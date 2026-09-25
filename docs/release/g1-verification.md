@@ -2,7 +2,9 @@
 
 **Gate:** G1 (Safe Web Beta containment)
 **Branch:** `production-readiness/phase-0`
-**Verified code commit:** `0358158` (G0 baseline for this gate: `dac960a`)
+**Verified code commit:** `519b878` (G0 baseline for this gate: `dac960a`). The full gate set was run on the
+tree of `b27fd5c`; `519b878` changes documentation only, and the guards that read that documentation
+were re-run afterwards.
 **Verified on:** Windows 11 x64
 **Pinned runtime:** Node `v22.14.0`, npm `11.16.0`, Rust toolchain `+1.89.0`
 **Design:** `docs/superpowers/specs/2026-09-25-g1-safe-web-beta-design.md`
