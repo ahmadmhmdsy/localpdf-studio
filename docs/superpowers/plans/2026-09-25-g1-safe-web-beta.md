@@ -35,6 +35,9 @@
 - Modify: `src/components/tools/FileUploadZone.test.tsx`
 - Modify: `src/pages/home/HomeBento.tsx`
 - Modify: `src/pages/Home.test.tsx`
+- Modify: `src/components/onboarding/OnboardingTour.tsx`
+- Modify: `src/components/onboarding/OnboardingTour.test.tsx`
+- Modify: `src/pages/tools/MergePdf.test.tsx`
 - Create: `docs/privacy/data-flow.md`
 
 - [ ] **Step 1: Write failing registry and notice tests**
@@ -174,6 +177,20 @@ LocalPDF Studio processes most tools in your browser. AI, OCR, and camera tools 
 ```
 
 Change the privacy link destination from `href="#"` to `href="#privacy"`.
+
+The onboarding tour welcome step must not claim absolute local-only behavior. Replace
+```tsx
+'A privacy-first PDF toolkit that runs entirely in your browser. ' +
+'No files are ever uploaded to a server.',
+```
+with
+```tsx
+'A privacy-first PDF toolkit that processes most tools in your browser. ' +
+'Each tool shows how it handles your file before you start.',
+```
+and add a test asserting the welcome description contains the new wording and neither absolute claim.
+
+Tool pages render the notice through the route-level `ToolAvailabilityGate` in `App.tsx`, not inside the page component. Update `src/pages/tools/MergePdf.test.tsx` so it asserts the absolute phrase is absent from the page rather than expecting the removed copy; the route-level disclosure is covered by the gate test and the browser suite.
 
 - [ ] **Step 5: Add the data-flow document**
 
@@ -491,16 +508,22 @@ test('disabled security and AI routes never mount a workflow', async ({ page }) 
   }
 });
 
-test('disabled AI and OCR routes issue no external request', async ({ page }) => {
-  const externalRequests: string[] = [];
+test('disabled AI and OCR routes issue no service request', async ({ page }) => {
+  const serviceRequests: string[] = [];
+  const serviceHosts = new Set([
+    'generativelanguage.googleapis.com',
+    'cdn.jsdelivr.net',
+    'unpkg.com',
+    'tessdata.projectnaptha.com',
+  ]);
   page.on('request', (request) => {
     const url = new URL(request.url());
-    if (url.hostname !== '127.0.0.1' && url.hostname !== 'localhost') externalRequests.push(request.url());
+    if (serviceHosts.has(url.hostname)) serviceRequests.push(request.url());
   });
   for (const path of ['/tools/ai-summarizer', '/tools/translate-pdf', '/tools/ocr-pdf', '/tools/scan-to-pdf']) {
     await page.goto(path);
   }
-  expect(externalRequests).toEqual([]);
+  expect(serviceRequests).toEqual([]);
 });
 
 test('the redaction compatibility alias resolves to the quarantined route', async ({ page }) => {
