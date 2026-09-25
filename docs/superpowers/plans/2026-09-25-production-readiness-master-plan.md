@@ -206,8 +206,12 @@ npm run test:coverage
 npm run build
 cargo fmt --manifest-path src-tauri/Cargo.toml -- --check
 npm run cargo:check
-npm audit --omit=dev
+npm audit --omit=dev --audit-level=high
 ```
+
+> **Platform note:** `npm run cargo:check` is the local Windows entrypoint and currently delegates to `scripts\with-msvc.cmd`. On Linux CI, the equivalent portable command is `cargo check --manifest-path src-tauri/Cargo.toml`; CI must use that direct command until Task 3.3 replaces the Windows-only wrapper with a cross-platform npm script.
+
+> **Coverage-worker note:** The `test:coverage` script intentionally passes Vitest's supported `--maxWorkers=1` resource envelope. The unbounded local run showed load-dependent Home test timeouts; the serial G0 command keeps the authoritative script name unchanged while avoiding runner-CPU-dependent failures. Do not replace this with a global timeout increase.
 
 Expected: PASS. Rust vulnerability audit joins this gate after Task 6.2 configures it.
 

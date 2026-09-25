@@ -233,7 +233,7 @@ fnm exec --using=22.14.0 -- node $NpmCli install --package-lock-only --ignore-sc
 - [ ] Do not weaken assertions, add blanket retries, disable tests, or change production behavior solely to satisfy mocks.
 - [ ] Run every repaired test file three consecutive times; all must PASS.
 - [ ] Run the complete test suite three consecutive times; all must PASS.
-- [ ] Run `npm run test:coverage`; all 79 files/current tests must pass and configured thresholds must remain unchanged.
+- [ ] Run `npm run test:coverage`; all 85 test files/658 tests must pass and configured thresholds must remain unchanged. The coverage script intentionally uses Vitest's supported `--maxWorkers=1` envelope to prevent load-dependent Home test timeouts; do not increase the global timeout or add blanket retries.
 - [ ] Commit as `test: remove timing-dependent suite failures`.
 
 **Acceptance:** Known files and the complete suite pass three consecutive times, coverage remains enabled, and no test relies on ordering or arbitrary delay.
@@ -245,7 +245,7 @@ fnm exec --using=22.14.0 -- node $NpmCli install --package-lock-only --ignore-sc
 - Reference: all Phase 0 task reports and commits
 
 - [ ] Start from a clean working tree except ignored SDD scratch.
-- [ ] Run a normal `npm ci` under Node 22.14.0/npm 11.16.0.
+- [ ] Run the locked `npm ci --ignore-scripts --no-audit --no-fund` under Node 22.14.0/npm 11.16.0.
 - [ ] Run `npm run typecheck`; record PASS and output.
 - [ ] Run `npm run lint`; record PASS and warning count.
 - [ ] Run `npm run test:coverage`; record file/test counts and coverage totals.
@@ -253,6 +253,9 @@ fnm exec --using=22.14.0 -- node $NpmCli install --package-lock-only --ignore-sc
 - [ ] Run `cargo fmt --manifest-path src-tauri/Cargo.toml -- --check`.
 - [ ] Run `npm run cargo:check`.
 - [ ] Run `npm audit --omit=dev --audit-level=high`; record PASS. Full dev audit and Rust audit remain Phase 6 tasks.
+
+> **Platform note:** `npm run cargo:check` is the local Windows entrypoint and delegates to `scripts\with-msvc.cmd`. On Linux CI, use the equivalent portable `cargo check --manifest-path src-tauri/Cargo.toml` command until Task 3.3 replaces the wrapper.
+
 - [ ] Confirm `git status --short` contains no unexpected generated/source changes.
 - [ ] Record commit SHA, runtime versions, exact commands, outcomes, and remaining warnings in `docs/release/g0-verification.md`.
 - [ ] Commit as `docs: record Gate G0 verification`.

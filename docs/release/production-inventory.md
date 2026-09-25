@@ -2,7 +2,7 @@
 
 **Baseline commit:** `8f9f63b` (branch `production-readiness/phase-0`)
 **Audit reference:** `PRODUCTION_READINESS_AUDIT.md` (audit date 2026-09-24, NO-GO verdict)
-**Status:** Baseline classification only. Release states are remediation planning states, not release approval. Task 2's feature registry (`src/config/featureRegistry.ts`) and `ToolAvailabilityGate` (`src/components/tools/ToolAvailabilityGate.tsx`) now gate all canonical routes so disabled tools cannot reach processing/download success states. This inventory does not claim production readiness; Gate G0 remains not passed.
+**Status:** Baseline classification only. Release states are remediation planning states, not release approval. Task 2's feature registry (`src/config/featureRegistry.ts`) and `ToolAvailabilityGate` (`src/components/tools/ToolAvailabilityGate.tsx`) now gate all canonical routes so disabled tools cannot reach processing/download success states. This inventory does not claim production readiness. The current foundation G0 result is recorded separately in `docs/release/g0-verification.md`; the baseline audit verdict and tool states below remain historical.
 
 ## Release state definitions
 
@@ -103,4 +103,4 @@ The companion feature registry (Task 2) mirrors these privacy classes and releas
 
 ## Next step
 
-The current feature registry (`src/config/featureRegistry.ts`) and `ToolAvailabilityGate` (`src/components/tools/ToolAvailabilityGate.tsx`) encode and enforce these release states and privacy classes across all canonical routes, so unavailable tools cannot reach processing/download success states. These states remain remediation planning states, not release approval; Gate G0 remains not passed.
+The current feature registry (`src/config/featureRegistry.ts`) and `ToolAvailabilityGate` (`src/components/tools/ToolAvailabilityGate.tsx`) encode and enforce these release states and privacy classes across all canonical routes, so unavailable tools cannot reach processing/download success states. These states remain remediation planning states, not release approval. The historical audit recorded G0 as not passed; current post-remediation evidence is recorded in `docs/release/g0-verification.md`, with the local serial coverage repetitions complete and the remote clean-checkout CI transition still required. Later security, platform, and release gates remain outstanding.

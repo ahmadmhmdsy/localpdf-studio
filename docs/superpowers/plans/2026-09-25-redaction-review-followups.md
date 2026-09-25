@@ -201,4 +201,6 @@ Provide the reviewer the complete diff and the requirements above. Resolve all C
 
 - [x] **Step 4: Verify repository state and Gate status.**
 
-Confirm `git diff --check`, clean scope, no dependency/lockfile changes, and the unchanged G0 record still says `G0 NOT PASSED`. Do not run `npm audit fix`.
+For this historical redaction follow-up, confirm `git diff --check`, clean scope, and no dependency/lockfile changes; do not run `npm audit fix`. Current G0 status is tracked separately in `docs/release/g0-verification.md`.
+
+> **Historical status note (2026-09-25):** This plan records the gate state during the redaction follow-up work. The current post-remediation G0 result is maintained in `docs/release/g0-verification.md`; later security and release gates remain separate.

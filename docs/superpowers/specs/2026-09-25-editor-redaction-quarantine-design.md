@@ -1,7 +1,7 @@
 # Editor Redaction Quarantine Design
 
 **Date:** 2026-09-25  
-**Status:** Approved policy, implementation pending  
+**Status:** Historical policy record; implementation completed during Phase 0; current G0 status is tracked in `docs/release/g0-verification.md`
 **Scope:** Phase 0 final-review fix
 
 ## Context
@@ -98,5 +98,6 @@ Use test-driven development for each behavior:
 A reviewer can navigate to `/editor?tool=redact-pdf`, press Ctrl+R, and inspect
 the editor toolbar without finding a redaction activation or redaction-specific
 export path. Legacy redaction records do not appear or affect editor export. The dedicated
-blackout route remains governed by its existing disabled registry entry, and
-Gate G0 remains explicitly not passed because its audit blocker is unchanged.
+blackout route remains governed by its existing disabled registry entry. At the time of this record, Gate G0 was explicitly not passed because its audit blocker was unchanged; current G0 status is tracked separately in `docs/release/g0-verification.md`.
+
+> **Historical status note (2026-09-25):** This task record captures the gate state when the redaction quarantine was implemented. The current post-remediation G0 result is maintained in `docs/release/g0-verification.md`; later security and release gates remain separate.
