@@ -591,6 +591,50 @@ git commit -m "test: add production browser safety gates"
 
 ---
 
+### Task 4b: Remediate the WCAG 1.4.3 defects the axe gate exposed
+
+**Added after execution.** The Task 4 axe gate failed on pre-existing application defects, not on
+test problems. The failing test was the gate itself; no rule was disabled or scoped away.
+
+Measured with axe-core 4.13 against the production preview build (light and dark themes):
+
+| Element | Before | After |
+|---|---|---|
+| Header "Visual Editor" CTA, accent text on accent-dim | 2.29:1 | 5.28:1 |
+| `StepTrack` active step label (11px mono) | 2.32:1 | 5.35:1 |
+| Disabled-tool kicker in `ToolLayout` | 2.54:1 | 5.86:1 |
+| White text on accent background (gate "Home", `NotFound` "Return home") | 2.68:1 | 5.87:1 |
+| Focus ring on light surfaces (WCAG 1.4.11) | 2.68:1 | 6.18:1 |
+
+Changes:
+
+- `src/index.css` adds `--accent-text` (accent used as text) and `--accent-solid` (accent
+  background carrying white text) to both theme blocks, keeps `--accent` decorative, and switches
+  the light focus ring to `--accent-text`. The previous comment claimed `--accent` measured
+  ~3.4:1 on light surfaces; it actually measures 2.36-2.68:1, so that claim was false and is
+  corrected here.
+- `src/theme/skins/bento.css` defines its own pair, because the bento skin overrides `--accent`
+  and would otherwise inherit pink text.
+- The remaining accent-as-text and white-on-accent usages move to the new tokens in `Header`,
+  `StepTrack`, `ToolLayout`, `ToolAvailabilityGate`, `FileUploadZone`, `ToastContainer`, `Home`,
+  `NotFound`, `MergePdf`, and `theme/skins/picker.css`.
+- `e2e/a11y.spec.ts` runs axe over the same three pages in both themes (6 tests), waits for the
+  settled page instead of the `load` event, and uses `test.use({ reducedMotion: 'reduce' })`
+  because `src/index.css` already honours `prefers-reduced-motion`. No sleeps, retries, raised
+  timeouts, or rule scoping. Nodes axe could not decide are printed, not hidden.
+
+Two measurement traps found here and worth remembering: a scan started at `load` reads the home
+cards mid fade-up animation and reports false contrast failures, and `Layout` applies `data-theme`
+from a store that hydrates asynchronously, so a pre-hydration scan compares dark foreground tokens
+against light backgrounds.
+
+Known remaining limitations, recorded rather than hidden: nine icon/stroke usages keep the raw
+brand pink below the 3:1 non-text bar, the completed-step and spinner states use `--accent-2`, and
+axe reports `incomplete` (not `violation`) for text over translucent backdrops, the ambient-orb
+layer, gradient text, and the `opacity-60 grayscale` dimmed cards.
+
+---
+
 ### Task 5: Verify the G1 gate and record evidence
 
 **Files:**
