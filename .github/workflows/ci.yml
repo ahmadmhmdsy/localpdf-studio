@@ -33,6 +33,10 @@ jobs:
       - name: Unit tests and coverage
         run: npm run test:coverage
       - run: npm run build
+      - name: Install Chromium for browser gates
+        run: npx playwright install --with-deps chromium
+      - name: Production browser smoke and accessibility gates
+        run: npm run test:e2e
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@1.89.0
         with:

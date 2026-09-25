@@ -17,6 +17,7 @@
     "lint": "eslint .",
     "test": "vitest run",
     "test:coverage": "vitest run --coverage --maxWorkers=1",
+    "test:e2e": "playwright test",
     "dev:tauri": "tauri dev",
     "build:tauri": "tauri build",
     "tauri": "tauri",
@@ -62,12 +63,14 @@
     "zustand": "^5.0.12"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.13.0",
     "@eslint/js": "^9.23.0",
+    "@playwright/test": "1.63.0",
+    "@tailwindcss/vite": "^4.1.14",
     "@tauri-apps/cli": "^2.1.0",
     "@tauri-apps/plugin-notification": "^2.0.0",
     "@tauri-apps/plugin-os": "^2.0.0",
     "@tauri-apps/plugin-shell": "^2.0.1",
-    "@tailwindcss/vite": "^4.1.14",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",

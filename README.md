@@ -70,8 +70,21 @@ npm run dev
 | `npm run lint` | ESLint |
 | `npm test` | Run all tests (Vitest) |
 | `npm run test:coverage` | Run tests with coverage report |
+| `npm run test:e2e` | Run production-browser smoke and accessibility gates (Playwright) |
 | `npm run clean` | Remove `dist/` |
 | `npx vitest run src/pages/tools/MergePdf.test.tsx` | Run a single test file |
+
+### Browser tests (Playwright)
+
+The browser gate runs against the **production build**, not the dev server. Install the Chromium browser once, then build and run the suite:
+
+```sh
+npx playwright install chromium   # one-time browser download
+npm run build                     # the preview server serves dist/
+npm run test:e2e                  # smoke + accessibility gates
+```
+
+`npm run test:e2e` starts its own `vite preview` server on `127.0.0.1:4173` via the Playwright `webServer` config, so no server needs to be running first. On CI, Chromium is installed with `npx playwright install --with-deps chromium` before the suite runs. See `e2e/` for the smoke and axe specs.
 
 ## Tech Stack
 
