@@ -60,7 +60,6 @@ export default function Editor() {
       if (toolParam === 'edit-pdf') setActiveTool('text');
       else if (toolParam === 'add-watermark') setActiveTool('text');
       else if (toolParam === 'sign-pdf') setActiveTool('image');
-      else if (toolParam === 'redact-pdf') setActiveTool('redact');
       else if (toolParam === 'crop-pdf') setActiveTool('crop');
       else setActiveTool('select');
     }
@@ -101,7 +100,6 @@ export default function Editor() {
     { key: 't', ctrl: true, handler: () => setActiveTool('text') },
     { key: 'd', ctrl: true, handler: () => setActiveTool('draw') },
     { key: 'i', ctrl: true, handler: () => setActiveTool('image') },
-    { key: 'r', ctrl: true, handler: () => setActiveTool('redact') },
     { key: 'c', ctrl: true, handler: () => setActiveTool('crop') },
     { key: 's', ctrl: true, handler: () => setActiveTool('signature') },
     // Help

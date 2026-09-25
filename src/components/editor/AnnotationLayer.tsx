@@ -1,9 +1,8 @@
 import { useRef, useEffect } from 'react';
-import { useEditor, TextAnnotation, ImageAnnotation, RedactAnnotation, CropAnnotation, DrawAnnotation, Point } from '../../contexts/EditorContext';
+import { useEditor, TextAnnotation, ImageAnnotation, CropAnnotation, DrawAnnotation, Point } from '../../contexts/EditorContext';
 import { ANNOTATION_COLORS } from '../../constants/colors';
 import TextAnnotationItem from './annotations/TextAnnotationItem';
 import ImageAnnotationItem from './annotations/ImageAnnotationItem';
-import RedactAnnotationItem from './annotations/RedactAnnotationItem';
 import CropAnnotationItem from './annotations/CropAnnotationItem';
 import DrawAnnotationItem from './annotations/DrawAnnotationItem';
 
@@ -107,23 +106,6 @@ export default function AnnotationLayer() {
         color: 'red',
       });
       setActiveTool('select');
-    } else if (activeTool === 'redact') {
-      if (!containerRef.current) return;
-      const rect = containerRef.current.getBoundingClientRect();
-      const x = (e.clientX - rect.left) / rect.width;
-      const y = (e.clientY - rect.top) / rect.height;
-
-      addAnnotation({
-        id: `redact-${Date.now()}`,
-        pageId: pageMeta.id,
-        type: 'redact',
-        x,
-        y,
-        width: 0.2, // Default 20% width
-        height: 0.05, // Default 5% height
-        color: 'black',
-      });
-      setActiveTool('select');
     } else if (activeTool === 'crop') {
       if (!containerRef.current) return;
 
@@ -193,14 +175,6 @@ export default function AnnotationLayer() {
             <ImageAnnotationItem 
               key={ann.id} 
               annotation={ann as ImageAnnotation} 
-              containerRef={containerRef}
-            />
-          );
-        } else if (ann.type === 'redact') {
-          return (
-            <RedactAnnotationItem 
-              key={ann.id} 
-              annotation={ann as RedactAnnotation} 
               containerRef={containerRef}
             />
           );

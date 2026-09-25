@@ -69,7 +69,6 @@ export const EDITOR_SHORTCUTS = {
   TOOL_TEXT: { key: 't', description: 'Text tool' },
   TOOL_DRAW: { key: 'd', description: 'Draw tool' },
   TOOL_IMAGE: { key: 'i', description: 'Image tool' },
-  TOOL_REDACT: { key: 'r', description: 'Redact tool' },
   TOOL_CROP: { key: 'c', description: 'Crop tool' },
   TOOL_SIGNATURE: { key: 's', description: 'Signature tool' },
 

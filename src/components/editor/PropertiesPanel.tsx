@@ -1,8 +1,8 @@
-import { TextAnnotation, ImageAnnotation, RedactAnnotation, CropAnnotation, DrawAnnotation } from '../../contexts/EditorContext';
+import { TextAnnotation, ImageAnnotation, DrawAnnotation } from '../../contexts/EditorContext';
 import { useToolsStore, useAnnotationsStore, useDocumentStore } from '../../store';
 import { useShallow } from 'zustand/react/shallow';
 import { Trash2 } from 'lucide-react';
-import { ANNOTATION_COLORS, REDACT_COLORS } from '../../constants/colors';
+import { ANNOTATION_COLORS } from '../../constants/colors';
 
 export default function PropertiesPanel() {
   const { activeTool, propertiesPanelVisible } = useToolsStore(
@@ -157,43 +157,6 @@ export default function PropertiesPanel() {
                     >
                       <Trash2 size={16} />
                       Delete Image
-                    </button>
-                  </div>
-                )}
-              </div>
-            )}
-
-            {(activeTool === 'redact' || (selectedAnnotation && selectedAnnotation.type === 'redact')) && (
-              <div className="space-y-4">
-                {activeTool === 'redact' && !selectedAnnotation && (
-                  <p className="text-xs text-[var(--text-3)] bg-[var(--surface-2)] p-3 rounded-lg border border-[var(--border)] mb-4">
-                    Click anywhere on the document to add a redaction box. Note: the editor's redact tool adds a visible shape only — use "Blackout PDF" for true content removal.
-                  </p>
-                )}
-
-                <div className={!selectedAnnotation ? 'opacity-50 pointer-events-none' : ''}>
-                  <label className="block text-xs font-medium text-[var(--text-3)] mb-1">Fill Color</label>
-                  <div className="flex gap-2">
-                    {REDACT_COLORS.map(({ value, label }) => (
-                      <button
-                        key={value}
-                        onClick={() => selectedAnnotation && updateAnnotation(selectedAnnotation.id, { color: value }, pages)}
-                        className={`w-8 h-8 rounded-full border-2 transition-all ${(selectedAnnotation as RedactAnnotation)?.color === value ? 'border-[var(--border)] scale-110' : 'border-[var(--border)] hover:border-[var(--border)]'}`}
-                        style={{ backgroundColor: value }}
-                        aria-label={`Select fill color ${label}`}
-                      />
-                    ))}
-                  </div>
-                </div>
-
-                {selectedAnnotation && (
-                  <div className="pt-4 mt-4 border-t border-[var(--border)]">
-                    <button
-                      onClick={() => deleteAnnotation(selectedAnnotation.id, pages)}
-                      className="flex items-center justify-center gap-2 w-full py-2 px-4 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-sm font-medium transition-colors"
-                    >
-                      <Trash2 size={16} />
-                      Delete Redaction
                     </button>
                   </div>
                 )}

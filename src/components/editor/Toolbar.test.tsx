@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { render, screen } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import Toolbar from './Toolbar';
 import * as DocumentStoreModule from '../../store/documentStore';
@@ -7,15 +7,31 @@ import * as ToolsStoreModule from '../../store/toolsStore';
 import * as AnnotationsStoreModule from '../../store/annotationsStore';
 import * as ToastContextModule from '../../contexts/ToastContext';
 
+const pdfLibMocks = vi.hoisted(() => {
+  const drawText = vi.fn();
+  const drawRectangle = vi.fn();
+  const page = {
+    getSize: vi.fn(() => ({ width: 100, height: 100 })),
+    getRotation: vi.fn(() => ({ angle: 0 })),
+    setRotation: vi.fn(),
+    drawText,
+    drawRectangle,
+    setCropBox: vi.fn(),
+    drawImage: vi.fn(),
+    drawSvgPath: vi.fn(),
+  };
+  const newPdf = {
+    copyPages: vi.fn(),
+    embedFont: vi.fn(),
+    addPage: vi.fn(),
+    save: vi.fn(),
+  };
+  const create = vi.fn();
+  return { drawText, drawRectangle, page, newPdf, create };
+});
+
 vi.mock('pdf-lib', () => ({
-  PDFDocument: {
-    create: vi.fn().mockResolvedValue({
-      copyPages: vi.fn().mockResolvedValue([]),
-      embedFont: vi.fn().mockResolvedValue({}),
-      addPage: vi.fn(),
-      save: vi.fn().mockResolvedValue(new Uint8Array([1, 2, 3])),
-    }),
-  },
+  PDFDocument: { create: pdfLibMocks.create },
   degrees: vi.fn((v) => v),
   rgb: vi.fn(),
   StandardFonts: { Helvetica: 'Helvetica' },
@@ -61,6 +77,14 @@ describe('Toolbar', () => {
       toasts: [],
       dismissToast: vi.fn(),
     } as any);
+
+    pdfLibMocks.create.mockResolvedValue(pdfLibMocks.newPdf);
+    pdfLibMocks.newPdf.copyPages.mockResolvedValue([pdfLibMocks.page]);
+    pdfLibMocks.newPdf.embedFont.mockResolvedValue({
+      widthOfTextAtSize: vi.fn(() => 10),
+      heightAtSize: vi.fn(() => 10),
+    });
+    pdfLibMocks.newPdf.save.mockResolvedValue(new Uint8Array([1, 2, 3]));
   });
 
   it('renders null when no file is loaded', () => {
@@ -83,7 +107,7 @@ describe('Toolbar', () => {
     expect(screen.getByLabelText('Freehand Draw')).toBeInTheDocument();
     expect(screen.getByLabelText('Add Signature')).toBeInTheDocument();
     expect(screen.getByLabelText('Add Image/Watermark')).toBeInTheDocument();
-    expect(screen.getByLabelText('Redact')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Redact')).not.toBeInTheDocument();
     expect(screen.getByLabelText('Crop Page')).toBeInTheDocument();
   });
 
@@ -115,6 +139,43 @@ describe('Toolbar', () => {
     render(<Toolbar />);
     expect(screen.getByText('Export Page')).toBeInTheDocument();
     expect(screen.getByText('Export All')).toBeInTheDocument();
+  });
+
+  it('exports normal annotations while ignoring a legacy redaction record', async () => {
+    vi.spyOn(AnnotationsStoreModule, 'useAnnotationsStore').mockReturnValue({
+      annotations: [
+        {
+          id: 'text-1',
+          pageId: 'page-0',
+          type: 'text',
+          text: 'hello',
+          x: 0.2,
+          y: 0.2,
+          fontSize: 12,
+          color: 'black',
+        },
+        {
+          id: 'redact-1',
+          pageId: 'page-0',
+          type: 'redact',
+          x: 0.5,
+          y: 0.5,
+          width: 0.2,
+          height: 0.05,
+          color: 'black',
+        },
+      ],
+      addAnnotation: vi.fn(),
+      undo: vi.fn(() => null),
+      redo: vi.fn(() => null),
+    } as any);
+
+    render(<Toolbar />);
+    await user.click(screen.getByRole('button', { name: 'Export All' }));
+
+    await waitFor(() => expect(pdfLibMocks.drawText).toHaveBeenCalled());
+    expect(pdfLibMocks.drawRectangle).not.toHaveBeenCalled();
+    expect(screen.queryByText('Redaction warning')).not.toBeInTheDocument();
   });
 
   it('renders close file button', () => {

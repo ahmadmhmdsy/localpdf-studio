@@ -1,4 +1,4 @@
-import { TextAnnotation, ImageAnnotation, RedactAnnotation, CropAnnotation, DrawAnnotation } from '../../contexts/EditorContext';
+import { TextAnnotation, ImageAnnotation, CropAnnotation, DrawAnnotation } from '../../contexts/EditorContext';
 import { useDocumentStore, useAnnotationsStore, useToolsStore } from '../../store';
 import { useToast } from '../../contexts/ToastContext';
 import { Moon, Sun, Trash2 } from 'lucide-react';
@@ -6,7 +6,6 @@ import { PDFDocument, PDFPage, PDFFont, degrees, rgb, StandardFonts } from 'pdf-
 import { useState, useRef } from 'react';
 import { hexToRgb } from '../../lib/color';
 import SignatureModal from './SignatureModal';
-import ConfirmModal from '../ui/ConfirmModal';
 import { ToolPicker } from './toolbar/ToolPicker';
 import { HistoryControls } from './toolbar/HistoryControls';
 import { ZoomControls } from './toolbar/ZoomControls';
@@ -19,8 +18,6 @@ export default function Toolbar() {
   const { showToast } = useToast();
   const [isExporting, setIsExporting] = useState(false);
   const [isSignatureModalOpen, setIsSignatureModalOpen] = useState(false);
-  const [showRedactConfirm, setShowRedactConfirm] = useState(false);
-  const doExportRef = useRef<(() => Promise<void>) | undefined>(undefined);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -96,15 +93,6 @@ export default function Toolbar() {
               width: imgWidth, height: imgHeight, opacity: imgAnn.opacity ?? 1, rotate: degrees(-(imgAnn.rotation || 0)),
             });
           }
-        } else if (ann.type === 'redact') {
-          const redactAnn = ann as RedactAnnotation;
-          const { r, g, b } = hexToRgb(redactAnn.color);
-          const rectWidth = redactAnn.width * width;
-          const rectHeight = redactAnn.height * height;
-          page.drawRectangle({
-            x: (redactAnn.x * width) - (rectWidth / 2), y: height - (redactAnn.y * height) - (rectHeight / 2),
-            width: rectWidth, height: rectHeight, color: rgb(r, g, b),
-          });
         } else if (ann.type === 'crop') {
           const cropAnn = ann as CropAnnotation;
           const cropWidth = cropAnn.width * width;
@@ -171,12 +159,6 @@ export default function Toolbar() {
 
   const handleExport = async () => {
     if (!pdfLibDoc || !file || pages.length === 0) return;
-    const hasRedactions = annotations.some(a => a.type === 'redact');
-    if (hasRedactions) {
-      doExportRef.current = doExport;
-      setShowRedactConfirm(true);
-      return;
-    }
     await doExport();
   };
 
@@ -277,20 +259,6 @@ export default function Toolbar() {
         isOpen={isSignatureModalOpen}
         onClose={() => setIsSignatureModalOpen(false)}
         onSave={handleSignatureSave}
-      />
-      <ConfirmModal
-        isOpen={showRedactConfirm}
-        title="Redaction warning"
-        message={`You have marked redaction shapes in the editor. These are visible shapes only — they are NOT removed from the underlying PDF. For true redaction (removing text from the content stream), use the "Blackout PDF" tool from the home page.\n\nContinue with this visual-only export?`}
-        confirmLabel="Continue export"
-        variant="warning"
-        onConfirm={() => {
-          setShowRedactConfirm(false);
-          const fn = doExportRef.current;
-          doExportRef.current = undefined;
-          if (fn) void fn();
-        }}
-        onCancel={() => setShowRedactConfirm(false)}
       />
     </div>
   );

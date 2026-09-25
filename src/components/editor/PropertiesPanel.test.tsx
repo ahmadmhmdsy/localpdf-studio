@@ -51,6 +51,37 @@ describe('PropertiesPanel', () => {
     expect(screen.getByText(/Font Size/i)).toBeInTheDocument();
   });
 
+  it('does not expose redaction settings for a legacy redaction record', () => {
+    vi.spyOn(ToolsStoreModule, 'useToolsStore').mockReturnValue({
+      activeTool: 'select',
+      propertiesPanelVisible: true,
+    } as any);
+    vi.spyOn(DocumentStoreModule, 'useDocumentStore').mockReturnValue({
+      file: mockFile,
+      pages: [],
+    } as any);
+    vi.spyOn(AnnotationsStoreModule, 'useAnnotationsStore').mockReturnValue({
+      annotations: [{
+        id: 'legacy-redaction',
+        pageId: 'page-0',
+        type: 'redact',
+        x: 0.5,
+        y: 0.5,
+        width: 0.2,
+        height: 0.05,
+        color: 'black',
+      }],
+      selectedAnnotationId: 'legacy-redaction',
+      updateAnnotation: vi.fn(),
+      deleteAnnotation: vi.fn(),
+    } as any);
+
+    render(<PropertiesPanel />);
+
+    expect(screen.queryByText('Fill Color')).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Delete Redaction' })).not.toBeInTheDocument();
+  });
+
   it('renders nothing when no file is loaded', () => {
     vi.spyOn(ToolsStoreModule, 'useToolsStore').mockReturnValue({ activeTool: 'select', propertiesPanelVisible: true } as any);
     vi.spyOn(DocumentStoreModule, 'useDocumentStore').mockReturnValue({ file: null } as any);

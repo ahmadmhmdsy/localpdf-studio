@@ -51,7 +51,7 @@ describe('KeyboardShortcutsHelp', () => {
     expect(screen.getByText('Ctrl+T')).toBeInTheDocument();
     expect(screen.getByText('Ctrl+D')).toBeInTheDocument();
     expect(screen.getByText('Ctrl+I')).toBeInTheDocument();
-    expect(screen.getByText('Ctrl+R')).toBeInTheDocument();
+    expect(screen.queryByText('Ctrl+R')).not.toBeInTheDocument();
     expect(screen.getByText('Ctrl+C')).toBeInTheDocument();
     expect(screen.getByText('Ctrl+S')).toBeInTheDocument();
   });
@@ -93,7 +93,7 @@ describe('KeyboardShortcutsHelp', () => {
     expect(screen.getByText('Text tool')).toBeInTheDocument();
     expect(screen.getByText('Draw tool')).toBeInTheDocument();
     expect(screen.getByText('Image tool')).toBeInTheDocument();
-    expect(screen.getByText('Redact tool')).toBeInTheDocument();
+    expect(screen.queryByText('Redact tool')).not.toBeInTheDocument();
     expect(screen.getByText('Crop tool')).toBeInTheDocument();
     expect(screen.getByText('Signature tool')).toBeInTheDocument();
   });

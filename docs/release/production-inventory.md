@@ -2,13 +2,13 @@
 
 **Baseline commit:** `8f9f63b` (branch `production-readiness/phase-0`)
 **Audit reference:** `PRODUCTION_READINESS_AUDIT.md` (audit date 2026-09-24, NO-GO verdict)
-**Status:** Baseline classification only. Release states are remediation planning states, not current UI states; tools remain reachable until the feature registry lands in Phase 0 Task 2. Do not treat any `stable` entry as release approval.
+**Status:** Baseline classification only. Release states are remediation planning states, not release approval. Task 2's feature registry (`src/config/featureRegistry.ts`) and `ToolAvailabilityGate` (`src/components/tools/ToolAvailabilityGate.tsx`) now gate all canonical routes so disabled tools cannot reach processing/download success states. This inventory does not claim production readiness; Gate G0 remains not passed.
 
 ## Release state definitions
 
 - `stable` — audited as a reliable narrow outcome for the basic workflow; no blocking defect recorded by the audit.
 - `limited` — usable with material caveats recorded by the audit; requires workstream remediation before broader claims.
-- `disabled` — audited as blocked, a no-op/misleading security behavior, or a high-risk confidentiality/privacy defect; must be quarantined behind a truthful unavailable screen (Phase 0 Task 2) before release.
+- `disabled` — audited as blocked, a no-op/misleading security behavior, or a high-risk confidentiality/privacy defect; the current registry and `ToolAvailabilityGate` block processing/download success while remediation remains outstanding. This is enforcement, not release approval.
 - `experimental` — not yet populated; no tool is assigned this state at baseline.
 
 ## Owner workstreams
@@ -52,7 +52,7 @@
 | crop-pdf | Crop PDF | OK with caveat | stable | local-only | Editor/Accessibility | Audit outcome matrix: one normalized crop is applied to all pages. | One shared crop for all pages; CropBox/MediaBox/origin normalization needs the unified transform (Phase 4). |
 | edit-pdf | Edit PDF | Limited | limited | local-only | Editor/Accessibility | Audit outcome matrix: overlay addition works. | Adds overlays only; does not edit existing PDF text/layout. |
 | sign-pdf | Sign PDF | Blocked/Misleading | limited | local-only | PDF Security | Audit outcome matrix: visual image stamp only. | Not certificate-backed or tamper-evident signing — advertised outcome is not achieved. |
-| blackout-pdf | Blackout PDF (Redact PDF) | Blocked | disabled | local-only | PDF Security | Audit P0 blocker 4: editor path is explicitly visual-only; dedicated path retains an original redacted page through inbound references (runtime probe). | Not a trustworthy confidentiality boundary: text remains extractable and removed content can stay reachable. |
+| blackout-pdf | Blackout PDF (Redact PDF) | Blocked | disabled | local-only | PDF Security | Audit P0 blocker 4 (runtime probe; editor redaction is now quarantined): the dedicated blackout path remains disabled and retains an original redacted page through inbound references. | Not a trustworthy confidentiality boundary: text remains extractable and removed content can stay reachable; the editor offers no redaction workflow. |
 | compare-pdf | Compare PDF | OK narrow | stable | local-only | Editor/Accessibility | Audit outcome matrix: honest side-by-side visual comparison. | No automatic content diff; visual comparison only. |
 | decrypt-pdf | Decrypt PDF (Unlock PDF) | Blocked | disabled | local-only | PDF Security | Audit P0 blocker 3: pdf-lib 1.17.1 cannot load genuinely encrypted PDFs (runtime probe). | Cannot reliably open encrypted PDFs, including via the unlock-pdf alias. |
 | protect-pdf | Protect PDF | Blocked | disabled | local-only | PDF Security | Audit P0 blocker 2: runtime probe produced output with no /Encrypt dictionary that opened without a password while reporting success. | Protection is a no-op that reports success — false confidentiality signal. |
@@ -67,11 +67,11 @@ State totals: stable 5, limited 17, disabled 9, experimental 0 — 31 tools tota
 - `camera`: scan-to-pdf — camera access is the primary (currently policy-blocked) input path.
 - `local-only`: all other tools. This classification describes current data flow, not a guarantee; the audit records that visual "Files never leave your device" copy overstates behavior for AI pages, and that no aggregate resource limits exist.
 
-The companion feature registry (Phase 0 Task 2) must mirror these privacy classes and release states exactly.
+The companion feature registry (Task 2) mirrors these privacy classes and release states exactly. Current enforcement is implemented in `src/config/featureRegistry.ts` and `src/components/tools/ToolAvailabilityGate.tsx`, which gate all canonical routes; these classifications remain remediation planning states, not release approval.
 
 ## Workstream assignments for disabled and limited tools
 
-- **Foundation (densest first):** owns the registry itself plus Task 3-5 gate repair; every disabled tool depends on the registry gate landing.
+- **Foundation (densest first):** owns the registry plus Task 3-5 gate repair; the current registry and `ToolAvailabilityGate` already gate disabled tools, while remaining work tracks their remediation.
 - **PDF Security:** protect-pdf, decrypt-pdf, blackout-pdf, sign-pdf, split-pdf, remove-pages, extract-pages, merge-pdf graph-safety follow-up.
 - **Privacy/AI/OCR:** ai-summarizer, translate-pdf, scan-to-pdf, ocr-pdf.
 - **Tauri Platform:** jpg-to-pdf (native MIME/page sizing) and the native save/CSP path that affects output delivery of every DownloadState tool (audit P0 blocker 5).
@@ -103,4 +103,4 @@ The companion feature registry (Phase 0 Task 2) must mirror these privacy classe
 
 ## Next step
 
-The companion feature registry (Phase 0 Task 2) will encode these release states and privacy classes so unavailable tools cannot reach processing/download success states.
+The current feature registry (`src/config/featureRegistry.ts`) and `ToolAvailabilityGate` (`src/components/tools/ToolAvailabilityGate.tsx`) encode and enforce these release states and privacy classes across all canonical routes, so unavailable tools cannot reach processing/download success states. These states remain remediation planning states, not release approval; Gate G0 remains not passed.

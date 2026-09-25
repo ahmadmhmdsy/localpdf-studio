@@ -14,8 +14,7 @@ const EDITOR_INTEGRATED_TOOLS = [
   'add-watermark',
   'crop-pdf',
   'edit-pdf',
-  'sign-pdf',
-  'redact-pdf'
+  'sign-pdf'
 ];
 
 export default function Home() {

@@ -41,7 +41,6 @@ const groups: ShortcutGroup[] = [
       { keys: 'Ctrl+T', desc: 'Text tool' },
       { keys: 'Ctrl+D', desc: 'Draw tool' },
       { keys: 'Ctrl+I', desc: 'Image tool' },
-      { keys: 'Ctrl+R', desc: 'Redact tool' },
       { keys: 'Ctrl+C', desc: 'Crop tool' },
       { keys: 'Ctrl+S', desc: 'Signature tool' },
     ],

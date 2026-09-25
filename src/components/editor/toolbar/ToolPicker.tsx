@@ -1,4 +1,4 @@
-import { MousePointer2, Hand, Type, Square, PenTool, Image as ImageIcon, Edit3, Crop } from 'lucide-react';
+import { MousePointer2, Hand, Type, PenTool, Image as ImageIcon, Edit3, Crop } from 'lucide-react';
 
 interface ToolPickerProps {
   activeTool: string | null;
@@ -66,14 +66,6 @@ export function ToolPicker({ activeTool, onSelect, onOpenSignature, onPickImage 
         aria-label="Add Image/Watermark"
       >
         <ImageIcon size={18} />
-      </button>
-      <button
-        onClick={() => onSelect('redact')}
-        className={toolButtonClass(activeTool === 'redact')}
-        title="Redact"
-        aria-label="Redact"
-      >
-        <Square size={18} className="fill-current" />
       </button>
       <button
         onClick={() => onSelect('crop')}

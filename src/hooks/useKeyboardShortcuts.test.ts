@@ -148,7 +148,7 @@ describe('useKeyboardShortcuts', () => {
     expect(EDITOR_SHORTCUTS.TOOL_TEXT.key).toBe('t');
     expect(EDITOR_SHORTCUTS.TOOL_DRAW.key).toBe('d');
     expect(EDITOR_SHORTCUTS.TOOL_IMAGE.key).toBe('i');
-    expect(EDITOR_SHORTCUTS.TOOL_REDACT.key).toBe('r');
+    expect(EDITOR_SHORTCUTS).not.toHaveProperty('TOOL_REDACT');
     expect(EDITOR_SHORTCUTS.TOOL_CROP.key).toBe('c');
     expect(EDITOR_SHORTCUTS.TOOL_SIGNATURE.key).toBe('s');
   });

@@ -226,7 +226,7 @@ const REGISTRY: Record<ToolId, ToolAvailability> = {
     privacy: 'local-only',
     support: 'Disabled pending remediation; see the production inventory for audit evidence.',
     limitation:
-      'The editor path is explicitly visual-only; the dedicated path retains an original redacted page through inbound references. Not a trustworthy confidentiality boundary: text remains extractable and removed content can stay reachable.',
+      'The editor has no redaction workflow, and the dedicated blackout path remains disabled. Neither path is a confidentiality boundary: text may remain extractable and removed content can stay reachable through underlying PDF references.',
   },
   'compare-pdf': {
     releaseState: 'stable',

@@ -30,7 +30,7 @@ const STEPS: TourStep[] = [
   {
     title: 'Use the Editor for full control',
     description:
-      'Open /editor for the visual workspace: reorder pages, annotate, redact, sign, and export. ' +
+      'Open /editor for the visual workspace: reorder pages, annotate, sign, and export. ' +
       'Press ? at any time to see all keyboard shortcuts.',
   },
 ];
