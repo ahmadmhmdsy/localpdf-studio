@@ -12,7 +12,7 @@ interface State {
 }
 
 class ToolErrorBoundaryInner extends Component<Props, State> {
-  public state: State = {
+  public override state: State = {
     hasError: false,
     error: null,
   };
@@ -21,7 +21,7 @@ class ToolErrorBoundaryInner extends Component<Props, State> {
     return { hasError: true, error };
   }
 
-  public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+  public override componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error(`Error in ${this.props.toolName || 'tool'}:`, error, errorInfo);
   }
 
@@ -33,7 +33,7 @@ class ToolErrorBoundaryInner extends Component<Props, State> {
     window.location.href = '/';
   };
 
-  public render() {
+  public override render() {
     if (this.state.hasError) {
       const toolName = this.props.toolName || 'This tool';
       

@@ -109,7 +109,7 @@ export default function Editor() {
     { key: '?', handler: () => setShowShortcuts((prev) => !prev) },
     // Properties panel toggle (Ctrl+,)
     { key: ',', ctrl: true, handler: () => togglePropertiesPanel() },
-  ], [undo, redo, pages, selectedAnnotationId, deleteAnnotation, zoom, setZoom, setActiveTool, setShowShortcuts, togglePropertiesPanel]);
+  ], [undo, redo, pages, setPages, selectedAnnotationId, deleteAnnotation, zoom, setZoom, setActiveTool, setShowShortcuts, togglePropertiesPanel]);
 
   useKeyboardShortcuts(keyboardShortcuts);
 

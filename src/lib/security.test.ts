@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach, beforeAll } from 'vitest';
 import { signPdf, redactPdf, dataUrlToBytes } from './security';
 
 const mockState = vi.hoisted(() => ({
-  pages: [] as { drawRectangle: ReturnType<typeof vi.fn>; drawImage: ReturnType<typeof vi.fn>; getSize: ReturnType<typeof vi.fn> }[],
+  pages: [] as { drawRectangle: ReturnType<typeof vi.fn>; drawImage: ReturnType<typeof vi.fn>; drawText: ReturnType<typeof vi.fn>; getSize: ReturnType<typeof vi.fn> }[],
   embedPng: undefined as ReturnType<typeof vi.fn> | undefined,
   load: undefined as ReturnType<typeof vi.fn> | undefined,
   create: undefined as ReturnType<typeof vi.fn> | undefined,

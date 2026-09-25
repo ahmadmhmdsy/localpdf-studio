@@ -42,9 +42,10 @@ export default function AddWatermark() {
       setResultSize((blob.size / 1024 / 1024).toFixed(2) + ' MB');
       setStep('download');
     } catch (error) {
-      logError('Error adding watermark:', error);
+      const normalizedError = error instanceof Error ? error : new Error(String(error));
+      logError('Error adding watermark:', normalizedError);
       showToast({
-        message: error.message || 'An error occurred. Please try again.',
+        message: normalizedError.message || 'An error occurred. Please try again.',
         type: 'error',
         duration: 5000,
       });

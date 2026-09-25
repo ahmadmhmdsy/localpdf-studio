@@ -4,7 +4,7 @@ import reactHooks from 'eslint-plugin-react-hooks';
 import reactRefresh from 'eslint-plugin-react-refresh';
 
 export default tseslint.config(
-  { ignores: ['dist', '.agents/**'] },
+  { ignores: ['dist/**', 'coverage/**', 'src-tauri/target/**', '.superpowers/**', 'audit-evidence/**', '.agents/**'] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ['**/*.{ts,tsx}'],

@@ -13,8 +13,8 @@ interface SortableThumbnailProps {
   isActive: boolean;
   pdfJsDoc: pdfjsLib.PDFDocumentProxy;
   onClick: () => void;
-  onRotate: (e: React.MouseEvent) => void;
-  onDelete: (e: React.MouseEvent) => void;
+  onRotate: React.MouseEventHandler<HTMLButtonElement>;
+  onDelete: React.MouseEventHandler<HTMLButtonElement>;
 }
 
 function SortableThumbnailInner({
@@ -64,8 +64,9 @@ function SortableThumbnailInner({
                   hasLoadedRef.current = true;
                 }
               } catch (error) {
-                if (error.name !== 'RenderingCancelledException') {
-                  logError(`Error generating thumbnail for page ${page.originalIndex + 1}:`, error);
+                const normalizedError = error instanceof Error ? error : new Error(String(error));
+                if (normalizedError.name !== 'RenderingCancelledException') {
+                  logError(`Error generating thumbnail for page ${page.originalIndex + 1}:`, normalizedError);
                 }
               }
             };

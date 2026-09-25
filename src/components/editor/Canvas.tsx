@@ -5,13 +5,13 @@ import { logError } from '../../lib/logger';
 import AnnotationLayer from './AnnotationLayer';
 
 // Debounce utility for delaying canvas re-render during zoom
-function useDebouncedCallback<T extends (...args: unknown[]) => unknown>(
-  callback: T,
+function useDebouncedCallback<TArgs extends unknown[]>(
+  callback: (...args: TArgs) => unknown,
   delay: number
 ) {
   const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  return useCallback((...args: Parameters<T>) => {
+  return useCallback((...args: TArgs) => {
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current);
     }
@@ -121,8 +121,9 @@ export default function Canvas() {
         renderTask = page.render(renderContext);
         await renderTask.promise;
       } catch (error) {
-        if (error.name !== 'RenderingCancelledException' && !isCancelled) {
-          logError('Error rendering page:', error);
+        const normalizedError = error instanceof Error ? error : new Error(String(error));
+        if (normalizedError.name !== 'RenderingCancelledException' && !isCancelled) {
+          logError('Error rendering page:', normalizedError);
         }
       } finally {
         if (!isCancelled) {

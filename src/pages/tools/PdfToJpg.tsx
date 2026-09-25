@@ -37,9 +37,10 @@ export default function PdfToJpg() {
       setResultSize((zipBlob.size / 1024 / 1024).toFixed(2) + ' MB');
       setStep('download');
     } catch (error) {
-      logError('Error converting PDF to JPG:', error);
+      const normalizedError = error instanceof Error ? error : new Error(String(error));
+      logError('Error converting PDF to JPG:', normalizedError);
       showToast({
-        message: error.message || 'An error occurred while converting. Please try again.',
+        message: normalizedError.message || 'An error occurred while converting. Please try again.',
         type: 'error',
         duration: 5000,
       });

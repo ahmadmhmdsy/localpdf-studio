@@ -42,9 +42,10 @@ export default function SplitPdf() {
       setResultSize((blob.size / 1024 / 1024).toFixed(2) + ' MB');
       setStep('download');
     } catch (error) {
-      logError('Error splitting PDF:', error);
+      const normalizedError = error instanceof Error ? error : new Error(String(error));
+      logError('Error splitting PDF:', normalizedError);
       showToast({
-        message: error.message || 'An error occurred while splitting the PDF. Please check your page ranges and try again.',
+        message: normalizedError.message || 'An error occurred while splitting the PDF. Please check your page ranges and try again.',
         type: 'error',
         duration: 5000,
       });

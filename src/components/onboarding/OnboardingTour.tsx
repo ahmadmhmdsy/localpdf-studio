@@ -62,6 +62,15 @@ export default function OnboardingTour({ forceShow = false }: OnboardingTourProp
     }
   }, [forceShow]);
 
+  const handleComplete = () => {
+    setIsOpen(false);
+    try {
+      window.localStorage.setItem(STORAGE_KEY, 'true');
+    } catch {
+      // ignore storage failures
+    }
+  };
+
   // Focus trap + ESC dismiss
   useEffect(() => {
     if (!isOpen) return;
@@ -99,15 +108,6 @@ export default function OnboardingTour({ forceShow = false }: OnboardingTourProp
     // handleComplete is stable (see below) so it does not need to be a dep.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
-
-  const handleComplete = () => {
-    setIsOpen(false);
-    try {
-      window.localStorage.setItem(STORAGE_KEY, 'true');
-    } catch {
-      // ignore storage failures
-    }
-  };
 
   const next = () => {
     if (step + 1 >= TOTAL_STEPS) handleComplete();
