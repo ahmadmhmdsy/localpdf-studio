@@ -4,6 +4,8 @@
 **Audit reference:** `PRODUCTION_READINESS_AUDIT.md` (audit date 2026-09-24, NO-GO verdict)
 **Status:** Baseline classification only. Release states are remediation planning states, not release approval. Task 2's feature registry (`src/config/featureRegistry.ts`) and `ToolAvailabilityGate` (`src/components/tools/ToolAvailabilityGate.tsx`) now gate all canonical routes so disabled tools cannot reach processing/download success states. This inventory does not claim production readiness. The current foundation G0 result is recorded separately in `docs/release/g0-verification.md`; the baseline audit verdict and tool states below remain historical.
 
+**G1 (Safe Web Beta) result:** recorded in `docs/release/g1-verification.md`, from the design in `docs/superpowers/specs/2026-09-25-g1-safe-web-beta-design.md`, the plan in `docs/superpowers/plans/2026-09-25-g1-safe-web-beta.md`, and the privacy classification in `docs/privacy/data-flow.md`. G1 adds registry-derived data-handling disclosure, removes build-time web AI secrets, and adds a production-browser smoke, network-isolation, and axe gate. It changes no release state below and does not authorize sensitive-document use.
+
 ## Release state definitions
 
 - `stable` — audited as a reliable narrow outcome for the basic workflow; no blocking defect recorded by the audit.
