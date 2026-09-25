@@ -32,6 +32,9 @@ describe('ToolAvailabilityGate', () => {
       </ToolAvailabilityGate>
     );
     expect(screen.getByText('WORKFLOW_CONTENT')).toBeInTheDocument();
+    expect(screen.getByRole('note', { name: 'Data handling' })).toHaveTextContent(
+      /processed in your browser/i
+    );
     // No limitation alert, no unavailable state
     expect(screen.queryByText(/unavailable/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/limitation/i)).not.toBeInTheDocument();
@@ -63,6 +66,9 @@ describe('ToolAvailabilityGate', () => {
     // Shows the tool name and registry limitation
     expect(screen.getAllByText(/Protect PDF/i).length).toBeGreaterThan(0);
     expect(screen.getByText(/Protection is a no-op/i)).toBeInTheDocument();
+    expect(screen.getByRole('note', { name: 'Data handling' })).toHaveTextContent(
+      /processed in your browser/i
+    );
     // Truthful: no success/security/local-processing claims on this screen
     const body = document.body.textContent || '';
     expect(body.toLowerCase()).not.toContain('success');

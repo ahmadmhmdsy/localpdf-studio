@@ -25,10 +25,10 @@ describe('FileUploadZone', () => {
     expect(screen.getByText('Custom subtitle')).toBeInTheDocument();
   });
 
-  it('displays privacy notice', () => {
+  it('does not make an absolute local-only privacy claim', () => {
     renderWithProviders(<FileUploadZone onFilesSelected={vi.fn()} />);
 
-    expect(screen.getByText(/files never leave your device/i)).toBeInTheDocument();
+    expect(screen.queryByText(/files never leave your device/i)).not.toBeInTheDocument();
   });
 
   it('has clickable upload area', () => {

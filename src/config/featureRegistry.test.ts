@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   TOOL_RELEASE_REGISTRY,
   getToolAvailability,
+  getToolPrivacyNotice,
   isToolAvailable,
   type ToolId,
   type ReleaseState,
@@ -177,5 +178,16 @@ describe('isToolAvailable', () => {
     expect(isToolAvailable('pdf-to-powerpoint')).toBe(false);
     expect(isToolAvailable('ai-summarizer')).toBe(false);
     expect(isToolAvailable('translate-pdf')).toBe(false);
+  });
+});
+
+describe('getToolPrivacyNotice', () => {
+  it('describes each privacy class without claiming network-free processing', () => {
+    expect(getToolPrivacyNotice('merge-pdf')).toMatch(/browser/i);
+    expect(getToolPrivacyNotice('merge-pdf')).not.toMatch(/never leave/i);
+    expect(getToolPrivacyNotice('ai-summarizer')).toMatch(/unavailable/i);
+    expect(getToolPrivacyNotice('ai-summarizer')).toMatch(/Google Gemini/i);
+    expect(getToolPrivacyNotice('scan-to-pdf')).toMatch(/camera/i);
+    expect(getToolPrivacyNotice('scan-to-pdf')).toMatch(/unavailable/i);
   });
 });

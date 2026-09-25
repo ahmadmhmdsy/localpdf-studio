@@ -224,13 +224,11 @@ export default function HomeBento() {
         <div>
           <h3>The number of bytes we keep of your work.</h3>
           <p>
-            LocalPDF Studio runs entirely in your browser. The only network call in this product
-            is the one you make when you ask the AI tools to think — and even then, only the
-            text you explicitly send leaves the page. We do not log, sync, or back up your files.
+            LocalPDF Studio processes most tools in your browser. AI, OCR, and camera tools are currently unavailable in the public beta; no file is sent to an external service from those routes.
           </p>
         </div>
         <a
-          href="#"
+          href="#privacy"
           style={{
             padding: '0.85rem 1.5rem',
             background: 'var(--accent-2)',

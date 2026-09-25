@@ -270,6 +270,19 @@ export function getToolAvailability(toolId: ToolId): ToolAvailability {
   return TOOL_RELEASE_REGISTRY[toolId];
 }
 
+const PRIVACY_NOTICES: Record<PrivacyClass, string> = {
+  'local-only':
+    'The selected file is processed in your browser. This tool does not upload the file.',
+  'optional-network':
+    'This tool is unavailable in the public beta. A future enabled version would send extracted content to Google Gemini only after explicit consent.',
+  camera:
+    'This tool is unavailable in the public beta. Camera access is not requested.',
+};
+
+export function getToolPrivacyNotice(toolId: ToolId): string {
+  return PRIVACY_NOTICES[getToolAvailability(toolId).privacy];
+}
+
 export function isToolAvailable(toolId: ToolId): boolean {
   return TOOL_RELEASE_REGISTRY[toolId].releaseState !== 'disabled';
 }

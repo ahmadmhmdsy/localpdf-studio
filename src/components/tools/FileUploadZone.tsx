@@ -305,17 +305,6 @@ export default function FileUploadZone({
               display: 'inline-block',
               marginRight: '5px',
             }} aria-hidden="true" />
-            Files never leave your device
-          </span>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <span style={{
-              width: '5px',
-              height: '5px',
-              borderRadius: '50%',
-              background: 'var(--accent-2)',
-              display: 'inline-block',
-              marginRight: '5px',
-            }} aria-hidden="true" />
             Maximum {MAX_FILE_SIZE_MB}MB per file
           </span>
         </div>
