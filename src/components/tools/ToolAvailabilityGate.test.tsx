@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { screen } from '@testing-library/react';
 import ToolAvailabilityGate from './ToolAvailabilityGate';
 import { renderWithProviders } from '../../tests/utils';
@@ -98,3 +98,24 @@ describe('ToolAvailabilityGate', () => {
     }
   });
 });
+
+for (const toolId of ['ai-summarizer', 'translate-pdf', 'ocr-pdf', 'scan-to-pdf'] as const) {
+  it(`does not mount ${toolId}`, () => {
+    const workflow = vi.fn();
+    // Passed as an element, not called inline: React only invokes the
+    // component when the gate actually mounts its children.
+    function BlockedWorkflow() {
+      workflow();
+      return <div data-testid="workflow-mounted" />;
+    }
+
+    renderWithProviders(
+      <ToolAvailabilityGate toolId={toolId} toolName="Blocked tool">
+        <BlockedWorkflow />
+      </ToolAvailabilityGate>
+    );
+
+    expect(workflow).not.toHaveBeenCalled();
+    expect(screen.queryByTestId('workflow-mounted')).not.toBeInTheDocument();
+  });
+}

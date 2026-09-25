@@ -116,7 +116,6 @@ describe('extractPdfText', () => {
 describe('summarizePdf', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.stubEnv('VITE_GEMINI_API_KEY', 'test-key');
   });
 
   afterEach(() => {
@@ -131,7 +130,9 @@ describe('summarizePdf', () => {
   });
 
   it('calls Gemini once for short text and returns the response text', async () => {
-    const { summarizePdf } = await import('./ai');
+    mockGetStoreValue.mockResolvedValue('test-key');
+    const { summarizePdf, resolveApiKey } = await import('./ai');
+    await resolveApiKey();
     mockGenerateContent.mockResolvedValueOnce({ text: 'A short summary.' });
     const out = await summarizePdf('Some short content to summarize.');
     expect(out).toBe('A short summary.');
@@ -139,14 +140,18 @@ describe('summarizePdf', () => {
   });
 
   it('falls back to a placeholder when the model returns no text', async () => {
-    const { summarizePdf } = await import('./ai');
+    mockGetStoreValue.mockResolvedValue('test-key');
+    const { summarizePdf, resolveApiKey } = await import('./ai');
+    await resolveApiKey();
     mockGenerateContent.mockResolvedValueOnce({ text: '' });
     const out = await summarizePdf('Anything will do.');
     expect(typeof out).toBe('string');
   });
 
   it('chunks long text into multiple parts and reports progress', async () => {
-    const { summarizePdf } = await import('./ai');
+    mockGetStoreValue.mockResolvedValue('test-key');
+    const { summarizePdf, resolveApiKey } = await import('./ai');
+    await resolveApiKey();
     mockGenerateContent
       .mockResolvedValueOnce({ text: 'chunk summary 1' })
       .mockResolvedValueOnce({ text: 'chunk summary 2' })
@@ -163,7 +168,6 @@ describe('summarizePdf', () => {
 describe('translatePdf and language list', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.stubEnv('VITE_GEMINI_API_KEY', 'test-key');
   });
 
   afterEach(() => {
@@ -197,7 +201,9 @@ describe('translatePdf and language list', () => {
   });
 
   it('extracts one TranslateResult per text item with a fallback translation', async () => {
-    const { translatePdf } = await import('./ai');
+    mockGetStoreValue.mockResolvedValue('test-key');
+    const { translatePdf, resolveApiKey } = await import('./ai');
+    await resolveApiKey();
     const { pdfjsLib } = await import('./pdfjs');
     const mockPdf = {
       numPages: 1,
@@ -224,7 +230,7 @@ describe('translatePdf and language list', () => {
 
 
 // ─────────────────────────────────────────────────────────────────────────────
-// API key resolution (Tauri store → env fallback)
+// API key resolution (in-memory cache → Tauri store; no build-time web key)
 // ─────────────────────────────────────────────────────────────────────────────
 
 const mockGetStoreValue = vi.fn();
@@ -245,9 +251,9 @@ describe('resolveApiKey', () => {
     vi.resetModules();
   });
 
-  it('returns null when neither store nor env has a key', async () => {
+  it('returns null when the store has no key, even if a build-time key exists', async () => {
     mockGetStoreValue.mockResolvedValueOnce(null);
-    vi.stubEnv('VITE_GEMINI_API_KEY', '');
+    vi.stubEnv('VITE_GEMINI_API_KEY', 'must-not-be-used');
     vi.resetModules();
     const { resolveApiKey } = await import('./ai');
     expect(await resolveApiKey()).toBeNull();
@@ -264,12 +270,12 @@ describe('resolveApiKey', () => {
     vi.unstubAllEnvs();
   });
 
-  it('falls back to env when store returns null', async () => {
+  it('ignores a build-time web key when the store returns null', async () => {
     mockGetStoreValue.mockResolvedValueOnce(null);
-    vi.stubEnv('VITE_GEMINI_API_KEY', 'env-key-456');
+    vi.stubEnv('VITE_GEMINI_API_KEY', 'must-not-be-used');
     vi.resetModules();
     const { resolveApiKey } = await import('./ai');
-    expect(await resolveApiKey()).toBe('env-key-456');
+    expect(await resolveApiKey()).toBeNull();
     vi.unstubAllEnvs();
   });
 
@@ -322,13 +328,12 @@ describe('sync getGenAI()', () => {
     vi.unstubAllEnvs();
   });
 
-  it('uses env var when set', async () => {
-    vi.stubEnv('VITE_GEMINI_API_KEY', 'env-only');
+  it('does not use a build-time web key', async () => {
+    vi.stubEnv('VITE_GEMINI_API_KEY', 'must-not-be-used');
+    mockGetStoreValue.mockResolvedValueOnce(null);
     vi.resetModules();
     const { getGenAI } = await import('./ai');
-    const client = getGenAI();
-    expect(client).toBeInstanceOf(MockGenAI);
-    expect((client as unknown as { opts: { apiKey: string } }).opts.apiKey).toBe('env-only');
+    expect(() => getGenAI()).toThrow(/API key not configured/);
     vi.unstubAllEnvs();
   });
 });

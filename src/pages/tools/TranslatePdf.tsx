@@ -3,11 +3,10 @@ import { Languages, FileCheck, AlertCircle, ChevronDown } from 'lucide-react';
 import ToolLayout from '../../components/tools/ToolLayout';
 import FileUploadZone from '../../components/tools/FileUploadZone';
 import ProcessingState from '../../components/tools/ProcessingState';
-import { SUPPORTED_LANGUAGES } from '../../lib/ai';
+import { getGenAIAsync, SUPPORTED_LANGUAGES } from '../../lib/ai';
 import { saveAs } from 'file-saver';
 import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
 import { pdfjsLib } from '../../lib/pdfjs';
-import { GoogleGenAI } from '@google/genai';
 import { logWarn } from '../../lib/logger';
 
 type Step = 'upload' | 'language' | 'translating' | 'done' | 'error';
@@ -35,7 +34,9 @@ export default function TranslatePdf() {
     setError(null);
 
     try {
-      const genAI = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
+      // Resolved from the in-memory cache or the desktop store only. The web
+      // build has no build-time key by design.
+      const genAI = await getGenAIAsync();
       const arrayBuffer = await file.arrayBuffer();
       
       // Load PDF

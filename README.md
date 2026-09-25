@@ -1,6 +1,6 @@
 # LocalPDF Studio
 
-A comprehensive, client-side PDF manipulation tool built with React. Merge, split, convert, annotate, and edit PDFs entirely in your browser — no data uploaded to servers.
+A PDF manipulation tool built with React that runs in your browser. Merge, split, convert, annotate, and edit PDFs locally; every tool shows its data boundary, and tools that would require a network or camera service are unavailable in the public beta.
 
 ![CI](https://github.com/anomalyco/localpdf-studio/actions/workflows/ci.yml/badge.svg)
 ![GitHub License](https://img.shields.io/badge/license-MIT-blue)
@@ -15,16 +15,16 @@ Full editor with text, drawing, image, and signature tools. Keyboard shortcuts (
 
 ### 🔄 Convert
 - PDF ↔ Word, Excel, PowerPoint, JPG, HTML
-- Scan to PDF (camera capture), OCR PDFs
+- Scan to PDF (camera capture) and OCR PDFs — unavailable in the public beta
 
 ### 🔒 Security
-Add/remove passwords and repair damaged PDFs. The dedicated blackout/redaction workflow is currently disabled and is not a confidentiality boundary.
+Repair damaged PDFs (parse/resave only). Add/remove passwords and the dedicated blackout/redaction workflow are disabled in the public beta and are not a confidentiality boundary.
 
 ### 🤖 AI-Powered
-AI Summarizer and Translate PDF.
+AI Summarizer and Translate PDF — unavailable in the public web beta. No file, prompt, or filename is sent to Google Gemini from the browser.
 
 ### ⚡ Performance
-- 100% client-side — files never leave your browser
+- Enabled tools process the selected file in the browser; each tool's data handling is disclosed in the UI
 - 100MB file size limit
 - Dark mode support
 - Bundle-split for fast loading (pdf-lib, tesseract, office parsers split into separate chunks)
@@ -49,15 +49,15 @@ npm --version         # must print 11.16.0
 # Install the exact locked dependency graph
 npm ci
 
-# Set up your Gemini API key (for AI features)
-# Edit .env and add:
-VITE_GEMINI_API_KEY=your_gemini_api_key_here
+# No API key setup is required for the web build.
+# AI Summarizer and Translate PDF are unavailable in the public beta, and the
+# browser build neither reads nor accepts an API key.
 
 # Start development server (port 3000)
 npm run dev
 ```
 
-> **⚠️ API Key Warning:** `VITE_GEMINI_API_KEY` is embedded in the client-side JS bundle at build time. Never use a shared, org-level, or quota-sensitive key. Always use a personal Gemini API key scoped to your own account. This is inherent to browser-only apps — a backend proxy would be needed to fully hide the key.
+> **⚠️ API keys:** the public web build contains no API key and accepts none. `VITE_GEMINI_API_KEY` is no longer read by the application, because any `VITE_*` value is inlined into public client JavaScript and readable by anyone who loads the page. The desktop build stores a user-owned key in the on-disk app store (`settings.json`, key `geminiApiKey`) and is configured from the Settings UI. AI tools are unavailable in the public web beta.
 
 ## Available Commands
 
@@ -80,7 +80,7 @@ npm run dev
 - **Styling:** Tailwind CSS v4
 - **PDF:** pdf-lib, pdfjs-dist
 - **State:** Zustand (4 stores)
-- **AI:** @google/genai (Gemini API)
+- **AI:** @google/genai (Gemini API; desktop store only — web routes disabled)
 - **Office:** mammoth, docx, exceljs
 - **OCR:** tesseract.js
 - **Testing:** Vitest + React Testing Library (514+ tests)
@@ -116,7 +116,9 @@ src/
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `VITE_GEMINI_API_KEY` | For AI features | Google Gemini API key (user-owned, see warning above) |
+| `APP_URL` | No | Base URL for self-referential links and callbacks. |
+
+The browser build accepts no API key. `VITE_GEMINI_API_KEY` is intentionally not read; the desktop build uses the on-disk app store instead (see warning above).
 
 ## License
 
