@@ -22,15 +22,23 @@ is the serving origin itself.
   a Google Fonts stylesheet. The stylesheet completed on every page view, so a visitor's IP address and
   user agent reached Google, while every web-font file request was refused by the shipped CSP
   (`font-src 'self' data:`) and the UI already rendered the system stack. Those links are removed, the
-  two dead family names were dropped from the component styles that referenced them, and the computed
-  `font-family` is unchanged.
+  two dead family names were dropped from the component styles that referenced them. The computed
+  `font-family` is unchanged because those names only ever appeared in a `font-family` list whose first
+  entry is a system stack: `Plus Jakarta Sans` and `DM Mono` were removed from the footer, header, tool
+  layout, API key settings, and download state. `JetBrains Mono` was deliberately kept in the bento skin
+  (the home page tiles and `src/theme/skins/bento.css`), where the monospace stack is the intended face
+  rather than a dead reference.
 - **OCR assets are not bundled.** `src/lib/ocr.ts` loads `tesseract.js` on demand, and the Tesseract
   worker fetches its core, worker, and `eng` trained-data language assets from a CDN
   (`cdn.jsdelivr.net` and `unpkg.com`) at runtime. If OCR is ever enabled without vendoring those
   assets into the bundle, enabling the tool would add CDN egress on top of the local processing
   claim. Any future OCR work must serve the worker, core, and language data locally, or disclose the
-  CDN as a data boundary in its own plan. While OCR stays disabled the browser tests forbid any request to
-  those hosts, so the current public beta fetches nothing from them.
+  CDN as a data boundary in its own plan. While OCR stays disabled the browser tests forbid a request to
+  those hosts, because the gate now asserts that a disabled route contacts no host other than the one
+  serving the app. That assertion used to allowlist these two CDNs, which made it blind to any other
+  external host; the allowlist is gone and the test has no list of acceptable hosts. Re-enabling OCR
+  therefore requires adding its hosts to the test and to the CSP deliberately, in the same commit, and
+  this document has to record the new data boundary at that point.
 - **The Gemini SDK is shipped but inert.** `dist/index.html` modulepreloads the `ai` chunk, so the
   `@google/genai` JavaScript is downloaded by every route. The SDK holds no key and makes no request
   without one; the web build has no key channel at all (see `src/config/viteKeyChannel.test.ts`).
@@ -40,8 +48,10 @@ is the serving origin itself.
 The shipped `index.html` CSP still lists `https://generativelanguage.googleapis.com` in
 `connect-src`, alongside `ws://localhost:*` for dev-server HMR. AI egress containment therefore
 rests on **routing**, not on the CSP: the disabled routes never mount a workflow, and the browser
-tests assert that they load no tool chunk, no OCR/PDF worker, and reach no host outside an explicit
-allowlist. A future change that mounts a disabled route, or that enables an AI route, would still be
+tests assert that they load no tool chunk, no OCR/PDF worker, and reach no host other than the one
+serving the app. The chunk assertion is re-checked against the built assets on every run, so a bundler
+change that renames tool chunks is reported instead of quietly turning that signal into a no-op. A
+future change that mounts a disabled route, or that enables an AI route, would still be
 able to reach the Gemini endpoint because the policy permits it. Tightening `connect-src` to drop
 the Gemini origin is a separate, low-risk change that this document recommends but that G1 does not
 make.

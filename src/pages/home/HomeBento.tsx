@@ -48,6 +48,18 @@ export default function HomeBento() {
     };
   }, []);
 
+  // How many *available* tools can move data off the device. Every network and camera
+  // tool is disabled in the registry, so this reads 0 in the web beta and in the
+  // desktop build alike, and it turns non-zero the moment one of them is enabled -
+  // which is exactly when the sentence under it has to change.
+  const egressSummary = useMemo(() => {
+    const networked = ALL_TOOLS.filter((tool) => getToolAvailability(tool.id).privacy !== 'local-only');
+    return {
+      networked: networked.length,
+      available: networked.filter((tool) => isToolAvailable(tool.id)).length,
+    };
+  }, []);
+
   // Filter tools across all categories by name + description (case-insensitive).
   const filteredCategories = useMemo(() => {
     const q = query.trim().toLowerCase();
@@ -102,13 +114,14 @@ export default function HomeBento() {
       <section className="bento-featured" aria-label="Featured">
         <article className="bento-tile bento-tile--hero">
           <span className="bento-privacy-badge">
-            <span className="dot" /> 100% on-device
+            <span className="dot" /> Local-first
           </span>
           <h1>
-            A complete <span>PDF workspace</span> that lives in your browser.
+            A complete <span>PDF workspace</span> that runs on your device.
           </h1>
           <p style={{ color: 'var(--text-2)', fontSize: '1rem', maxWidth: '30em', marginBottom: '1.5rem' }}>
-            {availabilitySummary.count} tools, 7 categories, zero servers touched. Open a file, do the work, close the tab. Nothing persists, nothing phones home.
+            {availabilitySummary.count} tools across {TOOL_CATEGORIES.length} categories. Open a file, do the work, close it. Most
+            tools run locally; AI, OCR, and camera tools are unavailable in the public beta.
           </p>
           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
             <Link to="/tools/merge-pdf" className="btn btn--pri">
@@ -133,38 +146,42 @@ export default function HomeBento() {
         </article>
 
         <article className="bento-tile" style={{ padding: '1.25rem' }}>
-          <div style={{ fontSize: '1.8rem', fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1 }}>0</div>
+          <div style={{ fontSize: '1.8rem', fontWeight: 700, letterSpacing: '-0.02em', lineHeight: 1 }}>
+            {egressSummary.available}
+          </div>
           <div style={{ color: 'var(--text-3)', fontSize: '0.78rem', fontFamily: 'ui-monospace, "JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: '0.5rem' }}>
-            Bytes uploaded
+            Tools that can send data out
           </div>
           <div style={{ fontFamily: 'ui-monospace, "JetBrains Mono", monospace', fontSize: '0.7rem', color: 'var(--ok)', marginTop: '0.4rem' }}>
-            Always zero
+            {egressSummary.available === 0
+              ? 'None available in this build'
+              : `${egressSummary.available} of ${egressSummary.networked} enabled`}
           </div>
         </article>
 
         <article className="bento-tile" style={{ padding: '1.25rem' }}>
           <span className="bento-privacy-badge">
-            <span className="dot" /> Private
+            <span className="dot" /> No account
           </span>
           <h3 style={{ fontSize: '1rem', fontWeight: 600, margin: '0.75rem 0 0.25rem' }}>No account required</h3>
           <p style={{ color: 'var(--text-2)', fontSize: '0.85rem' }}>
-            No sign-up. No email. No tracking pixels. Just a working set of tools.
+            No sign-up. No email. Open a tool and start working.
           </p>
         </article>
       </section>
 
-      {/* Recent strip (static sample, no persistence for now) */}
-      <div className="bento-recent" id="recent" aria-label="Recently used">
-        <span className="label">Recent</span>
+      {/* Quick picks: a static example list, not a record of anything the reader did. */}
+      <div className="bento-recent" id="quick-picks" aria-label="Example tools to try">
+        <span className="label">Quick picks</span>
         <div className="items">
           <Link to="/tools/merge-pdf" className="bento-chip">
-            <span className="ic-s" /> Merge — Q3 investor update
+            <span className="ic-s" /> Merge — combine files
           </Link>
-          <RecentChip toolId="compress-pdf" swatch="var(--accent-2)" context="Q3 asset brief" />
+          <QuickChip toolId="compress-pdf" swatch="var(--accent-2)" context="shrink a file" />
           <Link to="/tools/sign-pdf" className="bento-chip">
-            <span className="ic-s" style={{ background: 'var(--accent-4)' }} /> Sign — proposal
+            <span className="ic-s" style={{ background: 'var(--accent-4)' }} /> Sign — add a signature
           </Link>
-          <RecentChip toolId="translate-pdf" swatch="var(--accent-3)" context="paper notes" />
+          <QuickChip toolId="translate-pdf" swatch="var(--accent-3)" context="translate text" />
         </div>
       </div>
 
@@ -219,13 +236,13 @@ export default function HomeBento() {
       )}
 
       {/* Privacy deep block */}
-      <aside className="bento-privacy-deep" id="privacy" aria-label="Privacy guarantee">
+      <aside className="bento-privacy-deep" id="privacy" aria-label="Data handling">
         <div>
           <h3>Where your work is stored.</h3>
           <p>
-            LocalPDF Studio processes most tools in your browser. AI, OCR, and camera tools are currently unavailable in the public beta; no file is sent to an external service from those routes. The
-            editor keeps your working document and edit history in the local storage of this browser, on this device only, until you clear it: use the Close File control in the editor to
-            drop the stored file, or clear the stored data for this site in your browser settings.
+            LocalPDF Studio processes most tools locally. AI, OCR, and camera tools are currently unavailable in the public beta; no file is sent to an external service from those routes. The
+            editor keeps your working document and edit history in this app's local storage on this device, until you clear it: use the Close File control in the editor to
+            drop the stored file, or clear this app's stored data (site data in the browser, app data on the desktop).
           </p>
         </div>
       </aside>
@@ -298,10 +315,12 @@ function CardIcon({ icon: Icon, dimmed = false }: { icon: Tool['icon']; dimmed?:
   );
 }
 
-// A recently-used chip whose state is read from the release registry, so a
-// remediation cannot leave a stale "unavailable" label behind. Disabled tools
-// stay non-interactive; anything available keeps its normal link behavior.
-function RecentChip({
+// An example chip in the quick-picks strip. It is not a history entry: nothing here
+// comes from what the reader opened. Its state is still read from the release
+// registry, so a remediation cannot leave a stale "unavailable" label behind.
+// Disabled tools stay non-interactive; anything available keeps its normal link
+// behavior.
+function QuickChip({
   toolId,
   swatch,
   context,

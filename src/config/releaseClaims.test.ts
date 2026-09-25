@@ -1,5 +1,5 @@
-import { readFileSync } from 'node:fs';
-import { resolve } from 'node:path';
+import { readFileSync, readdirSync } from 'node:fs';
+import { join, relative, resolve, sep } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { TOOL_CATEGORIES } from '../constants/tools';
 import { TOOL_RELEASE_REGISTRY } from './featureRegistry';
@@ -21,6 +21,25 @@ const blackoutDescription =
   )?.description ?? '';
 
 const readSource = (path: string) => readFileSync(resolve(process.cwd(), path), 'utf8');
+
+/** Drops JSX/CSS tags so a source scan reads what a reader sees, not attributes. */
+const stripMarkup = (source: string) => source.replace(/<[^>]*>/g, ' ');
+
+/** Every shipped source file under src, for cross-file claim and anchor checks. */
+const collectSrcSources = (dir = resolve(process.cwd(), 'src')): { path: string; source: string }[] =>
+  readdirSync(dir, { withFileTypes: true }).flatMap((entry) => {
+    const fullPath = join(dir, entry.name);
+    if (entry.isDirectory()) return collectSrcSources(fullPath);
+    if (!/\.(ts|tsx|css)$/.test(entry.name)) return [];
+    return [
+      {
+        path: relative(process.cwd(), fullPath).split(sep).join('/'),
+        source: readFileSync(fullPath, 'utf8'),
+      },
+    ];
+  });
+
+const srcSources = collectSrcSources();
 const onboardingSource = readSource('src/components/onboarding/OnboardingTour.tsx');
 const homeSource = readSource('src/pages/Home.tsx');
 const homeBentoSource = readSource('src/pages/home/HomeBento.tsx');
@@ -117,10 +136,18 @@ describe('release-facing redaction claims', () => {
 });
 
 /**
- * Absolute "everything stays on your device" phrasing is false in the public beta:
- * AI, OCR, and camera tools are disabled and send nothing, but the copy must say so
- * instead of promising that every tool is local. Each pattern below is a claim the
- * registry cannot support, so a matching surface is a release-blocking defect.
+ * Absolute data-handling phrasing is false in the shipped app, and shipping in two
+ * builds makes that worse: the public web beta has no AI key channel at all, and the
+ * Tauri desktop build can hold a user-supplied Gemini key. A blanket "nothing ever
+ * leaves / nothing is stored / no servers touched" sentence is therefore unprovable
+ * in both builds, and the editor really does retain the working document and the edit
+ * history in IndexedDB.
+ *
+ * Each pattern below is a claim the code cannot support, so a match on a
+ * release-facing surface is a release-blocking defect. They are written as phrase
+ * shapes (percentage absolutes, server-count absolutes, persistence absolutes,
+ * tracking absolutes) rather than as exact sentences, so rewording the same lie does
+ * not slip past them.
  */
 const absoluteLocalOnlyClaims: { label: string; pattern: RegExp }[] = [
   { label: '100% FREE claim', pattern: /100%\s*free/i },
@@ -130,7 +157,62 @@ const absoluteLocalOnlyClaims: { label: string; pattern: RegExp }[] = [
   { label: 'local-only version label', pattern: /v1\.0\s*·\s*local-only/i },
   { label: 'no uploads, no servers promise', pattern: /no uploads,\s*no servers/i },
   { label: 'files never leave claim', pattern: /files? never leave/i },
+  // On-device / offline absolutes.
+  {
+    label: 'percent on-device claim',
+    pattern: /\b\d{1,3}\s*%\s*(?:on[-\s]?device|offline|local|private|anonymous|secure)\b/i,
+  },
+  {
+    label: 'on-device absolutism',
+    pattern: /\b(?:entirely|fully|always|completely|purely|totally)\s+(?:on[-\s]?device|offline|local)\b/i,
+  },
+  {
+    label: 'all-tools-on-device claim',
+    pattern:
+      /\b(?:all|every|each)\s+(?:of\s+)?(?:the\s+)?(?:tools?|processing|work|data|files?|documents?)\b[^.\n]{0,20}\b(?:on[-\s]?(?:your\s+)?device|offline)\b/i,
+  },
+  // Server-count and egress absolutes.
+  {
+    label: 'zero-server claim',
+    pattern: /\b(?:zero|no|never|nil|not a single|nobody)\s+(?:servers?|cloud|backends?|remotes?|third[- ]party)\b/i,
+  },
+  // Quantitative egress metrics. The load-bearing containment sentence ("no file is
+  // sent to an external service from those routes") is required copy, so only the
+  // measured-byte shapes are banned here, not every negation.
+  {
+    label: 'zero-byte-egress claim',
+    pattern: /\b(?:zero|nothing|no|not a single|0)\s*(?:bytes?|kb|mb|gb)\b[^.\n]{0,24}\b(?:uploaded|uploads?|sent|leaves?)\b/i,
+  },
+  {
+    label: 'nothing-egress claim',
+    pattern: /\bnothing\s+is\s+(?:ever\s+)?(?:uploaded|sent|transmitted|leaves)\b/i,
+  },
+  { label: 'phones-home claim', pattern: /\bphones?\s+home\b/i },
+  // Persistence absolutes.
+  {
+    label: 'nothing-persists claim',
+    pattern: /\b(?:nothing|never|no data|no files?|nobody)\b[^.\n]{0,40}\b(?:persist|stored|kept|remembered|retained)\b/i,
+  },
+  { label: 'always-zero claim', pattern: /\balways\s+(?:zero|0|nil|none|empty)\b/i },
+  // Analytics absolutes: no tracker exists in this app, so "no tracking pixels" is a
+  // promise about code that is not there rather than a measurement of anything.
+  {
+    label: 'no-tracking claim',
+    pattern: /\b(?:no|zero|without|never)\s+track(?:ing|ers?)\b|\btrack(?:ing|ers?)\s+(?:pixels?|beacons?|scripts?)\b/i,
+  },
 ];
+
+/**
+ * Content-based companion to the phrase list. A counter tile is a factual claim about
+ * the running app, so a tile whose subject is bytes, uploads, persistence, servers,
+ * devices, or egress must render a registry-derived value and must not hard-code a
+ * number. "0 / Bytes uploaded / Always zero" was a guess; guessing is how the false
+ * claim shipped, so the shape is rejected here even if the wording changes.
+ */
+const COUNTER_TILE_PATTERN = /<article className="bento-tile"[\s\S]*?<\/article>/g;
+const DATA_SUBJECT_PATTERN = /bytes?|upload|persist|stor(?:e|ed|age)|server|device|egress|send|track/i;
+const counterTiles = homeBentoSource.match(COUNTER_TILE_PATTERN) ?? [];
+const dataCounterTiles = counterTiles.filter((tile) => DATA_SUBJECT_PATTERN.test(stripMarkup(tile)));
 
 const footerSource = readSource('src/components/layout/Footer.tsx');
 const sidebarSource = readSource('src/components/layout/Sidebar.tsx');
@@ -199,5 +281,143 @@ describe('release-facing containment claims', () => {
       .filter((sentence) => !UNAVAILABILITY_QUALIFIER.test(sentence));
 
     expect(advertised).toEqual([]);
+  });
+});
+
+describe('release-facing data-handling claims', () => {
+  it('rejects every absolute phrase shape the adversarial review found', () => {
+    // The point of this test is the *shapes*, not these strings: a reworded lie with
+    // the same absolutism has to fail too.
+    const unsupportedAbsolutes = [
+      '100% on-device',
+      'All work is 100% on-device.',
+      'Fully offline and private',
+      '7 categories, zero servers touched.',
+      'Nothing persists, nothing phones home.',
+      'Nothing is stored.',
+      'No bytes uploaded',
+      '0 bytes uploaded',
+      'Nothing is uploaded',
+      'No tracking pixels',
+      'No trackers at all',
+      'Your files never leave this machine',
+      'All processing happens on your device.',
+      'Every tool runs offline',
+    ];
+
+    for (const claim of unsupportedAbsolutes) {
+      expect(
+        absoluteLocalOnlyClaims.some(({ pattern }) => pattern.test(claim)),
+        `not guarded: ${claim}`,
+      ).toBe(true);
+    }
+  });
+
+  it('backs every data-handling counter tile with a registry-derived value', () => {
+    expect(dataCounterTiles.length).toBeGreaterThan(0);
+
+    for (const tile of dataCounterTiles) {
+      expect(stripMarkup(tile), 'a data counter must render a derived value').toMatch(
+        /\{[A-Za-z_$][\w$.]*\}/,
+      );
+      // A number typed into the markup is a guess, not a measurement, and guessing is
+      // how "0 / Bytes uploaded / Always zero" became a false claim.
+      expect(tile, 'a data counter must not hard-code its value').not.toMatch(/>\s*-?\d[\d,.]*\s*</);
+    }
+  });
+
+  it('never presents the static example strip as a user history', () => {
+    expect(homeBentoSource).not.toMatch(/recently used/i);
+  });
+
+  it('does not ship a "privacy guarantee" label for a documented behaviour', () => {
+    expect(homeBentoSource).not.toMatch(/privacy guarantee/i);
+  });
+});
+
+describe('in-page anchor integrity', () => {
+  it('points every in-page anchor at an element that exists', () => {
+    const surfaces: Record<string, string> = {
+      Home: homeSource,
+      HomeBento: homeBentoSource,
+      Sidebar: sidebarSource,
+      Layout: readSource('src/components/layout/Layout.tsx'),
+    };
+    const idExists = (id: string) =>
+      srcSources.some(({ source }) => new RegExp(`id=["']${escapeRegExp(id)}["']`).test(source));
+
+    for (const [name, source] of Object.entries(surfaces)) {
+      const anchors = [
+        ...[...source.matchAll(/(?:href|to)=["']#([A-Za-z][\w-]*)["']/g)].map((match) => match[1]),
+        ...[...source.matchAll(/to=["']\/#([A-Za-z][\w-]*)["']/g)].map((match) => match[1]),
+      ];
+
+      for (const anchor of anchors) {
+        expect(idExists(anchor), `${name} links to #${anchor}, which no element defines`).toBe(true);
+      }
+    }
+  });
+});
+
+describe('desktop bundle description', () => {
+  it('describes the Tauri app without calling its WebView a browser', () => {
+    expect(tauriConfig.bundle.shortDescription).not.toMatch(/\bin (?:your|a|the) browser\b/i);
+    expect(tauriConfig.bundle.shortDescription).toMatch(/locally on your desktop/i);
+    expect(tauriConfig.bundle.longDescription).not.toMatch(/\bin your browser\b/i);
+    expect(tauriConfig.bundle.longDescription).toMatch(/locally/i);
+  });
+});
+
+describe('Gemini containment behind the "send nothing" copy', () => {
+  const toolPageDir = resolve(process.cwd(), 'src/pages/tools');
+  const toolPageFiles = readdirSync(toolPageDir)
+    .filter((name) => name.endsWith('.tsx') && !name.endsWith('.test.tsx'))
+    .sort();
+  const toolIdFromPageName = (name: string) =>
+    name.replace(/\.tsx$/, '').replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
+
+  const libAiImport = /from ['"][^'"]*lib\/ai['"]/;
+  const geminiToolPages = toolPageFiles.filter((name) =>
+    libAiImport.test(readFileSync(join(toolPageDir, name), 'utf8')),
+  );
+  const sdkImporters = srcSources
+    .filter(({ source }) => /from ['"]@google\/genai['"]/.test(source))
+    .map(({ path }) => path);
+  const libAiImporters = srcSources
+    .filter(({ path: path2, source }) => !path2.startsWith('src/pages/tools/') && libAiImport.test(source))
+    .map(({ path: path2 }) => path2)
+    .sort();
+  const pagesNamingTheGeminiOrigin = srcSources
+    .filter(({ path: path2, source }) => path2.startsWith('src/pages/') && /generativelanguage/i.test(source))
+    .map(({ path: path2 }) => path2)
+    .sort();
+
+  it('reaches every AI request path only from a registry-disabled tool page', () => {
+    // "Send nothing to an external service" is load-bearing routing, so pin the exact
+    // set of pages that can issue a request. A new caller fails here.
+    expect(geminiToolPages.map(toolIdFromPageName)).toEqual(['ai-summarizer', 'translate-pdf']);
+
+    for (const page of geminiToolPages) {
+      const toolId = toolIdFromPageName(page);
+      const entry = TOOL_RELEASE_REGISTRY[toolId as keyof typeof TOOL_RELEASE_REGISTRY];
+      expect(entry, `${page} has no registry entry`).toBeDefined();
+      expect(entry.releaseState, `${page} must stay disabled for the no-egress copy to hold`).toBe(
+        'disabled',
+      );
+    }
+  });
+
+  it('keeps the Gemini SDK behind a single lib module and out of every page', () => {
+    expect(sdkImporters).toEqual(['src/lib/ai.ts']);
+    expect(pagesNamingTheGeminiOrigin).toEqual([]);
+  });
+
+  it('lets only the key settings reach the AI module, and never call a model', () => {
+    expect(libAiImporters).toEqual(['src/components/settings/ApiKeySettings.tsx']);
+    // Comments explain why the key exists; they must not satisfy or trip this guard.
+    const settings = readSource('src/components/settings/ApiKeySettings.tsx')
+      .replace(/\/\*[\s\S]*?\*\//g, '')
+      .replace(/(^|[^:])\/\/.*$/gm, '$1');
+    expect(settings).not.toMatch(/generateContent|\.models\b|\.chats\b|getGenAI/);
   });
 });

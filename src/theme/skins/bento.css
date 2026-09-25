@@ -261,7 +261,9 @@
   gap: 0.4rem;
   padding: 0.3rem 0.55rem;
   background: color-mix(in oklab, var(--accent-2) 14%, transparent);
-  color: var(--accent-2);
+  /* Text token, not the raw success accent: --accent-2 measures only ~2.1:1 on the
+     light bento surface. The badge keeps its green identity through the tint and dot. */
+  color: var(--text-2);
   border-radius: 100px;
   font-family: ui-monospace, "JetBrains Mono", monospace;
   font-size: 0.65rem;
@@ -270,7 +272,7 @@
   font-weight: 600;
 }
 [data-skin="bento"] .bento-privacy-badge .dot {
-  width: 6px; height: 6px; background: currentColor; border-radius: 50%;
+  width: 6px; height: 6px; background: var(--accent-2); border-radius: 50%;
 }
 
 /* ── Recent strip ── */
@@ -402,12 +404,11 @@
   color: var(--bg);
   border-radius: var(--radius-lg);
   display: grid;
+  /* Single column at every width: this block holds one child, so the old 780px
+     override repeated the value above it and changed nothing. */
   grid-template-columns: 1fr;
   gap: 2rem;
   align-items: center;
-}
-@media (max-width: 780px) {
-  [data-skin="bento"] .bento-privacy-deep { grid-template-columns: 1fr; }
 }
 [data-skin="bento"] .bento-privacy-deep h3 {
   font-size: 1.6rem;

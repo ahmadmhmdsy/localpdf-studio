@@ -188,7 +188,7 @@ export default function DownloadState({
             style={{
               fontFamily: 'monospace',
               fontSize: '13px',
-              color: 'var(--accent-2)',
+              color: 'var(--text-2)',
               marginBottom: '32px',
             }}
           >

@@ -1,7 +1,23 @@
+import { existsSync, readdirSync, readFileSync } from 'node:fs';
+import { join } from 'node:path';
 import { expect, test } from '@playwright/test';
 import { TOOL_RELEASE_REGISTRY, type ToolId } from '../src/config/featureRegistry';
 
 type RegistryEntry = [ToolId, (typeof TOOL_RELEASE_REGISTRY)[ToolId]];
+
+// Playwright runs from the project root, which is also the working directory its
+// webServer command and the rest of the repository's source guards assume.
+const projectRoot = process.cwd();
+const assetsDir = join(projectRoot, 'dist', 'assets');
+const distIndexHtml = join(projectRoot, 'dist', 'index.html');
+
+/** The web build the preview server serves. */
+const hasBuiltAssets = existsSync(assetsDir) && existsSync(distIndexHtml);
+
+const readBuiltAssets = (): { chunks: string[]; html: string } => ({
+  chunks: readdirSync(assetsDir).filter((name) => name.endsWith('.js')),
+  html: readFileSync(distIndexHtml, 'utf8'),
+});
 
 /**
  * Every tool the registry marks `disabled`, read from the registry itself so a new
@@ -13,28 +29,16 @@ const DISABLED_TOOL_IDS: ToolId[] = (Object.entries(TOOL_RELEASE_REGISTRY) as Re
   .filter(([, availability]) => availability.releaseState === 'disabled')
   .map(([toolId]) => toolId);
 
-/**
- * The hosts a quarantined workflow could legitimately need: the CDNs a Tesseract
- * worker would fetch its core, worker, and language data from. They stay allowed
- * because a future OCR enablement needs them, and the OCR/CDN asset matcher above
- * still forbids them from being fetched while OCR is disabled.
- *
- * No other external host is allowed, and in particular no font host: the app ships
- * no third-party font, so `fonts.googleapis.com` and `fonts.gstatic.com` are now
- * unlisted hosts that fail the assertion below if they ever reappear. Anything else
- * is a containment failure, so the assertion is an allowlist rather than a list of
- * known-bad hosts.
- */
-const ALLOWED_EXTERNAL_HOSTS = new Set(['cdn.jsdelivr.net', 'unpkg.com']);
+/** The host serving the preview build: the only host a route may contact. */
+const LOCAL_HOSTS = new Set(['127.0.0.1', 'localhost']);
 
 /**
- * Font hosts the shipped app must never contact. The app uses system font stacks
- * only, so any request here is third-party egress on every page view and a privacy
- * regression.
+ * Font hosts the shipped app must never contact. The app renders with system font
+ * stacks only, so any request here is third-party egress on every page view and a
+ * privacy regression. This is a named-host check on purpose: it covers the *enabled*
+ * routes, which the disabled-route test does not visit.
  */
 const FORBIDDEN_FONT_HOSTS = new Set(['fonts.googleapis.com', 'fonts.gstatic.com']);
-
-const LOCAL_HOSTS = new Set(['127.0.0.1', 'localhost']);
 
 const toUrl = (requestUrl: string) => {
   try {
@@ -49,6 +53,10 @@ const toUrl = (requestUrl: string) => {
  * `OcrPdf-<hash>.js`), so comparing the id without separators matches the built
  * asset regardless of hash or casing. React.lazy only fetches a tool chunk when the
  * component renders, so a match means a disabled workflow actually mounted.
+ *
+ * This is a naming convention, not a guarantee, and the test below re-checks it
+ * against the built output so it cannot quietly stop matching: if a bundler change
+ * renames or merges chunks, Signal 1 turns into a no-op instead of a real check.
  */
 const matchesToolChunk = (pathname: string, toolId: ToolId) =>
   new RegExp(toolId.replace(/-/g, ''), 'i').test(pathname);
@@ -60,6 +68,34 @@ const matchesToolChunk = (pathname: string, toolId: ToolId) =>
  * `ai` chunks, so none of these are shell assets.
  */
 const matchesWorkerAsset = (url: string) => /tesseract|pdf\.worker|traineddata|tessdata/i.test(url);
+
+test('the built assets still follow the tool chunk naming convention', () => {
+  test.skip(!hasBuiltAssets, 'dist/ is not built; run the build first to check this');
+  const { chunks, html } = readBuiltAssets();
+
+  // Non-vacuous: the built app really does emit per-tool chunks.
+  expect(chunks.length).toBeGreaterThan(5);
+
+  for (const toolId of DISABLED_TOOL_IDS) {
+    const matching = chunks.filter((chunk) => matchesToolChunk(chunk, toolId));
+    expect(
+      matching,
+      toolId +
+        ' has no chunk named after it in dist/assets, so \'no quarantined tool chunk' +
+        ' was fetched\' cannot detect it. Check the manualChunks map in vite.config.ts.',
+    ).not.toEqual([]);
+  }
+
+  // The shell must not preload a quarantined chunk either, which is the other way
+  // Signal 1 can be defeated without a request ever being made to a disabled route.
+  const preloaded = [...html.matchAll(/(?:modulepreload|src)="[^"]*assets\/([^"]+)"/g)].map(
+    (match) => match[1],
+  );
+  const quarantinedPreloads = preloaded.filter((asset) =>
+    DISABLED_TOOL_IDS.some((toolId) => matchesToolChunk(asset, toolId)),
+  );
+  expect(quarantinedPreloads, 'dist/index.html preloads a disabled tool chunk').toEqual([]);
+});
 
 test('home renders a named main heading', async ({ page }) => {
   await page.goto('/');
@@ -109,7 +145,7 @@ test('disabled security and AI routes never mount a workflow', async ({ page }) 
   }
 });
 
-test('disabled routes load no quarantined tool code and reach no unlisted host', async ({ page }) => {
+test('disabled routes load no quarantined tool code and contact no other host', async ({ page }) => {
   const requested: string[] = [];
   page.on('request', (request) => requested.push(request.url()));
 
@@ -129,18 +165,31 @@ test('disabled routes load no quarantined tool code and reach no unlisted host',
   const workerRequests = requested.filter((requestUrl) => matchesWorkerAsset(requestUrl));
   expect(workerRequests, 'a disabled route loaded OCR or PDF worker assets').toEqual([]);
 
-  // Signal 3: any host outside the explicit allowlist, so a new egress host is
-  // visible even when it is not one of the services this test already knew about.
-  const unlistedHosts = [
+  // Signal 3: any host other than the one serving the app. The assertion is zero
+  // non-local hosts, not a list of known-bad ones, so a new egress host cannot be
+  // waved through by being unfamiliar to this test.
+  //
+  // Every request a route makes has to resolve to the host that served the page. This
+  // file used to allowlist `cdn.jsdelivr.net` and `unpkg.com` for a future OCR
+  // enablement, and that pair turned a real hole into a passing test: only
+  // Tesseract-shaped asset names were forbidden, so any other external fetch - a
+  // font CDN, a telemetry collector, a pixel host - passed every check. Naming hosts
+  // as acceptable is a silent policy change, so the list is gone. If OCR is enabled,
+  // add its hosts here on purpose, in the same commit that widens the CSP, and
+  // record the new data boundary in docs/privacy/data-flow.md.
+  const externalHosts = [
     ...new Set(
       requested
         .map(toUrl)
         .filter((url): url is URL => url !== null && /^https?:$/.test(url.protocol))
-        .filter((url) => !LOCAL_HOSTS.has(url.hostname) && !ALLOWED_EXTERNAL_HOSTS.has(url.hostname))
-        .map((url) => url.hostname),
+        .filter((url) => !LOCAL_HOSTS.has(url.hostname))
+        .map((url) => url.hostname + ' (' + url.pathname + ')'),
     ),
   ];
-  expect(unlistedHosts, 'a disabled route contacted a host outside the allowlist').toEqual([]);
+  expect(
+    externalHosts,
+    'a disabled route contacted a host that does not serve the app',
+  ).toEqual([]);
 
   // Signal 4 (checked last so a broken gate is reported as a chunk regression
   // first): every disabled route still renders the unavailable screen.
