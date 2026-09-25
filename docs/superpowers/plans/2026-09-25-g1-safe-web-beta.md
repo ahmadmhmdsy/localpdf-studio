@@ -414,7 +414,8 @@ npx vitest run src/lib/ai.test.ts src/components/tools/ToolAvailabilityGate.test
 npm run typecheck
 npm run lint
 npm run build
-if (Get-ChildItem -Recurse dist -File | Select-String -Pattern 'VITE_GEMINI_API_KEY|AIza[0-9A-Za-z_-]{20,}' -Quiet) { throw 'build output contains a Gemini key pattern' }
+$hits = Get-ChildItem -Recurse dist -File | Select-String -Pattern 'VITE_GEMINI_API_KEY|AIza[0-9A-Za-z_-]{20,}'
+if ($hits) { $hits | Select-Object Path, LineNumber; throw 'build output contains a Gemini key pattern' } else { 'dist secret scan: clean' }
 ```
 
 Expected: tests, typecheck, lint, and build pass; the PowerShell scan prints no match and exits zero.

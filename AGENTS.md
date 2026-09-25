@@ -27,7 +27,7 @@ npm run test:coverage  # vitest with coverage
 npm run clean        # rimraf dist/
 ```
 
-- `.env` needs `VITE_GEMINI_API_KEY` for AI features (summarize, translate). `.env*` is gitignored (except `.env.example`). `APP_URL` in `.env` is for self-referential links.
+- `.env*` is gitignored (except `.env.example`). The web build accepts no API key: AI tools (summarize, translate) are unavailable in the public web beta, and a `VITE_*` variable would be inlined into the public browser bundle. The desktop build stores a user-owned key via `tauri-plugin-store` instead. `APP_URL` in `.env` is for self-referential links.
 - Path alias `@/` → project root (`./`), NOT `src/`. Verified in `tsconfig.json` paths and `vite.config.ts` resolve.alias.
 - Tailwind CSS v4 is configured via `@tailwindcss/vite` plugin — no `postcss.config` or `tailwind.config` file. Styles are in `src/index.css`.
 

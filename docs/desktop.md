@@ -6,7 +6,7 @@ This document covers the Tauri 2 desktop shell for LocalPDF Studio. The web buil
 
 - A native desktop window for Windows / macOS / Linux.
 - Native OS file pickers and save dialogs (replaces the HTML `<input type="file">` fallback).
-- On-disk key/value store via `tauri-plugin-store` (used to persist the Gemini API key securely, replacing the build-time `VITE_GEMINI_API_KEY`).
+- On-disk key/value store via `tauri-plugin-store` (used to persist the Gemini API key securely; the web build holds no key at all).
 - Bundle sizes ~5–10 MB vs ~150 MB for Electron, idle RAM ~50 MB vs ~150 MB.
 - All 31 PDF tools work unchanged because the wrapper is a normal WebView.
 
@@ -82,7 +82,7 @@ Components use `src/lib/native.ts` to bridge to native OS features:
 
 ## Gemini API key
 
-Unlike the web build (which embeds the key via `VITE_GEMINI_API_KEY` at build time), the desktop app reads the key from the on-disk store. To set it:
+The web build accepts no API key at all: AI tools are unavailable in the public web beta, and a `VITE_*` variable would be inlined into the public browser bundle. The desktop app reads the key from the on-disk store. To set it:
 
 1. Launch the desktop app.
 2. Click the gear icon in the header → "Gemini API Key".
@@ -90,8 +90,10 @@ Unlike the web build (which embeds the key via `VITE_GEMINI_API_KEY` at build ti
 
 ```src/lib/ai.ts``` resolves the key in this order:
 
-1. `tauri-plugin-store` (desktop users)
-2. `import.meta.env.VITE_GEMINI_API_KEY` (web users, and fallback for desktop if no key set)
+1. the in-memory cache (populated by a previous resolve or the Settings UI)
+2. `tauri-plugin-store` (desktop users)
+
+There is deliberately no build-time environment fallback in either target.
 
 The key is cached in-memory. To force re-reading, call `clearApiKeyCache()` (already wired to the Settings save flow).
 
@@ -146,7 +148,7 @@ src-tauri/
 |---|---|
 | `src/lib/native.ts` (NEW) | Abstraction layer; plugin imports are lazy so the browser bundle stays small |
 | `src/lib/native.test.ts` (NEW) | 18 tests covering isTauri, pickFiles, saveFile, store helpers, events |
-| `src/lib/ai.ts` | Added `resolveApiKey()`, `getGenAIAsync()`, `clearApiKeyCache()`; sync `getGenAI()` now prefers the cache then env |
+| `src/lib/ai.ts` | Added `resolveApiKey()`, `getGenAIAsync()`, `clearApiKeyCache()`; both accessors resolve from the in-memory cache and the on-disk store only |
 | `src/lib/ai.test.ts` | Appended tests for API key resolution |
 | `src/components/settings/ApiKeySettings.tsx` (NEW) | Modal dialog for managing the API key (only rendered in Tauri) |
 | `src/components/tools/FileUploadZone.tsx` | Added a "Browse from disk…" button when running in Tauri; keep all existing dropzone behavior |
