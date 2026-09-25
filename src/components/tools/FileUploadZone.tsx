@@ -210,7 +210,7 @@ export default function FileUploadZone({
 
         <div className="drop-cta" style={{ textAlign: 'center' }}>
           <h2 style={{
-            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            fontFamily: 'sans-serif',
             fontSize: '22px',
             fontWeight: 700,
             letterSpacing: '-0.01em',
@@ -223,7 +223,7 @@ export default function FileUploadZone({
             color: 'var(--text-3)',
             fontSize: '14px',
             marginBottom: '28px',
-            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            fontFamily: 'sans-serif',
           }}>
             {subtitle}
           </p>
@@ -293,7 +293,7 @@ export default function FileUploadZone({
           marginTop: '28px',
           color: 'var(--text-3)',
           fontSize: '11px',
-          fontFamily: "'DM Mono', monospace",
+          fontFamily: 'monospace',
           flexWrap: 'wrap',
         }}>
           <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>

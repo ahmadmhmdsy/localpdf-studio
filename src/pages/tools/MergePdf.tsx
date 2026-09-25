@@ -163,7 +163,7 @@ export default function MergePdf() {
                             )}
                           >
                             <div className="flex items-center gap-4 overflow-hidden">
-                              <div {...provided.dragHandleProps} aria-label="Drag to reorder" className="text-[var(--text-3)] hover:text-[var(--accent)] cursor-grab active:cursor-grabbing transition-colors">
+                              <div {...provided.dragHandleProps} aria-label="Drag to reorder" className="text-[var(--text-3)] hover:text-[var(--accent-text)] cursor-grab active:cursor-grabbing transition-colors">
                                 <GripVertical size={20} />
                               </div>
                               <div className="w-10 h-10 rounded-full bg-[var(--accent)]/10 flex items-center justify-center flex-shrink-0">
@@ -194,7 +194,7 @@ export default function MergePdf() {
                             </div>
                             <button
                               onClick={() => removeFile(index)}
-                              className="p-2 text-[var(--text-3)] hover:text-[var(--accent)] hover:bg-[var(--accent-dim)] rounded-[var(--radius-sm)] transition-all duration-200 opacity-0 group-hover:opacity-100"
+                              className="p-2 text-[var(--text-3)] hover:text-[var(--accent-text)] hover:bg-[var(--accent-dim)] rounded-[var(--radius-sm)] transition-all duration-200 opacity-0 group-hover:opacity-100"
                               aria-label={`Remove ${file.name}`}
                             >
                               <X size={20} />

@@ -220,29 +220,14 @@ export default function HomeBento() {
 
       {/* Privacy deep block */}
       <aside className="bento-privacy-deep" id="privacy" aria-label="Privacy guarantee">
-        <div className="num">0</div>
         <div>
-          <h3>The number of bytes we keep of your work.</h3>
+          <h3>Where your work is stored.</h3>
           <p>
-            LocalPDF Studio processes most tools in your browser. AI, OCR, and camera tools are currently unavailable in the public beta; no file is sent to an external service from those routes.
+            LocalPDF Studio processes most tools in your browser. AI, OCR, and camera tools are currently unavailable in the public beta; no file is sent to an external service from those routes. The
+            editor keeps your working document and edit history in the local storage of this browser, on this device only, until you clear it: use the Close File control in the editor to
+            drop the stored file, or clear the stored data for this site in your browser settings.
           </p>
         </div>
-        <a
-          href="#privacy"
-          style={{
-            padding: '0.85rem 1.5rem',
-            background: 'var(--accent-2)',
-            color: 'var(--ink)',
-            borderRadius: 'var(--radius-md)',
-            fontWeight: 700,
-            fontSize: '0.92rem',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '0.4rem',
-          }}
-        >
-          Read the privacy note →
-        </a>
       </aside>
     </>
   );

@@ -2,9 +2,11 @@ import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { TOOL_CATEGORIES } from '../constants/tools';
+import { TOOL_RELEASE_REGISTRY } from './featureRegistry';
 
 type TauriConfig = {
   bundle: {
+    shortDescription: string;
     longDescription: string;
   };
 };
@@ -111,5 +113,91 @@ describe('release-facing redaction claims', () => {
     expect(tauriConfig.bundle.longDescription).toMatch(
       /dedicated blackout\/redaction[^.]*disabled/i,
     );
+  });
+});
+
+/**
+ * Absolute "everything stays on your device" phrasing is false in the public beta:
+ * AI, OCR, and camera tools are disabled and send nothing, but the copy must say so
+ * instead of promising that every tool is local. Each pattern below is a claim the
+ * registry cannot support, so a matching surface is a release-blocking defect.
+ */
+const absoluteLocalOnlyClaims: { label: string; pattern: RegExp }[] = [
+  { label: '100% FREE claim', pattern: /100%\s*free/i },
+  { label: 'all processing happens locally', pattern: /all processing is done locally/i },
+  { label: 'processes locally in your browser', pattern: /process(?:es|ing)? locally in your browser/i },
+  { label: 'runs entirely on your device', pattern: /entirely on your device/i },
+  { label: 'local-only version label', pattern: /v1\.0\s*·\s*local-only/i },
+  { label: 'no uploads, no servers promise', pattern: /no uploads,\s*no servers/i },
+  { label: 'files never leave claim', pattern: /files? never leave/i },
+];
+
+const footerSource = readSource('src/components/layout/Footer.tsx');
+const sidebarSource = readSource('src/components/layout/Sidebar.tsx');
+
+const containmentSurfaces: Record<string, string> = {
+  Home: homeSource,
+  HomeBento: homeBentoSource,
+  Footer: footerSource,
+  Sidebar: sidebarSource,
+  'Tauri shortDescription': tauriConfig.bundle.shortDescription,
+  'Tauri longDescription': tauriConfig.bundle.longDescription,
+};
+
+const escapeRegExp = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
+const GENERIC_TOOL_NAME_WORDS = new Set(['pdf', 'file', 'files', 'to', 'and', 'the']);
+
+/**
+ * 'AI Summarizer' -> /\bAI Summarizer\b/, 'OCR PDF' -> /\bOCR\b/,
+ * 'PDF to PowerPoint' -> /\bPowerPoint\b/. Short or generic leading words are
+ * skipped so the pattern cannot degenerate into a word that appears everywhere.
+ */
+const advertisingPattern = (toolName: string): RegExp => {
+  const words = toolName.split(/[\s-]+/);
+  const significant = words.filter((word) => !GENERIC_TOOL_NAME_WORDS.has(word.toLowerCase()));
+  const first = significant[0] ?? toolName;
+  const keyword = first.length < 3 ? significant.slice(0, 2).join(' ') : first;
+  return new RegExp(`\\b${escapeRegExp(keyword)}\\b`, 'i');
+};
+
+const disabledToolNames = TOOL_CATEGORIES.flatMap((category) => category.tools)
+  .filter((tool) => TOOL_RELEASE_REGISTRY[tool.id].releaseState === 'disabled')
+  .map((tool) => tool.name);
+
+const UNAVAILABILITY_QUALIFIER =
+  /\b(?:unavailable|not available|disabled|currently|never|does not|do not)\b/i;
+
+describe('release-facing containment claims', () => {
+  it('keeps the disabled tool list non-empty for the installer assertion', () => {
+    expect(disabledToolNames.length).toBeGreaterThan(0);
+    expect(disabledToolNames).toEqual(
+      expect.arrayContaining(['OCR PDF', 'Compress PDF', 'AI Summarizer', 'Scan to PDF', 'Blackout PDF']),
+    );
+  });
+
+  it('avoids absolute local-only phrasing on user-facing surfaces', () => {
+    for (const [surface, source] of Object.entries(containmentSurfaces)) {
+      for (const { label, pattern } of absoluteLocalOnlyClaims) {
+        expect(source, `${surface}: ${label}`).not.toMatch(pattern);
+      }
+    }
+  });
+
+  it('states the containment boundary instead of a blanket local promise', () => {
+    expect(homeSource).toMatch(/unavailable in the public beta/i);
+    expect(footerSource).toMatch(/unavailable in the public beta/i);
+    expect(tauriConfig.bundle.longDescription).toMatch(/unavailable in this release/i);
+  });
+
+  it('does not advertise a disabled tool in the installer description', () => {
+    const advertised = tauriConfig.bundle.longDescription
+      .split(/(?<=[.!?;])\s+|\n+/)
+      .filter((sentence) =>
+        disabledToolNames.some((toolName) => advertisingPattern(toolName).test(sentence)),
+      )
+      .filter((sentence) => !UNAVAILABILITY_QUALIFIER.test(sentence));
+
+    expect(advertised).toEqual([]);
   });
 });

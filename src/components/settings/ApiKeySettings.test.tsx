@@ -14,7 +14,6 @@ vi.mock('../../lib/native', () => ({
 
 vi.mock('../../lib/ai', () => ({
   clearApiKeyCache: vi.fn(),
-  getCachedApiKey: () => null,
   resolveApiKey: vi.fn().mockResolvedValue(null),
 }));
 

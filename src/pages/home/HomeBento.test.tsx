@@ -176,16 +176,40 @@ describe('HomeBento availability messaging', () => {
     expect(chip!.textContent).not.toMatch(/unavailable/i);
   });
 
-  it('links the privacy note to the real privacy block without an absolute local-only claim', () => {
+  it('states the privacy boundary in place, with no self-targeting privacy link', () => {
     renderBento();
 
     const privacyBlock = screen.getByRole('complementary', { name: 'Privacy guarantee' });
     expect(privacyBlock).toHaveAttribute('id', 'privacy');
-    expect(within(privacyBlock).getByRole('link', { name: /read the privacy note/i })).toHaveAttribute(
-      'href',
-      '#privacy'
-    );
     expect(privacyBlock).not.toHaveTextContent(/files never leave/i);
+    expect(privacyBlock).toHaveTextContent(/AI, OCR, and camera tools are currently unavailable/i);
+
+    // The note is the block itself, so a link to #privacy here would be a no-op jump.
+    const selfTargetingLinks = within(privacyBlock)
+      .queryAllByRole('link')
+      .filter((link) => link.getAttribute('href') === '#privacy');
+    expect(selfTargetingLinks).toEqual([]);
+  });
+
+  it('describes browser-local storage instead of claiming zero retained bytes', () => {
+    renderBento();
+
+    const privacyBlock = screen.getByRole('complementary', { name: 'Privacy guarantee' });
+
+    // The old block rendered a large "0" next to "The number of bytes we keep of your
+    // work." The editor really does persist the working document and the edit history
+    // in IndexedDB, so that number was false and the byte framing had to go.
+    expect(privacyBlock).not.toHaveTextContent(/bytes we keep/i);
+    expect(privacyBlock.querySelector('.num')).toBeNull();
+
+    // What the code actually does: process in the browser, keep a copy in this
+    // browser's local storage, and stay there until the reader clears it.
+    expect(privacyBlock).toHaveTextContent(/where your work is stored/i);
+    expect(privacyBlock).toHaveTextContent(/local storage/i);
+    expect(privacyBlock).toHaveTextContent(/until you clear it/i);
+    expect(privacyBlock).toHaveTextContent(/clear the stored data for this site/i);
+
+    // The containment sentence stays.
     expect(privacyBlock).toHaveTextContent(/AI, OCR, and camera tools are currently unavailable/i);
   });
 

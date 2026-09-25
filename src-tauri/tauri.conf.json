@@ -44,7 +44,7 @@
     ],
     "category": "Productivity",
     "shortDescription": "Edit PDFs locally in your browser.",
-    "longDescription": "LocalPDF Studio is a privacy-first PDF toolkit that runs entirely on your device. Merge, split, convert, sign, compress, OCR, and more \\u2014 no uploads, no servers. The dedicated blackout/redaction workflow is currently disabled.",
+    "longDescription": "LocalPDF Studio is a PDF toolkit that processes most documents in your browser. Merge, split, convert, sign, and organize PDFs. AI, OCR, and camera tools are unavailable in this release and send nothing to an external service. The dedicated blackout/redaction workflow is currently disabled.",
     "publisher": "LocalPDF Studio",
     "copyright": "",
     "homepage": "https://localpdf.studio",

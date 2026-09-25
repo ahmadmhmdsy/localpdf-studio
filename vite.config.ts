@@ -1,7 +1,7 @@
 import tailwindcss from '@tailwindcss/vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
-import {defineConfig, loadEnv} from 'vite';
+import {defineConfig} from 'vite';
 
 // Tauri runs the dev server on a fixed port and host. Set TAURI_DEV=1 when
 // launching via `tauri dev` so we hand Vite the URL Tauri expects.
@@ -9,16 +9,15 @@ import {defineConfig, loadEnv} from 'vite';
 const TAURI_DEV_HOST = '127.0.0.1';
 const TAURI_DEV_PORT = 1420;
 
-export default defineConfig(({mode}) => {
-  const env = loadEnv(mode, '.', '');
+// No `define` and no unprefixed `loadEnv`: the public web bundle must not be
+// able to inline any build-time value, including an API key. The desktop build
+// reads the user-owned key from tauri-plugin-store at runtime instead.
+export default defineConfig(() => {
   // Tauri injects TAURI_DEV=1 into the env when launched from `tauri dev`.
   const isTauriDev = process.env.TAURI_DEV === '1';
 
   return {
     plugins: [react(), tailwindcss()],
-    define: {
-      'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY),
-    },
     resolve: {
       alias: {
         '@': path.resolve(__dirname, '.'),

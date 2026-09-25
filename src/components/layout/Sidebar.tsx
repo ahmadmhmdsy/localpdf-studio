@@ -81,7 +81,7 @@ export default function Sidebar() {
         >
           {darkMode ? '☀ Light' : '☾ Dark'}
         </button>
-        <span><span className="dot" />v1.0 · local-only</span>
+        <span><span className="dot" />v1.0 · browser-first</span>
       </div>
     </aside>
   );

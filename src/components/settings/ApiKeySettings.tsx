@@ -136,10 +136,10 @@ export default function ApiKeySettings({ open, onClose }: ApiKeySettingsProps) {
         onClick={(e) => e.stopPropagation()}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
-          <Key size={20} aria-hidden="true" style={{ color: 'var(--accent)' }} />
+          <Key size={20} aria-hidden="true" style={{ color: 'var(--accent-text)' }} />
           <h2
             id="api-key-settings-title"
-            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: '18px', fontWeight: 700 }}
+            style={{ fontFamily: 'sans-serif', fontSize: '18px', fontWeight: 700 }}
           >
             Gemini API Key
           </h2>
@@ -167,7 +167,7 @@ export default function ApiKeySettings({ open, onClose }: ApiKeySettingsProps) {
             border: '1px solid var(--border)',
             borderRadius: '12px',
             padding: '14px 16px',
-            fontFamily: "'DM Mono', monospace",
+            fontFamily: 'monospace',
             fontSize: '12px',
             color: 'var(--text-2)',
           }}>
@@ -191,7 +191,7 @@ export default function ApiKeySettings({ open, onClose }: ApiKeySettingsProps) {
                 width: '100%', padding: '12px 14px', fontSize: '14px',
                 background: 'rgba(0,0,0,0.25)', color: 'var(--text)',
                 border: '1px solid var(--border)', borderRadius: '12px',
-                outline: 'none', fontFamily: "'DM Mono', monospace",
+                outline: 'none', fontFamily: 'monospace',
               }}
             />
             <div style={{ display: 'flex', gap: '10px', marginTop: '18px', justifyContent: 'flex-end' }}>

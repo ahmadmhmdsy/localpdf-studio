@@ -32,7 +32,7 @@ export default function Header() {
             <div className="flex h-9 w-9 items-center justify-center rounded-lg" style={{ background: 'var(--accent)' }}>
               <FileText size={18} className="text-white" />
             </div>
-            <span className="text-lg font-bold tracking-tight hidden sm:inline" style={{ color: 'var(--text)', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+            <span className="text-lg font-bold tracking-tight hidden sm:inline" style={{ color: 'var(--text)', fontFamily: 'sans-serif' }}>
               LocalPDF Studio
             </span>
           </Link>
@@ -99,7 +99,7 @@ export default function Header() {
           aria-label="Site navigation"
         >
           <div className="flex items-center justify-between px-6 py-4 border-b" style={{ borderColor: 'var(--border)' }}>
-            <span className="text-base font-bold tracking-tight" style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+            <span className="text-base font-bold tracking-tight" style={{ fontFamily: 'sans-serif' }}>
               LocalPDF Studio
             </span>
             <button

@@ -402,20 +402,12 @@
   color: var(--bg);
   border-radius: var(--radius-lg);
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  grid-template-columns: 1fr;
   gap: 2rem;
   align-items: center;
 }
 @media (max-width: 780px) {
   [data-skin="bento"] .bento-privacy-deep { grid-template-columns: 1fr; }
-}
-[data-skin="bento"] .bento-privacy-deep .num {
-  font-family: inherit;
-  font-weight: 800;
-  font-size: 5rem;
-  letter-spacing: -0.04em;
-  line-height: 1;
-  color: var(--accent-2);
 }
 [data-skin="bento"] .bento-privacy-deep h3 {
   font-size: 1.6rem;

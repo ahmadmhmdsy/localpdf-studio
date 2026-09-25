@@ -44,7 +44,7 @@ export default function ToolLayout({
           {kicker && (
             <p
               style={{
-                fontFamily: "'DM Mono', monospace",
+                fontFamily: 'monospace',
                 fontSize: '11px',
                 letterSpacing: '0.12em',
                 textTransform: 'uppercase',
@@ -59,7 +59,7 @@ export default function ToolLayout({
           {title && (
             <h1
               style={{
-                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                fontFamily: 'sans-serif',
                 fontSize: 'clamp(28px, 5vw, 42px)',
                 fontWeight: 800,
                 letterSpacing: '-0.02em',
@@ -75,7 +75,7 @@ export default function ToolLayout({
           {description && (
             <p
               style={{
-                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                fontFamily: 'sans-serif',
                 fontSize: '16px',
                 lineHeight: 1.6,
                 color: 'var(--text-2)',

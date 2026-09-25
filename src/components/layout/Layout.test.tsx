@@ -20,7 +20,7 @@ describe('Layout', () => {
   it('renders Header and Footer', () => {
     renderWithProviders(<Layout />);
     expect(screen.getByText('LocalPDF Studio')).toBeInTheDocument();
-    expect(screen.getByText(/All processing is done locally/i)).toBeInTheDocument();
+    expect(screen.getByText(/Most tools are processed in your browser/i)).toBeInTheDocument();
   });
 
   it('renders the Outlet', () => {

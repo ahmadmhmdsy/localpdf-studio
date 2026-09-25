@@ -48,10 +48,13 @@ describe('Home', () => {
       expect(screen.getByRole('heading', { name: /every tool you need to work with PDFs/i })).toBeInTheDocument();
     });
 
-    it('displays subtitle about free and local processing', () => {
+    it('displays a subtitle that states the browser-local and containment boundary', () => {
       renderHome();
-      expect(screen.getByText(/100% FREE/i)).toBeInTheDocument();
-      expect(screen.getByText(/process locally in your browser/i)).toBeInTheDocument();
+      expect(screen.getByText(/Most tools process in your browser/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/AI, OCR, and camera tools are unavailable in the public beta/i),
+      ).toBeInTheDocument();
+      expect(screen.queryByText(/100% FREE/i)).not.toBeInTheDocument();
     });
   });
 
