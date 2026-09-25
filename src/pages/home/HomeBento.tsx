@@ -71,7 +71,7 @@ export default function HomeBento() {
           <Search aria-hidden="true" />
           <input
             type="search"
-            placeholder={`Search ${availabilitySummary.count} tools — e.g. compress, redact, watermark…`}
+            placeholder={`Search ${availabilitySummary.count} tools — e.g. merge, watermark, sign…`}
             aria-label="Search tools"
             value={query}
             onChange={(e) => setQuery(e.target.value)}

@@ -153,6 +153,17 @@ describe('Home', () => {
       expect(link).toHaveAttribute('href', '/editor?tool=sign-pdf');
     });
 
+    it('keeps blackout on its disabled dedicated route, not the editor redaction query', () => {
+      renderHome();
+      const blackout = screen.getByRole('link', { name: /blackout pdf/i });
+
+      expect(blackout).toHaveAttribute('href', '/tools/blackout-pdf');
+      expect(blackout).toHaveAttribute('aria-disabled', 'true');
+      expect(
+        screen.getAllByRole('link').some((link) => link.getAttribute('href')?.includes('redact-pdf')),
+      ).toBe(false);
+    });
+
     it('keeps unavailable status text outside the dimmed card subtree', () => {
       renderHome();
       const unavailableLink = screen.getByRole('link', {

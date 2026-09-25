@@ -1,4 +1,4 @@
-import { render, waitFor } from '@testing-library/react';
+import { fireEvent, render, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { MemoryRouter } from 'react-router-dom';
 import Editor from './Editor';
@@ -9,11 +9,18 @@ const shortcutCapture = vi.hoisted(() => ({
   current: [] as Array<{ key: string; ctrl?: boolean; handler: () => void }>,
 }));
 
-vi.mock('../hooks/useKeyboardShortcuts', () => ({
-  useKeyboardShortcuts: vi.fn((shortcuts) => {
-    shortcutCapture.current = shortcuts;
-  }),
-}));
+vi.mock('../hooks/useKeyboardShortcuts', async () => {
+  const actual = await vi.importActual<typeof import('../hooks/useKeyboardShortcuts')>(
+    '../hooks/useKeyboardShortcuts',
+  );
+
+  return {
+    useKeyboardShortcuts: vi.fn((shortcuts: Parameters<typeof actual.useKeyboardShortcuts>[0]) => {
+      shortcutCapture.current = shortcuts;
+      actual.useKeyboardShortcuts(shortcuts);
+    }),
+  };
+});
 
 vi.mock('./editor/EditorWorkspace', () => ({
   EditorWorkspace: () => <div data-testid="editor-workspace" />,
@@ -85,12 +92,23 @@ describe('Editor redaction quarantine', () => {
     renderEditor('/editor?tool=redact-pdf');
 
     await waitFor(() => expect(setActiveTool).toHaveBeenCalled());
+    expect(setActiveTool).toHaveBeenCalledWith('select');
     expect(setActiveTool).not.toHaveBeenCalledWith('redact');
 
     const shortcut = shortcutCapture.current.find(
       (entry) => entry.key === 'r' && entry.ctrl,
     );
     expect(shortcut).toBeUndefined();
+  });
+
+  it('does not activate redaction from a physical Ctrl+R event', async () => {
+    renderEditor('/editor');
+    await waitFor(() => expect(shortcutCapture.current.length).toBeGreaterThan(0));
+    setActiveTool.mockClear();
+
+    fireEvent.keyDown(window, { key: 'r', ctrlKey: true });
+
+    expect(setActiveTool).not.toHaveBeenCalled();
   });
 
   it('preserves the unrelated crop query mapping', async () => {

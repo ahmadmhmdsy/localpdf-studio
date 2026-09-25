@@ -78,7 +78,7 @@ export const TOOL_CATEGORIES: ToolCategory[] = [
     name: "PDF SECURITY",
     tools: [
       { id: "sign-pdf", name: "Sign PDF", description: "Draw, type, or upload a signature and stamp it onto your PDF pages. Signatures stay in your browser.", icon: PenTool, color: "text-blue-500", isMVP: true },
-      { id: "blackout-pdf", name: "Blackout PDF", description: "Permanently remove text from a document by blacking out areas (text becomes un-extractable).", icon: Square, color: "text-blue-500", isMVP: true },
+      { id: "blackout-pdf", name: "Blackout PDF", description: "Unavailable while the dedicated blackout/redaction workflow is remediated; do not use it as a confidentiality boundary.", icon: Square, color: "text-blue-500", isMVP: true },
       { id: "compare-pdf", name: "Compare PDF", description: "Show two PDFs side-by-side for visual comparison. Differences are not auto-detected.", icon: GitCompare, color: "text-blue-500", isMVP: true },
       { id: "decrypt-pdf", name: "Decrypt PDF", description: "Remove the password from an encrypted PDF (you must know the password).", icon: KeyRound, color: "text-blue-500", isMVP: true },
       { id: "protect-pdf", name: "Protect PDF", description: "Add password protection and permissions to PDF files.", icon: Shield, color: "text-blue-500", isMVP: true },

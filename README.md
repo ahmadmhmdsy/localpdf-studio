@@ -11,14 +11,14 @@ A comprehensive, client-side PDF manipulation tool built with React. Merge, spli
 Merge, split, rotate, reorder, remove, and extract pages from PDFs.
 
 ### 🎨 Edit & Annotate
-Full editor with text, drawing, image, signature, and redaction tools. Keyboard shortcuts (press `?` to see all).
+Full editor with text, drawing, image, and signature tools. Keyboard shortcuts (press `?` to see all).
 
 ### 🔄 Convert
 - PDF ↔ Word, Excel, PowerPoint, JPG, HTML
 - Scan to PDF (camera capture), OCR PDFs
 
 ### 🔒 Security
-Add/remove passwords, redact sensitive content, repair damaged PDFs.
+Add/remove passwords and repair damaged PDFs. The dedicated blackout/redaction workflow is currently disabled and is not a confidentiality boundary.
 
 ### 🤖 AI-Powered
 AI Summarizer and Translate PDF.

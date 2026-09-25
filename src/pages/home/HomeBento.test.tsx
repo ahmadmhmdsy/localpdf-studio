@@ -47,13 +47,23 @@ describe('HomeBento availability messaging', () => {
 
     const heroTile = screen.getByRole('heading', { level: 1 }).closest('article') as HTMLElement;
     expect(heroTile).toHaveTextContent(`${count} tools, 7 categories`);
-    expect(screen.getByPlaceholderText(new RegExp(`^Search ${count} tools`))).toBeInTheDocument();
+    const search = screen.getByPlaceholderText(new RegExp(`^Search ${count} tools`));
+    expect(search).toBeInTheDocument();
+    expect(search.getAttribute('placeholder')).not.toMatch(/redact/i);
 
     const countLabel = screen.getByText('Tools available');
     const tile = countLabel.closest('article') as HTMLElement;
     expect(tile).toHaveTextContent(String(count));
     expect(tile).toHaveTextContent(stateSummary);
     expect(tile).not.toHaveTextContent(/▲|this month/i);
+  });
+
+  it('does not link the alternate Home skin to the editor redaction query', () => {
+    renderBento();
+
+    expect(
+      screen.getAllByRole('link').some((link) => link.getAttribute('href')?.includes('redact-pdf')),
+    ).toBe(false);
   });
 
   it('includes the registry state in a limited tool link accessible name', () => {

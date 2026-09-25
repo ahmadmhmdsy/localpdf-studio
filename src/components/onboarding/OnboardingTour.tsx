@@ -19,8 +19,8 @@ const STEPS: TourStep[] = [
   {
     title: 'Pick a tool',
     description:
-      'Open the Home page to see all 31 tools: merge, split, compress, redact, sign, convert, and more. ' +
-      'Every tool is one click away.',
+      'Open the Home page to browse PDF tools, including merge, split, convert, and sign. ' +
+      'Each card shows its current availability before you choose a tool.',
   },
   {
     title: 'Upload and process',

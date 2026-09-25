@@ -30,9 +30,11 @@ export default function PropertiesPanel() {
 
   if (!file) return null;
 
-  const selectedAnnotation = annotations.find(a => a.id === selectedAnnotationId);
+  const selectedAnnotation = annotations.find(
+    (annotation) => annotation.id === selectedAnnotationId && annotation.type !== 'redact',
+  );
 
-  const hasContent = activeTool !== 'select' || selectedAnnotation;
+  const hasContent = activeTool !== 'redact' && (activeTool !== 'select' || selectedAnnotation);
   const showProperties = propertiesPanelVisible;
 
   if (!showProperties) return null;

@@ -80,6 +80,30 @@ describe('PropertiesPanel', () => {
 
     expect(screen.queryByText('Fill Color')).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Delete Redaction' })).not.toBeInTheDocument();
+    expect(screen.queryByText('redact Settings')).not.toBeInTheDocument();
+    expect(screen.getByText(/Select a tool or an element on the canvas/i)).toBeInTheDocument();
+  });
+
+  it('does not expose settings for a stale redaction active tool', () => {
+    vi.spyOn(ToolsStoreModule, 'useToolsStore').mockReturnValue({
+      activeTool: 'redact',
+      propertiesPanelVisible: true,
+    } as any);
+    vi.spyOn(DocumentStoreModule, 'useDocumentStore').mockReturnValue({
+      file: mockFile,
+      pages: [],
+    } as any);
+    vi.spyOn(AnnotationsStoreModule, 'useAnnotationsStore').mockReturnValue({
+      annotations: [],
+      selectedAnnotationId: null,
+      updateAnnotation: vi.fn(),
+      deleteAnnotation: vi.fn(),
+    } as any);
+
+    render(<PropertiesPanel />);
+
+    expect(screen.queryByText('redact Settings')).not.toBeInTheDocument();
+    expect(screen.getByText(/Select a tool or an element on the canvas/i)).toBeInTheDocument();
   });
 
   it('renders nothing when no file is loaded', () => {

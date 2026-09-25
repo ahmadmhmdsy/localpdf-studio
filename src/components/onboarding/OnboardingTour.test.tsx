@@ -32,6 +32,17 @@ describe('OnboardingTour', () => {
     expect(screen.getByText(/Welcome to LocalPDF Studio/i)).toBeInTheDocument();
   });
 
+  it('does not advertise redaction as an available tool', async () => {
+    const user = userEvent.setup();
+    render(<OnboardingTour forceShow />);
+
+    await user.click(screen.getByRole('button', { name: /next step/i }));
+    expect(screen.getByText(/shows its current availability before you choose a tool/i)).toBeInTheDocument();
+    expect(screen.queryByText(/availability and limitations/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/redact/i)).not.toBeInTheDocument();
+    expect(screen.queryByText(/every tool is one click away/i)).not.toBeInTheDocument();
+  });
+
   it('advances through all four steps when Next is clicked', async () => {
     const user = userEvent.setup();
     render(<OnboardingTour forceShow />);
