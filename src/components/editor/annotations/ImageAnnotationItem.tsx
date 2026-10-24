@@ -7,8 +7,9 @@ const ImageAnnotationItem = React.memo(function ImageAnnotationItem({ annotation
   const cleanupRef = useRef<(() => void)[]>([]);
 
   useEffect(() => {
+    const cleanups = cleanupRef.current;
     return () => {
-      cleanupRef.current.forEach(fn => fn());
+      cleanups.forEach(fn => fn());
     };
   }, []);
 

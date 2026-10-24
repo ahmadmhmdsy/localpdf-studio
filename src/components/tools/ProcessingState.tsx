@@ -5,9 +5,11 @@ interface ProcessingStateProps {
   description?: string;
   progress?: number;
   statusMessage?: string;
+  /** Custom step labels. Defaults to generic steps if not provided. */
+  steps?: string[];
 }
 
-const PROCESSING_STEPS = [
+const DEFAULT_STEPS = [
   'Validating files',
   'Processing pages…',
   'Finalizing',
@@ -18,8 +20,10 @@ export default function ProcessingState({
   description,
   progress = 0,
   statusMessage,
+  steps,
 }: ProcessingStateProps) {
   const clampedProgress = Math.min(100, Math.max(0, progress));
+  const activeSteps = steps && steps.length > 0 ? steps : DEFAULT_STEPS;
   
   const getActiveStep = (): number => {
     if (clampedProgress < 35) return 0;
@@ -153,7 +157,7 @@ export default function ProcessingState({
           maxWidth: '300px',
           margin: '0 auto',
         }}>
-          {PROCESSING_STEPS.map((step, index) => {
+          {activeSteps.map((step, index) => {
             const isActive = index === activeStep;
             const isDone = index < activeStep;
 

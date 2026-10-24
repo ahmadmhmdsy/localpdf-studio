@@ -1,7 +1,14 @@
 import { fireEvent, render, screen } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import AnnotationLayer from './AnnotationLayer';
-import * as EditorContextModule from '../../contexts/EditorContext';
+import { useDocumentStore, useToolsStore, useAnnotationsStore } from '../../store';
+
+// Mock the granular store hooks
+vi.mock('../../store', () => ({
+  useDocumentStore: vi.fn(),
+  useToolsStore: vi.fn(),
+  useAnnotationsStore: vi.fn(),
+}));
 
 vi.mock('./annotations/TextAnnotationItem', () => ({
   default: () => <div data-testid="text-annotation" />,
@@ -26,18 +33,22 @@ describe('AnnotationLayer redaction quarantine', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.spyOn(EditorContextModule, 'useEditor').mockReturnValue({
+    vi.mocked(useDocumentStore).mockImplementation((selector: (state: any) => unknown) => selector({
       pages: [{ id: 'page-0', originalIndex: 0, rotation: 0 }],
+    }));
+    vi.mocked(useToolsStore).mockImplementation((selector: (state: any) => unknown) => selector({
       currentPage: 1,
+      activeTool: 'select',
+      setActiveTool,
+    }));
+    vi.mocked(useAnnotationsStore).mockImplementation((selector: (state: any) => unknown) => selector({
       annotations: [
         { id: 'text-1', pageId: 'page-0', type: 'text', text: 'hello', x: 0.2, y: 0.2, fontSize: 12, color: 'black' },
         { id: 'redact-1', pageId: 'page-0', type: 'redact', x: 0.5, y: 0.5, width: 0.2, height: 0.05, color: 'black' },
       ],
-      activeTool: 'select',
       addAnnotation,
       setSelectedAnnotationId,
-      setActiveTool,
-    } as any);
+    }));
   });
 
   it('does not render a legacy redaction record', () => {
@@ -47,15 +58,16 @@ describe('AnnotationLayer redaction quarantine', () => {
   });
 
   it('does not create a redaction record when legacy activeTool is redact', () => {
-    vi.spyOn(EditorContextModule, 'useEditor').mockReturnValue({
-      pages: [{ id: 'page-0', originalIndex: 0, rotation: 0 }],
+    vi.mocked(useToolsStore).mockImplementation((selector: (state: any) => unknown) => selector({
       currentPage: 1,
-      annotations: [],
       activeTool: 'redact',
+      setActiveTool,
+    }));
+    vi.mocked(useAnnotationsStore).mockImplementation((selector: (state: any) => unknown) => selector({
+      annotations: [],
       addAnnotation,
       setSelectedAnnotationId,
-      setActiveTool,
-    } as any);
+    }));
 
     const { container } = render(<AnnotationLayer />);
     const layer = container.firstElementChild as HTMLElement;

@@ -106,7 +106,6 @@ export default function OnboardingTour({ forceShow = false }: OnboardingTourProp
     });
     return () => document.removeEventListener('keydown', handleKey);
     // handleComplete is stable (see below) so it does not need to be a dep.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   const next = () => {

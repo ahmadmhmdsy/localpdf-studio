@@ -50,6 +50,7 @@ const PdfToExcel = lazy(() => import('./pages/tools/PdfToExcel'));
 const PowerpointToPdf = lazy(() => import('./pages/tools/PowerpointToPdf'));
 const PdfToPowerpoint = lazy(() => import('./pages/tools/PdfToPowerpoint'));
 const TranslatePdf = lazy(() => import('./pages/tools/TranslatePdf'));
+const Limitations = lazy(() => import('./pages/Limitations'));
 
 function ToolRoute({ element, name, toolId }: { element: React.ReactNode; name: string; toolId: ToolId }) {
   return (
@@ -74,6 +75,7 @@ export default function App() {
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
             <Route path="editor" element={<Editor />} />
+            <Route path="limitations" element={<Limitations />} />
             <Route path="tools/merge-pdf" element={<ToolRoute element={<MergePdf />} name="Merge PDF" toolId="merge-pdf" />} />
             <Route path="tools/split-pdf" element={<ToolRoute element={<SplitPdf />} name="Split PDF" toolId="split-pdf" />} />
             <Route path="tools/pdf-to-jpg" element={<ToolRoute element={<PdfToJpg />} name="PDF to JPG" toolId="pdf-to-jpg" />} />

@@ -7,6 +7,7 @@ import DownloadState from '../../components/tools/DownloadState';
 import { extractPages } from '../../lib/pdf';
 import { logError } from '../../lib/logger';
 import { useToast } from '../../contexts/ToastContext';
+import { useManagedObjectUrl } from '../../hooks/useObjectUrl';
 
 type Step = 'upload' | 'configure' | 'processing' | 'download';
 
@@ -17,6 +18,7 @@ export default function SplitPdf() {
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [resultSize, setResultSize] = useState<string>('');
   const { showToast } = useToast();
+  const { create: createObjectUrl, revoke: revokeObjectUrl } = useManagedObjectUrl();
 
   const handleFilesSelected = (newFiles: File[]) => {
     if (newFiles.length > 0) {
@@ -36,7 +38,7 @@ export default function SplitPdf() {
       const extractedPdfBytes = await extractPages(file, ranges);
       
       const blob = new Blob([extractedPdfBytes], { type: 'application/pdf' });
-      const url = URL.createObjectURL(blob);
+      const url = createObjectUrl(blob);
       
       setResultUrl(url);
       setResultSize((blob.size / 1024 / 1024).toFixed(2) + ' MB');
@@ -57,7 +59,7 @@ export default function SplitPdf() {
     setFile(null);
     setRanges('');
     if (resultUrl) {
-      URL.revokeObjectURL(resultUrl);
+      revokeObjectUrl();
       setResultUrl(null);
     }
     setStep('upload');

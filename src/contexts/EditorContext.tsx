@@ -139,6 +139,7 @@ export function EditorProvider({ children }: { children: ReactNode }) {
 }
 
 // Re-export granular store hooks for convenience
+// eslint-disable-next-line react-refresh/only-export-components
 export { useDocumentStore, useToolsStore, useAnnotationsStore };
 
 // Combined hook for backwards compatibility (migrating components should use granular hooks)
@@ -147,6 +148,7 @@ export { useDocumentStore, useToolsStore, useAnnotationsStore };
  * `useAnnotationsStore`) directly. `useEditor()` subscribes to every store and
  * causes unnecessary re-renders. Will be removed in a future release.
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function useEditor() {
   const document = useDocumentStore();
   const tools = useToolsStore();

@@ -28,12 +28,15 @@ const readEnvPrefixes = (source: string): string[] => {
 };
 
 /**
- * The client-exposed names src is allowed to read. All three are non-secret build
+ * The client-exposed names src is allowed to read. All are non-secret build
  * metadata: `DEV` is Vite's own build-mode flag, replaced with a boolean;
- * `VITE_APP_URL` is the self-referential link base; `VITE_DEV` is a build flag. A
- * key-shaped name belongs in the Tauri store, never here.
+ * `VITE_APP_URL` is the self-referential link base; `VITE_DEV` is a build flag;
+ * `VITE_SENTRY_DSN` is the Sentry error monitoring DSN (not a key);
+ * `MODE` and `PROD` are Vite's own build-mode flags; `VITE_APP_VERSION` is
+ * the app version string; `BASE_URL` is Vite's public base path, used to locate the
+ * self-hosted OCR assets. A key-shaped name belongs in the Tauri store, never here.
  */
-const ALLOWED_CLIENT_ENV_NAMES = new Set(['DEV', 'VITE_APP_URL', 'VITE_DEV']);
+const ALLOWED_CLIENT_ENV_NAMES = new Set(['DEV', 'VITE_APP_URL', 'VITE_DEV', 'VITE_SENTRY_DSN', 'MODE', 'PROD', 'VITE_APP_VERSION', 'BASE_URL']);
 
 /** Matches dot and bracket access, because either one gets inlined. */
 const findClientEnvReferences = (source: string): string[] =>

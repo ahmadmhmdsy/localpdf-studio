@@ -1,4 +1,4 @@
-import { PDFDocument, rgb } from 'pdf-lib';
+import { PDFDocument } from 'pdf-lib';
 import { pdfjsLib } from './pdfjs';
 
 export function dataUrlToBytes(dataUrl: string): ArrayBuffer {

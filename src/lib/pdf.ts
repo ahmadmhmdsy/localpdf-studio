@@ -189,6 +189,175 @@ export async function removePages(file: File, rangeString: string): Promise<Uint
   return await pdf.save();
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 export async function addPageNumbers(file: File, position: 'top-left' | 'top-center' | 'top-right' | 'bottom-left' | 'bottom-center' | 'bottom-right' = 'bottom-center'): Promise<Uint8Array> {
   const arrayBuffer = await file.arrayBuffer();
   const pdf = await PDFDocument.load(arrayBuffer);
@@ -201,15 +370,37 @@ export async function addPageNumbers(file: File, position: 'top-left' | 'top-cen
     const page = pages[i];
     const { width, height } = page.getSize();
     const text = `${i + 1} / ${totalPages}`;
-    const fontSize = 12;
+    
+    // Scale font size based on page dimensions
+    const baseSize = Math.min(width, height);
+    const fontSize = Math.max(8, Math.min(14, baseSize / 50));
     const textWidth = font.widthOfTextAtSize(text, fontSize);
     
-    let x = width / 2 - textWidth / 2;
-    let y = 30;
+    // Calculate margins based on page size
+    const margin = Math.max(20, Math.min(40, baseSize / 20));
     
-    if (position.includes('left')) x = 30;
-    if (position.includes('right')) x = width - 30 - textWidth;
-    if (position.includes('top')) y = height - 30;
+    let x = width / 2 - textWidth / 2;
+    let y = margin;
+    
+    if (position.includes('left')) x = margin;
+    if (position.includes('right')) x = width - margin - textWidth;
+    if (position.includes('top')) y = height - margin - fontSize;
+    
+    // Add a subtle background for better visibility
+    const padding = 4;
+    const bgWidth = textWidth + padding * 2;
+    const bgHeight = fontSize + padding * 2;
+    const bgX = x - padding;
+    const bgY = y - padding;
+    
+    page.drawRectangle({
+      x: bgX,
+      y: bgY,
+      width: bgWidth,
+      height: bgHeight,
+      color: rgb(1, 1, 1),
+      opacity: 0.8,
+    });
     
     page.drawText(text, {
       x,

@@ -4,7 +4,7 @@ import ToolAvailabilityGate from './ToolAvailabilityGate';
 import { renderWithProviders } from '../../tests/utils';
 
 const DISABLED_IDS = [
-  'scan-to-pdf', 'compress-pdf', 'ocr-pdf', 'pdf-to-powerpoint',
+  'scan-to-pdf', 'compress-pdf', 'pdf-to-powerpoint',
   'blackout-pdf', 'decrypt-pdf', 'protect-pdf', 'ai-summarizer',
   'translate-pdf',
 ] as const;
@@ -65,7 +65,7 @@ describe('ToolAvailabilityGate', () => {
     expect(screen.getByRole('heading', { name: /unavailable/i })).toBeInTheDocument();
     // Shows the tool name and registry limitation
     expect(screen.getAllByText(/Protect PDF/i).length).toBeGreaterThan(0);
-    expect(screen.getByText(/Protection is a no-op/i)).toBeInTheDocument();
+    expect(screen.getByText(/temporarily unavailable/i)).toBeInTheDocument();
     expect(screen.getByRole('note', { name: 'Data handling' })).toHaveTextContent(
       /processed in your browser/i
     );
@@ -99,7 +99,7 @@ describe('ToolAvailabilityGate', () => {
   });
 });
 
-for (const toolId of ['ai-summarizer', 'translate-pdf', 'ocr-pdf', 'scan-to-pdf'] as const) {
+for (const toolId of ['ai-summarizer', 'translate-pdf', 'scan-to-pdf'] as const) {
   it(`does not mount ${toolId}`, () => {
     const workflow = vi.fn();
     // Passed as an element, not called inline: React only invokes the

@@ -48,6 +48,8 @@ interface ToolsState {
    *  Prevents a flash of the wrong theme/skin on first paint. */
   hydrated: boolean;
   propertiesPanelVisible: boolean;
+  /** Whether the user has consented to AI tool usage. */
+  aiConsentGiven: boolean;
 
   // Actions
   setCurrentPage: (page: number) => void;
@@ -59,6 +61,7 @@ interface ToolsState {
   /** Read persisted prefs from IndexedDB and apply them. Call once at app boot. */
   hydrate: () => Promise<void>;
   togglePropertiesPanel: () => void;
+  setAiConsentGiven: (given: boolean) => void;
   resetTools: () => void;
 }
 
@@ -70,6 +73,7 @@ export const useToolsStore = create<ToolsState>((setStore, getStore) => ({
   skin: initialPrefs.skin ?? 'glass',
   hydrated: false,
   propertiesPanelVisible: true,
+  aiConsentGiven: false,
 
   setCurrentPage: (currentPage) => setStore({ currentPage }),
   setZoom: (zoom) => setStore({ zoom }),
@@ -106,6 +110,8 @@ export const useToolsStore = create<ToolsState>((setStore, getStore) => ({
   togglePropertiesPanel: () => {
     setStore((state) => ({ propertiesPanelVisible: !state.propertiesPanelVisible }));
   },
+
+  setAiConsentGiven: (aiConsentGiven) => setStore({ aiConsentGiven }),
 
   resetTools: () => {
     setStore({

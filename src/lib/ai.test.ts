@@ -32,10 +32,12 @@ describe('withRetry', () => {
     expect(fn).toHaveBeenCalledTimes(1);
   });
 
-  it('retries on failure and succeeds', async () => {
+  it('retries on retryable failure and succeeds', async () => {
+    const error = new Error('Server Error');
+    (error as { status?: number }).status = 500;
     const fn = vi.fn()
-      .mockRejectedValueOnce(new Error('fail 1'))
-      .mockRejectedValueOnce(new Error('fail 2'))
+      .mockRejectedValueOnce(error)
+      .mockRejectedValueOnce(error)
       .mockResolvedValue('success');
     const result = await withRetry(fn, { maxAttempts: 3, baseDelay: 10 });
     expect(result).toBe('success');
@@ -43,21 +45,92 @@ describe('withRetry', () => {
   });
 
   it('throws after max attempts exhausted', async () => {
-    const fn = vi.fn().mockRejectedValue(new Error('always fails'));
-    await expect(withRetry(fn, { maxAttempts: 2, baseDelay: 10 })).rejects.toThrow('always fails');
+    const error = new Error('Server Error');
+    (error as { status?: number }).status = 500;
+    const fn = vi.fn().mockRejectedValue(error);
+    await expect(withRetry(fn, { maxAttempts: 2, baseDelay: 10 })).rejects.toThrow('Server Error');
     expect(fn).toHaveBeenCalledTimes(2);
   });
 
   it('throws the last error received', async () => {
+    const error1 = new Error('error 1');
+    (error1 as { status?: number }).status = 500;
+    const error2 = new Error('error 2');
+    (error2 as { status?: number }).status = 500;
     const fn = vi.fn()
-      .mockRejectedValueOnce(new Error('error 1'))
-      .mockRejectedValueOnce(new Error('error 2'));
+      .mockRejectedValueOnce(error1)
+      .mockRejectedValueOnce(error2);
     await expect(withRetry(fn, { maxAttempts: 2, baseDelay: 10 })).rejects.toThrow('error 2');
   });
 
   it('handles non-Error rejections', async () => {
     const fn = vi.fn().mockRejectedValue('string error');
     await expect(withRetry(fn, { maxAttempts: 1, baseDelay: 10 })).rejects.toThrow('string error');
+  });
+});
+
+describe('withRetry error classification', () => {
+  it('does NOT retry on 400 client errors', async () => {
+    const error = new Error('Bad Request');
+    (error as { status?: number }).status = 400;
+    const fn = vi.fn().mockRejectedValue(error);
+    await expect(withRetry(fn, { maxAttempts: 3, baseDelay: 10 })).rejects.toThrow('Bad Request');
+    expect(fn).toHaveBeenCalledTimes(1);
+  });
+
+  it('does NOT retry on 401 unauthorized errors', async () => {
+    const error = new Error('Unauthorized');
+    (error as { status?: number }).status = 401;
+    const fn = vi.fn().mockRejectedValue(error);
+    await expect(withRetry(fn, { maxAttempts: 3, baseDelay: 10 })).rejects.toThrow('Unauthorized');
+    expect(fn).toHaveBeenCalledTimes(1);
+  });
+
+  it('does NOT retry on 403 forbidden errors', async () => {
+    const error = new Error('Forbidden');
+    (error as { status?: number }).status = 403;
+    const fn = vi.fn().mockRejectedValue(error);
+    await expect(withRetry(fn, { maxAttempts: 3, baseDelay: 10 })).rejects.toThrow('Forbidden');
+    expect(fn).toHaveBeenCalledTimes(1);
+  });
+
+  it('DOES retry on 429 rate limit errors', async () => {
+    const error = new Error('Rate Limited');
+    (error as { status?: number }).status = 429;
+    const fn = vi.fn()
+      .mockRejectedValueOnce(error)
+      .mockResolvedValue('success');
+    const result = await withRetry(fn, { maxAttempts: 3, baseDelay: 10 });
+    expect(result).toBe('success');
+    expect(fn).toHaveBeenCalledTimes(2);
+  });
+
+  it('DOES retry on 500 server errors', async () => {
+    const error = new Error('Server Error');
+    (error as { status?: number }).status = 500;
+    const fn = vi.fn()
+      .mockRejectedValueOnce(error)
+      .mockResolvedValue('success');
+    const result = await withRetry(fn, { maxAttempts: 3, baseDelay: 10 });
+    expect(result).toBe('success');
+    expect(fn).toHaveBeenCalledTimes(2);
+  });
+
+  it('DOES retry on 503 service unavailable errors', async () => {
+    const error = new Error('Service Unavailable');
+    (error as { status?: number }).status = 503;
+    const fn = vi.fn()
+      .mockRejectedValueOnce(error)
+      .mockResolvedValue('success');
+    const result = await withRetry(fn, { maxAttempts: 3, baseDelay: 10 });
+    expect(result).toBe('success');
+    expect(fn).toHaveBeenCalledTimes(2);
+  });
+
+  it('does NOT retry on generic errors without status', async () => {
+    const fn = vi.fn().mockRejectedValue(new Error('Some random error'));
+    await expect(withRetry(fn, { maxAttempts: 3, baseDelay: 10 })).rejects.toThrow('Some random error');
+    expect(fn).toHaveBeenCalledTimes(1);
   });
 });
 

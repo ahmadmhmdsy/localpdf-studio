@@ -89,16 +89,16 @@ const REGISTRY: Record<ToolId, ToolAvailability> = {
   'scan-to-pdf': {
     releaseState: 'disabled',
     privacy: 'camera',
-    support: 'Disabled pending remediation; see the production inventory for audit evidence.',
+    support: 'Not available — disabled pending remediation; see the production inventory for audit evidence.',
     limitation:
       'Camera access is blocked by the shipped Permissions-Policy with no image-file fallback; the desktop camera permission workflow is unverified.',
   },
   'compress-pdf': {
     releaseState: 'disabled',
     privacy: 'local-only',
-    support: 'Disabled pending remediation; see the production inventory for audit evidence.',
+    support: 'Not available — disabled pending remediation; see the production inventory for audit evidence.',
     limitation:
-      'Levels only change yielding/progress behavior; can produce identical output — the advertised outcome is not achieved.',
+      'Optional lossy image downsampling is implemented but not yet independently verified; without it, size drops only when the source has unoptimized streams or metadata.',
   },
   'repair-pdf': {
     releaseState: 'limited',
@@ -108,11 +108,11 @@ const REGISTRY: Record<ToolId, ToolAvailability> = {
       'Parse/resave only; unrecoverable files become placeholder PDFs containing parser error text.',
   },
   'ocr-pdf': {
-    releaseState: 'disabled',
+    releaseState: 'limited',
     privacy: 'local-only',
-    support: 'Disabled pending remediation; see the production inventory for audit evidence.',
+    support: 'Adds a searchable, invisible text layer to scanned pages, entirely in the browser.',
     limitation:
-      'CSP/CDN conflict blocks the flow; text layer is limited; third-party supply-chain dependency and high memory use.',
+      'English only: the other listed languages have no data yet; cancellable; optional page range; limited to 200 pages and 50 MB; Latin-script languages only; high memory use on large files.',
   },
   'jpg-to-pdf': {
     releaseState: 'limited',
@@ -177,7 +177,7 @@ const REGISTRY: Record<ToolId, ToolAvailability> = {
   'pdf-to-powerpoint': {
     releaseState: 'disabled',
     privacy: 'local-only',
-    support: 'Disabled pending remediation; see the production inventory for audit evidence.',
+    support: 'Not available — disabled pending remediation; see the production inventory for audit evidence.',
     limitation:
       'PNG is declared while JPEG bytes are embedded; slide-master/layout relationships are missing. Outputs are structurally suspect PPTX packages; blocked pending independent OOXML validation.',
   },
@@ -224,7 +224,7 @@ const REGISTRY: Record<ToolId, ToolAvailability> = {
   'blackout-pdf': {
     releaseState: 'disabled',
     privacy: 'local-only',
-    support: 'Disabled pending remediation; see the production inventory for audit evidence.',
+    support: 'Not available — disabled pending remediation; see the production inventory for audit evidence.',
     limitation:
       'The editor has no redaction workflow, and the dedicated blackout path remains disabled. Neither path is a confidentiality boundary: text may remain extractable and removed content can stay reachable through underlying PDF references.',
   },
@@ -237,28 +237,28 @@ const REGISTRY: Record<ToolId, ToolAvailability> = {
   'decrypt-pdf': {
     releaseState: 'disabled',
     privacy: 'local-only',
-    support: 'Disabled pending remediation; see the production inventory for audit evidence.',
+    support: 'Not implemented; pdf-lib 1.17.1 does not support decryption.',
     limitation:
-      'Cannot reliably open genuinely encrypted PDFs, including via the unlock-pdf alias.',
+      'PDF decryption is not implemented. pdf-lib cannot reliably open encrypted PDFs in the browser.',
   },
   'protect-pdf': {
     releaseState: 'disabled',
     privacy: 'local-only',
-    support: 'Disabled pending remediation; see the production inventory for audit evidence.',
+    support: 'Not implemented; pdf-lib 1.17.1 does not support encryption. This is not a confidentiality boundary.',
     limitation:
-      'Protection is a no-op that reports a false outcome — the produced output had no /Encrypt dictionary and opened without a password. This is not a confidentiality boundary.',
+      'PDF encryption is not implemented. pdf-lib save() silently ignores userPassword/ownerPassword, producing unencrypted output.',
   },
   'ai-summarizer': {
     releaseState: 'disabled',
     privacy: 'optional-network',
-    support: 'Disabled pending remediation; see the production inventory for audit evidence.',
+    support: 'Not available — disabled pending remediation; see the production inventory for audit evidence.',
     limitation:
       'Undisclosed text egress to Gemini, no consent/cancellation/limits; the summary download includes the full source text by default.',
   },
   'translate-pdf': {
     releaseState: 'disabled',
     privacy: 'optional-network',
-    support: 'Disabled pending remediation; see the production inventory for audit evidence.',
+    support: 'Not available — disabled pending remediation; see the production inventory for audit evidence.',
     limitation:
       'Per-block requests can silently skip failures while presenting the run as done; Helvetica cannot encode several advertised CJK/Arabic/Hindi targets.',
   },

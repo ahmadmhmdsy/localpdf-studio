@@ -12,6 +12,7 @@ import { useDropzone } from 'react-dropzone';
 import { cn } from '../../lib/utils';
 import { useToast } from '../../contexts/ToastContext';
 import { PDF_ACCEPT } from '../../types/dropzone';
+import { useManagedObjectUrl } from '../../hooks/useObjectUrl';
 
 type Step = 'upload' | 'configure' | 'processing' | 'download';
 
@@ -23,6 +24,7 @@ export default function MergePdf() {
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [resultSize, setResultSize] = useState<string>('');
   const { showToast } = useToast();
+  const { create: createObjectUrl, revoke: revokeObjectUrl } = useManagedObjectUrl();
 
   const handleFilesSelected = (newFiles: File[]) => {
     setFiles((prev) => [...prev, ...newFiles]);
@@ -67,7 +69,7 @@ export default function MergePdf() {
       const mergedPdfBytes = await mergePdfs(files);
       
       const blob = new Blob([mergedPdfBytes], { type: 'application/pdf' });
-      const url = URL.createObjectURL(blob);
+      const url = createObjectUrl(blob);
       
       setResultUrl(url);
       setResultSize((blob.size / 1024 / 1024).toFixed(2) + ' MB');
@@ -86,7 +88,7 @@ export default function MergePdf() {
   const startOver = () => {
     setFiles([]);
     if (resultUrl) {
-      URL.revokeObjectURL(resultUrl);
+      revokeObjectUrl();
       setResultUrl(null);
     }
     setStep('upload');

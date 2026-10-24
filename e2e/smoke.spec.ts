@@ -127,7 +127,6 @@ test('the registry still marks the containment-sensitive tools as disabled', () 
   for (const toolId of [
     'ai-summarizer',
     'translate-pdf',
-    'ocr-pdf',
     'scan-to-pdf',
     'protect-pdf',
     'decrypt-pdf',
@@ -137,8 +136,24 @@ test('the registry still marks the containment-sensitive tools as disabled', () 
   }
 });
 
+test('the OCR route mounts its workflow and contacts only the app host', async ({ page }) => {
+  const requested: string[] = [];
+  page.on('request', (request) => requested.push(request.url()));
+
+  await page.goto('/tools/ocr-pdf');
+  await expect(page.getByRole('heading', { name: /OCR PDF/i }).first()).toBeVisible();
+  await expect(page.locator('input[type="file"]')).toHaveCount(1);
+
+  const externalHosts = requested
+    .map(toUrl)
+    .filter((url): url is URL => url !== null && /^https?:$/.test(url.protocol))
+    .filter((url) => !LOCAL_HOSTS.has(url.hostname))
+    .map((url) => url.hostname);
+  expect(externalHosts, 'the OCR route contacted a host that does not serve the app').toEqual([]);
+});
+
 test('disabled security and AI routes never mount a workflow', async ({ page }) => {
-  for (const path of ['/tools/protect-pdf', '/tools/decrypt-pdf', '/tools/blackout-pdf', '/tools/ai-summarizer', '/tools/ocr-pdf']) {
+  for (const path of ['/tools/protect-pdf', '/tools/decrypt-pdf', '/tools/blackout-pdf', '/tools/ai-summarizer']) {
     await page.goto(path);
     await expect(page.getByRole('heading', { name: /unavailable/i })).toBeVisible();
     await expect(page.locator('input[type="file"]')).toHaveCount(0);

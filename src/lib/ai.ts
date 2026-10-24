@@ -85,37 +85,62 @@ interface RetryOptions {
   maxDelay?: number;
 }
 
+/**
+ * Determine if an error is retryable.
+ * - HTTP 429 (rate limit): retryable
+ * - HTTP 5xx (server error): retryable
+ * - HTTP 4xx (client error, except 429): NOT retryable
+ * - Network errors (fetch throws): retryable
+ * - Other errors: NOT retryable (fail fast)
+ */
+function isRetryableError(error: unknown): boolean {
+  const status = (error as { status?: number; code?: number })?.status
+    ?? (error as { status?: number; code?: number })?.code;
+
+  if (typeof status === 'number') {
+    if (status === 429) return true;
+    if (status >= 500) return true;
+    if (status >= 400 && status < 500) return false;
+  }
+
+  if (error instanceof TypeError && error.message.includes('fetch')) return true;
+  if ((error as { retryable?: boolean })?.retryable) return true;
+
+  return false;
+}
+
 export async function withRetry<T>(
   fn: () => Promise<T>,
   options: RetryOptions = {}
 ): Promise<T> {
   const { maxAttempts = 3, baseDelay = 1000, maxDelay = 10000 } = options;
-  
+
   let lastError: Error | undefined;
-  
+
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       return await fn();
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
-      
-      // Don't retry on the last attempt
+
       if (attempt === maxAttempts) {
         break;
       }
-      
-      // Calculate exponential backoff delay
+
+      if (!isRetryableError(error)) {
+        console.warn('Non-retryable error encountered, failing fast:', lastError.message);
+        break;
+      }
+
       const delay = Math.min(baseDelay * Math.pow(2, attempt - 1), maxDelay);
-      
-      // Add some jitter to prevent thundering herd
       const jitteredDelay = delay + Math.random() * 500;
-      
+
       console.warn(`API call failed (attempt ${attempt}/${maxAttempts}), retrying in ${jitteredDelay}ms...`, error);
-      
+
       await new Promise(resolve => setTimeout(resolve, jitteredDelay));
     }
   }
-  
+
   throw lastError;
 }
 
@@ -148,7 +173,6 @@ export async function summarizePdf(text: string, onProgress?: (chunk: number, to
   const CHUNK_SIZE = 25000;
   const OVERLAP = 500;
 
-  // Split text into overlapping chunks
   const chunks: string[] = [];
   let start = 0;
   while (start < text.length) {
@@ -158,7 +182,6 @@ export async function summarizePdf(text: string, onProgress?: (chunk: number, to
     start = end - OVERLAP;
   }
 
-  // Single chunk - summarize directly
   if (chunks.length === 1) {
     return withRetry(async () => {
       const response = await getGenAI().models.generateContent({
@@ -169,7 +192,6 @@ export async function summarizePdf(text: string, onProgress?: (chunk: number, to
     });
   }
 
-  // Multiple chunks - summarize each then combine
   const chunkSummaries: string[] = [];
   for (let i = 0; i < chunks.length; i++) {
     const summary = await withRetry(async () => {
@@ -183,7 +205,6 @@ export async function summarizePdf(text: string, onProgress?: (chunk: number, to
     onProgress?.(i + 1, chunks.length);
   }
 
-  // Combine chunk summaries into a final summary
   const combinedText = chunkSummaries.join('\n\n');
   return withRetry(async () => {
     const response = await getGenAI().models.generateContent({
@@ -241,7 +262,7 @@ export async function translatePdf(
         pageIndex: pageNum - 1,
       });
     }
-    
+
     onProgress?.(pageNum, totalPages);
   }
 
@@ -250,28 +271,24 @@ export async function translatePdf(
 
 async function translateTextBatch(texts: string[], targetLang: string): Promise<string[]> {
   return withRetry(async () => {
-    // Create a numbered list of texts to translate
     const batchText = texts.map((text, i) => `[${i + 1}] ${text}`).join('\n\n');
-    
+
     const model = getGenAI().models.generateContent({
       model: 'gemini-2.0-flash',
       contents: `Translate the following numbered text items to ${targetLang}. Return ONLY the translations, one per line, in the same order as the input. Do not include the numbers or any additional text:\n\n${batchText}`,
     });
-    
+
     const response = await model;
     const translatedText = response.text || '';
-    
-    // Split the response back into individual translations
+
     const translations = translatedText.split('\n').map((line: string) => {
-      // Remove any leading numbers like "1. " or "[1] "
       return line.replace(/^\d+[.)]\s*/, '').replace(/^\[\d+\]\s*/, '').trim();
     }).filter((line: string) => line.length > 0);
-    
-    // If we got fewer translations than inputs, pad with originals
+
     while (translations.length < texts.length) {
       translations.push(texts[translations.length]);
     }
-    
+
     return translations.slice(0, texts.length);
   });
 }

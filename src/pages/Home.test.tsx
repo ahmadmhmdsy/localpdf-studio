@@ -116,7 +116,7 @@ describe('Home', () => {
       renderHome();
       expect(screen.getByText(/combine PDFs in the order/i)).toBeInTheDocument();
       expect(screen.getByText(/reduce file size/i)).toBeInTheDocument();
-      expect(screen.getByText(/get AI-generated summary/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/Not available in the web build/i).length).toBeGreaterThan(0);
     });
 
     it('uses theme-specific WCAG AA foregrounds for availability badges', () => {

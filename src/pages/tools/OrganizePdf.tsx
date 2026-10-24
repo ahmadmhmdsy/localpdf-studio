@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
-import { File as FileIcon, X, GripVertical } from 'lucide-react';
+import { File as FileIcon, X } from 'lucide-react';
 import ToolLayout from '../../components/tools/ToolLayout';
 import FileUploadZone from '../../components/tools/FileUploadZone';
 import ProcessingState from '../../components/tools/ProcessingState';

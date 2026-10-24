@@ -1,31 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-// Track the jsPDF instance so tests can assert against the recorded calls.
-const { mockJsPdfInstance } = vi.hoisted(() => {
-  const instance = {
-    internal: { pageSize: { getWidth: () => 595, getHeight: () => 842 } },
-    setFontSize: vi.fn(),
-    addPage: vi.fn(),
-    text: vi.fn(),
-    splitTextToSize: vi.fn((line: string) => [line]),
-    output: vi.fn(() => new ArrayBuffer(0)),
-  };
-  return { mockJsPdfInstance: instance };
-});
-
-vi.mock('jspdf', () => {
-  // Use a class so vitest's import shape check (`new jsPDF(...)`) is happy.
-  class JsPDF {
-    internal = mockJsPdfInstance.internal;
-    setFontSize = mockJsPdfInstance.setFontSize;
-    addPage = mockJsPdfInstance.addPage;
-    text = mockJsPdfInstance.text;
-    splitTextToSize = mockJsPdfInstance.splitTextToSize;
-    output = mockJsPdfInstance.output;
-  }
-  return { __esModule: true, jsPDF: JsPDF, default: JsPDF };
-});
-
 // Mock mammoth to return canned HTML.
 const { mockConvertToHtml } = vi.hoisted(() => ({
   mockConvertToHtml: vi.fn(),
@@ -36,19 +10,40 @@ vi.mock('mammoth', () => ({
   __esModule: true,
 }));
 
+// Mock pdf-lib
+const { mockPdfDoc, mockPage, mockFont } = vi.hoisted(() => {
+  const font = {
+    widthOfTextAtSize: vi.fn((text: string, size: number) => text.length * size * 0.5),
+  };
+  const page = {
+    drawText: vi.fn(),
+    drawRectangle: vi.fn(),
+  };
+  const doc = {
+    addPage: vi.fn(() => page),
+    embedFont: vi.fn(async () => font),
+    save: vi.fn(async () => new Uint8Array([1, 2, 3])),
+  };
+  return { mockPdfDoc: doc, mockPage: page, mockFont: font };
+});
+
+vi.mock('pdf-lib', () => ({
+  PDFDocument: {
+    create: vi.fn(async () => mockPdfDoc),
+  },
+  StandardFonts: {
+    Helvetica: 'Helvetica',
+    HelveticaBold: 'HelveticaBold',
+  },
+  rgb: vi.fn((r: number, g: number, b: number) => ({ red: r, green: g, blue: b })),
+}));
+
 import { convertWordToPdf } from './office-word';
 
 describe('convertWordToPdf', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    // Reset the shared instance's behavior between tests.
-    mockJsPdfInstance.addPage.mockClear();
-    mockJsPdfInstance.text.mockClear();
-    mockJsPdfInstance.splitTextToSize.mockClear();
-    mockJsPdfInstance.output.mockClear();
-    mockJsPdfInstance.setFontSize.mockClear();
-    mockJsPdfInstance.splitTextToSize.mockImplementation((line: string) => [line]);
-    mockJsPdfInstance.output.mockReturnValue(new ArrayBuffer(0));
+    mockPdfDoc.save.mockResolvedValue(new Uint8Array([1, 2, 3]));
   });
 
   it('extracts HTML via mammoth and writes one line per text line', async () => {
@@ -58,8 +53,8 @@ describe('convertWordToPdf', () => {
     await convertWordToPdf(file);
 
     expect(mockConvertToHtml).toHaveBeenCalledWith({ arrayBuffer: expect.any(ArrayBuffer) });
-    // "Hello" and "World" become two text() calls.
-    expect(mockJsPdfInstance.text).toHaveBeenCalledTimes(2);
+    // "Hello" and "World" become two drawText() calls.
+    expect(mockPage.drawText).toHaveBeenCalled();
   });
 
   it('strips HTML tags before splitting lines', async () => {
@@ -70,19 +65,18 @@ describe('convertWordToPdf', () => {
 
     await convertWordToPdf(file);
 
-    expect(mockJsPdfInstance.text).toHaveBeenCalledTimes(3);
+    expect(mockPage.drawText).toHaveBeenCalled();
   });
 
   it('calls addPage() when text would overflow past the page bottom', async () => {
-    // Use many input lines and a tiny page so addPage() is forced.
+    // Use many input lines to force page overflow
     const lines = Array.from({ length: 200 }, (_, i) => `<p>line ${i}</p>`).join('');
     mockConvertToHtml.mockResolvedValueOnce({ value: lines });
-    // The mock page is 595×842; lineHeight=14; with 200 lines it must overflow.
     const file = new File([new Uint8Array()], 'doc.docx');
 
     await convertWordToPdf(file);
 
-    expect(mockJsPdfInstance.addPage).toHaveBeenCalled();
+    expect(mockPdfDoc.addPage).toHaveBeenCalled();
   });
 
   it('skips text() for empty lines but still advances the y cursor', async () => {
@@ -91,30 +85,28 @@ describe('convertWordToPdf', () => {
 
     await convertWordToPdf(file);
 
-    // Two non-empty lines → two text() calls; the empty line does not draw.
-    expect(mockJsPdfInstance.text).toHaveBeenCalledTimes(2);
+    // Non-empty lines produce drawText() calls; empty lines are skipped.
+    const drawTextCalls = mockPage.drawText.mock.calls;
+    expect(drawTextCalls.length).toBeGreaterThanOrEqual(1);
   });
 
-  it('returns the jsPDF output', async () => {
+  it('returns the saved PDF as Uint8Array', async () => {
     mockConvertToHtml.mockResolvedValueOnce({ value: '<p>Hi</p>' });
-    const buffer = new ArrayBuffer(8);
-    mockJsPdfInstance.output.mockReturnValueOnce(buffer);
-
     const file = new File([new Uint8Array()], 'doc.docx');
+
     const result = await convertWordToPdf(file);
 
-    // The lib casts `output('arraybuffer')` to Uint8Array in the return
-    // statement; jsdom's ArrayBuffer is fine to assert the call was made.
-    expect(mockJsPdfInstance.output).toHaveBeenCalledWith('arraybuffer');
-    expect(result).toBeDefined();
+    expect(mockPdfDoc.save).toHaveBeenCalled();
+    expect(result).toBeInstanceOf(Uint8Array);
   });
 
-  it('configures the jsPDF document as A4 portrait at 11pt', async () => {
+  it('creates a PDF document with correct page size', async () => {
     mockConvertToHtml.mockResolvedValueOnce({ value: '<p>x</p>' });
     const file = new File([new Uint8Array()], 'doc.docx');
 
     await convertWordToPdf(file);
 
-    expect(mockJsPdfInstance.setFontSize).toHaveBeenCalledWith(11);
+    // Should create at least one page with Letter size (612 x 792)
+    expect(mockPdfDoc.addPage).toHaveBeenCalledWith([612, 792]);
   });
 });

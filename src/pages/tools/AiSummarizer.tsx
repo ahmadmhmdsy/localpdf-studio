@@ -4,6 +4,8 @@ import ToolLayout from '../../components/tools/ToolLayout';
 import FileUploadZone from '../../components/tools/FileUploadZone';
 import ProcessingState from '../../components/tools/ProcessingState';
 import { extractPdfText, summarizePdf } from '../../lib/ai';
+import { useToolsStore } from '../../store';
+import AiConsentDialog from '../../components/tools/AiConsentDialog';
 
 type Step = 'upload' | 'extracting' | 'summarizing' | 'done' | 'error';
 
@@ -14,9 +16,11 @@ export default function AiSummarizer() {
   const [summary, setSummary] = useState('');
   const [extractionProgress, setExtractionProgress] = useState(0);
   const [summarizationProgress, setSummarizationProgress] = useState(0);
-  const [totalSummarizationChunks, setTotalSummarizationChunks] = useState(0);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [showConsent, setShowConsent] = useState(false);
+  const aiConsentGiven = useToolsStore((s) => s.aiConsentGiven);
+  const setAiConsentGiven = useToolsStore((s) => s.setAiConsentGiven);
 
   const handleFilesSelected = (files: File[]) => {
     if (files.length === 1) {
@@ -27,6 +31,11 @@ export default function AiSummarizer() {
   };
 
   const handleSummarize = async (selectedFile: File) => {
+    // Check consent first
+    if (!aiConsentGiven) {
+      setShowConsent(true);
+      return;
+    }
     try {
       // Step 1: Extract text
       setStep('extracting');
@@ -179,6 +188,16 @@ export default function AiSummarizer() {
           </button>
         </div>
       )}
+      <AiConsentDialog
+        isOpen={showConsent}
+        onAccept={() => {
+          setAiConsentGiven(true);
+          setShowConsent(false);
+          if (file) handleSummarize(file);
+        }}
+        onDecline={() => setShowConsent(false)}
+        toolName="AI Summarizer"
+      />
     </ToolLayout>
   );
 }

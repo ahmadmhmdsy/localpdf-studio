@@ -1,15 +1,11 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useRef, useCallback } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { useDocumentStore, useToolsStore, useAnnotationsStore } from '../store';
 import { cn } from '../lib/utils';
 import { useShallow } from 'zustand/react/shallow';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { useToast } from '../contexts/ToastContext';
-import Sidebar from '../components/editor/Sidebar';
-import Canvas from '../components/editor/Canvas';
-import Toolbar from '../components/editor/Toolbar';
-import PropertiesPanel from '../components/editor/PropertiesPanel';
-import FileUploadZone from '../components/tools/FileUploadZone';
+
 import KeyboardShortcutsHelp from '../components/editor/KeyboardShortcutsHelp';
 import { EditorEmptyState } from './editor/EditorEmptyState';
 import { EditorWorkspace } from './editor/EditorWorkspace';
@@ -54,6 +50,34 @@ export default function Editor() {
   const [searchParams] = useSearchParams();
   const { showToast } = useToast();
 
+  // Use refs for values that change frequently to avoid re-creating handlers
+  const pagesRef = useRef(pages);
+  const zoomRef = useRef(zoom);
+  const selectedAnnotationIdRef = useRef(selectedAnnotationId);
+
+  // Stable callback refs
+  const undoRef = useRef(undo);
+  const redoRef = useRef(redo);
+  const setPagesRef = useRef(setPages);
+  const deleteAnnotationRef = useRef(deleteAnnotation);
+  const setZoomRef = useRef(setZoom);
+  const setActiveToolRef = useRef(setActiveTool);
+  const togglePropertiesPanelRef = useRef(togglePropertiesPanel);
+
+  // Update refs in effect to avoid assigning during render
+  useEffect(() => {
+    pagesRef.current = pages;
+    zoomRef.current = zoom;
+    selectedAnnotationIdRef.current = selectedAnnotationId;
+    undoRef.current = undo;
+    redoRef.current = redo;
+    setPagesRef.current = setPages;
+    deleteAnnotationRef.current = deleteAnnotation;
+    setZoomRef.current = setZoom;
+    setActiveToolRef.current = setActiveTool;
+    togglePropertiesPanelRef.current = togglePropertiesPanel;
+  }, [pages, zoom, selectedAnnotationId, undo, redo, setPages, deleteAnnotation, setZoom, setActiveTool, togglePropertiesPanel]);
+
   useEffect(() => {
     const toolParam = searchParams.get('tool');
     if (toolParam) {
@@ -65,53 +89,53 @@ export default function Editor() {
     }
   }, [searchParams, setActiveTool]);
 
-  // Use the keyboard shortcuts hook
+  // Keyboard shortcuts with stable handlers using refs
   const keyboardShortcuts = useMemo(() => [
     // Undo/Redo
     { key: 'z', ctrl: true, handler: () => {
-      const result = undo(pages);
-      if (result) setPages(result.pages);
+      const result = undoRef.current(pagesRef.current);
+      if (result) setPagesRef.current(result.pages);
     }},
     { key: 'z', ctrl: true, shift: true, handler: () => {
-      const result = redo(pages);
-      if (result) setPages(result.pages);
+      const result = redoRef.current(pagesRef.current);
+      if (result) setPagesRef.current(result.pages);
     }},
     { key: 'y', ctrl: true, handler: () => {
-      const result = redo(pages);
-      if (result) setPages(result.pages);
+      const result = redoRef.current(pagesRef.current);
+      if (result) setPagesRef.current(result.pages);
     }},
 
     // Delete
     { key: 'Delete', handler: () => {
-      if (selectedAnnotationId) deleteAnnotation(selectedAnnotationId, pages);
+      if (selectedAnnotationIdRef.current) deleteAnnotationRef.current(selectedAnnotationIdRef.current, pagesRef.current);
     }},
     { key: 'Backspace', handler: () => {
-      if (selectedAnnotationId) deleteAnnotation(selectedAnnotationId, pages);
+      if (selectedAnnotationIdRef.current) deleteAnnotationRef.current(selectedAnnotationIdRef.current, pagesRef.current);
     }},
 
     // Zoom
-    { key: '=', ctrl: true, handler: () => setZoom(zoom + 0.1) },
-    { key: '+', ctrl: true, handler: () => setZoom(zoom + 0.1) },
-    { key: '-', ctrl: true, handler: () => setZoom(zoom - 0.1) },
+    { key: '=', ctrl: true, handler: () => setZoomRef.current(zoomRef.current + 0.1) },
+    { key: '+', ctrl: true, handler: () => setZoomRef.current(zoomRef.current + 0.1) },
+    { key: '-', ctrl: true, handler: () => setZoomRef.current(zoomRef.current - 0.1) },
 
     // Tools
-    { key: 'v', ctrl: true, handler: () => setActiveTool('select') },
-    { key: 'h', ctrl: true, handler: () => setActiveTool('pan') },
-    { key: 't', ctrl: true, handler: () => setActiveTool('text') },
-    { key: 'd', ctrl: true, handler: () => setActiveTool('draw') },
-    { key: 'i', ctrl: true, handler: () => setActiveTool('image') },
-    { key: 'c', ctrl: true, handler: () => setActiveTool('crop') },
-    { key: 's', ctrl: true, handler: () => setActiveTool('signature') },
+    { key: 'v', ctrl: true, handler: () => setActiveToolRef.current('select') },
+    { key: 'h', ctrl: true, handler: () => setActiveToolRef.current('pan') },
+    { key: 't', ctrl: true, handler: () => setActiveToolRef.current('text') },
+    { key: 'd', ctrl: true, handler: () => setActiveToolRef.current('draw') },
+    { key: 'i', ctrl: true, handler: () => setActiveToolRef.current('image') },
+    { key: 'c', ctrl: true, handler: () => setActiveToolRef.current('crop') },
+    { key: 's', ctrl: true, handler: () => setActiveToolRef.current('signature') },
     // Help
     { key: '/', shift: true, handler: () => setShowShortcuts((prev) => !prev) },
     { key: '?', handler: () => setShowShortcuts((prev) => !prev) },
     // Properties panel toggle (Ctrl+,)
-    { key: ',', ctrl: true, handler: () => togglePropertiesPanel() },
-  ], [undo, redo, pages, setPages, selectedAnnotationId, deleteAnnotation, zoom, setZoom, setActiveTool, setShowShortcuts, togglePropertiesPanel]);
+    { key: ',', ctrl: true, handler: () => togglePropertiesPanelRef.current() },
+  ], []); // Empty deps - handlers use refs for latest values
 
   useKeyboardShortcuts(keyboardShortcuts);
 
-  const handleFilesSelected = async (files: File[]) => {
+  const handleFilesSelected = useCallback(async (files: File[]) => {
     if (files.length === 0) return;
 
     if (files.length > 1) {
@@ -125,18 +149,16 @@ export default function Editor() {
 
     try {
       await loadFile(files[0]);
-    } catch (error) {
+    } catch {
       showToast({
         message: 'Failed to load PDF. Please try another file.',
         type: 'error',
         duration: 5000,
       });
     }
-  };
+  }, [loadFile, showToast]);
 
   const skin = useToolsStore((s) => s.skin);
-  // Bento skin: full-screen workspace (no floating header to subtract).
-  // Glass skin: keep the original 64px top offset so the floating pill doesn't overlap content.
   const wrapperHeight = skin === 'bento' ? 'h-screen' : 'h-[calc(100vh-64px)]';
 
   return (

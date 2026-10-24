@@ -4,22 +4,32 @@ import ToolLayout from '../../components/tools/ToolLayout';
 import FileUploadZone from '../../components/tools/FileUploadZone';
 import ProcessingState from '../../components/tools/ProcessingState';
 import DownloadState from '../../components/tools/DownloadState';
-import { compressPdf } from '../../lib/compress';
+import { compressPdf, type ImageCompression } from '../../lib/compress';
 import { logError } from '../../lib/logger';
 import { useToast } from '../../contexts/ToastContext';
+import { useManagedObjectUrl } from '../../hooks/useObjectUrl';
 
 type Step = 'upload' | 'configure' | 'processing' | 'download';
 type Quality = 'low' | 'medium' | 'high';
+
+const IMAGE_OPTIONS: { value: ImageCompression; label: string; hint: string }[] = [
+  { value: 'off', label: 'Off', hint: 'Images stay exactly as they are' },
+  { value: 'light', label: 'Light', hint: 'Up to 200 DPI, high quality' },
+  { value: 'balanced', label: 'Balanced', hint: 'Up to 150 DPI, good for screens' },
+  { value: 'strong', label: 'Strong', hint: 'Up to 96 DPI, smallest file' },
+];
 
 export default function CompressPdf() {
   const [step, setStep] = useState<Step>('upload');
   const [file, setFile] = useState<File | null>(null);
   const [quality, setQuality] = useState<Quality>('medium');
+  const [images, setImages] = useState<ImageCompression>('off');
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [resultSize, setResultSize] = useState<string>('');
   const [originalSize, setOriginalSize] = useState<string>('');
   const [resultNotes, setResultNotes] = useState<string[]>([]);
   const { showToast } = useToast();
+  const { create: createObjectUrl, revoke: revokeObjectUrl } = useManagedObjectUrl();
 
   const handleFilesSelected = (newFiles: File[]) => {
     if (newFiles.length > 0) {
@@ -34,10 +44,10 @@ export default function CompressPdf() {
 
     setStep('processing');
     try {
-      const result = await compressPdf(file, quality);
+      const result = await compressPdf(file, quality, { images });
 
       const blob = new Blob([result.bytes], { type: 'application/pdf' });
-      const url = URL.createObjectURL(blob);
+      const url = createObjectUrl(blob);
 
       setResultUrl(url);
       setResultSize((blob.size / 1024 / 1024).toFixed(2) + ' MB');
@@ -57,7 +67,7 @@ export default function CompressPdf() {
   const startOver = () => {
     setFile(null);
     if (resultUrl) {
-      URL.revokeObjectURL(resultUrl);
+      revokeObjectUrl();
       setResultUrl(null);
     }
     setResultNotes([]);
@@ -67,7 +77,7 @@ export default function CompressPdf() {
   return (
     <ToolLayout
       title="Compress PDF"
-      description="Re-pack PDF streams to reduce file size. pdf-lib cannot re-compress embedded images, so size reduction is limited."
+      description="Reduce file size by re-packing PDF streams and, optionally, downsampling embedded images. Image re-encoding is lossy and irreversible."
     >
       {step === 'upload' && (
         <FileUploadZone
@@ -107,9 +117,9 @@ export default function CompressPdf() {
             >
               <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5" aria-hidden="true" />
               <p>
-                This tool cannot re-compress JPEG or PNG images already embedded in the PDF. Real
-                size reduction happens only when the source PDF had unoptimized metadata or
-                inefficient object streams.
+                Without image re-compression, size drops only when the source PDF had unoptimized
+                metadata or object streams. Image re-compression is irreversible: original pixels are
+                replaced and CMYK, indexed and 16-bit images are left as they are.
               </p>
             </div>
 
@@ -157,6 +167,33 @@ export default function CompressPdf() {
                 </button>
               </div>
             </div>
+
+            <fieldset className="mt-8 space-y-3">
+              <legend className="text-[var(--text)] font-medium mb-3">Re-compress images (lossy)</legend>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {IMAGE_OPTIONS.map((option) => (
+                  <label
+                    key={option.value}
+                    className={`p-3 rounded-xl border-2 cursor-pointer transition-all focus-within:ring-2 focus-within:ring-red-500 ${
+                      images === option.value
+                        ? 'border-red-600 bg-red-50'
+                        : 'border-[var(--border)] hover:border-red-300 hover:bg-[var(--surface-2)]'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="image-compression"
+                      value={option.value}
+                      checked={images === option.value}
+                      onChange={() => setImages(option.value)}
+                      className="sr-only"
+                    />
+                    <div className="font-semibold text-[var(--text)]">{option.label}</div>
+                    <div className="text-xs text-[var(--text-3)]">{option.hint}</div>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
           </div>
 
           <div className="flex justify-center">
@@ -181,7 +218,7 @@ export default function CompressPdf() {
         <div className="w-full max-w-2xl mx-auto flex flex-col gap-6">
           <DownloadState
             title="Done"
-            description={`Re-packed from ${originalSize} to ${resultSize}. If the file got larger, the source PDF was already well-optimized.`}
+            description={`Compressed from ${originalSize} to ${resultSize}. If the file got larger, the source PDF was already well-optimized.`}
             fileName={`compressed_${file?.name || 'document.pdf'}`}
             fileUrl={resultUrl}
             fileSize={resultSize}

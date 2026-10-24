@@ -6,7 +6,7 @@ import {
   Minimize, Wrench, ScanText,
   Image, FileText, Presentation, FileSpreadsheet, Globe,
   FileBadge, RotateCw, ListOrdered, Stamp, Crop, Edit,
-  KeyRound, Lock, PenTool, Square, GitCompare, Languages,
+  KeyRound, PenTool, Square, GitCompare, Languages,
   Sparkles, Shield
 } from 'lucide-react';
 
@@ -33,15 +33,15 @@ export const TOOL_CATEGORIES: ToolCategory[] = [
       { id: "remove-pages", name: "Remove pages", description: "Remove pages from a PDF document in a flash.", icon: FileMinus, color: "text-red-500", isMVP: true },
       { id: "extract-pages", name: "Extract pages", description: "Get a new document containing only the desired pages.", icon: FileOutput, color: "text-red-500", isMVP: true },
       { id: "organize-pdf", name: "Organize PDF", description: "Sort, add and delete PDF pages.", icon: LayoutGrid, color: "text-red-500", isMVP: true },
-      { id: "scan-to-pdf", name: "Scan to PDF", description: "Capture document scans from your camera and convert them instantly to PDF.", icon: Scan, color: "text-red-500", isMVP: true },
+      { id: "scan-to-pdf", name: "Scan to PDF", description: "Not available — disabled pending remediation. See the production inventory for details.", icon: Scan, color: "text-red-500", isMVP: true },
     ]
   },
   {
     name: "OPTIMIZE PDF",
     tools: [
-      { id: "compress-pdf", name: "Compress PDF", description: "Re-pack PDF streams to reduce file size. pdf-lib cannot re-compress embedded images, so savings are limited.", icon: Minimize, color: "text-green-500", isMVP: true },
+      { id: "compress-pdf", name: "Compress PDF", description: "Reduce file size by re-packing streams and, optionally, downsampling embedded images.", icon: Minimize, color: "text-green-500", isMVP: true },
       { id: "repair-pdf", name: "Repair PDF", description: "Fix corrupted PDFs when possible with client-side repair.", icon: Wrench, color: "text-green-500", isMVP: true },
-      { id: "ocr-pdf", name: "OCR PDF", description: "Make scanned PDFs searchable by recognizing text with on-device OCR (Tesseract.js).", icon: ScanText, color: "text-green-500", isMVP: true },
+      { id: "ocr-pdf", name: "OCR PDF", description: "Not available — disabled pending remediation. See the production inventory for details.", icon: ScanText, color: "text-green-500", isMVP: true },
     ]
   },
   {
@@ -61,7 +61,7 @@ export const TOOL_CATEGORIES: ToolCategory[] = [
       { id: "pdf-to-pdfa", name: "PDF to PDF/A", description: "Convert PDF to PDF/A format for long-term archiving.", icon: FileBadge, color: "text-yellow-500", isMVP: true },
       { id: "pdf-to-word", name: "PDF to WORD", description: "Convert PDF files to editable Word documents.", icon: FileText, color: "text-yellow-500", isMVP: true },
       { id: "pdf-to-excel", name: "PDF to EXCEL", description: "Extract tables from PDF to Excel format.", icon: FileSpreadsheet, color: "text-yellow-500", isMVP: true },
-      { id: "pdf-to-powerpoint", name: "PDF to POWERPOINT", description: "Convert PDF pages to PowerPoint slides.", icon: Presentation, color: "text-yellow-500", isMVP: true },
+      { id: "pdf-to-powerpoint", name: "PDF to POWERPOINT", description: "Not available — disabled pending remediation. See the production inventory for details.", icon: Presentation, color: "text-yellow-500", isMVP: true },
     ]
   },
   {
@@ -80,15 +80,15 @@ export const TOOL_CATEGORIES: ToolCategory[] = [
       { id: "sign-pdf", name: "Sign PDF", description: "Draw, type, or upload a signature and stamp it onto your PDF pages. Signatures stay in your browser.", icon: PenTool, color: "text-blue-500", isMVP: true },
       { id: "blackout-pdf", name: "Blackout PDF", description: "Unavailable while the dedicated blackout/redaction workflow is remediated; do not use it as a confidentiality boundary.", icon: Square, color: "text-blue-500", isMVP: true },
       { id: "compare-pdf", name: "Compare PDF", description: "Show two PDFs side-by-side for visual comparison. Differences are not auto-detected.", icon: GitCompare, color: "text-blue-500", isMVP: true },
-      { id: "decrypt-pdf", name: "Decrypt PDF", description: "Remove the password from an encrypted PDF (you must know the password).", icon: KeyRound, color: "text-blue-500", isMVP: true },
-      { id: "protect-pdf", name: "Protect PDF", description: "Add password protection and permissions to PDF files.", icon: Shield, color: "text-blue-500", isMVP: true },
+      { id: "decrypt-pdf", name: "Decrypt PDF", description: "Not available — pdf-lib does not support PDF decryption. See the production inventory for details.", icon: KeyRound, color: "text-blue-500", isMVP: true },
+      { id: "protect-pdf", name: "Protect PDF", description: "Not available — pdf-lib does not support PDF encryption. See the production inventory for details.", icon: Shield, color: "text-blue-500", isMVP: true },
     ]
   },
   {
     name: "PDF INTELLIGENCE",
     tools: [
-      { id: "ai-summarizer", name: "AI Summarizer", description: "Get AI-generated summary of PDF content using Google Gemini.", icon: Sparkles, color: "text-purple-600", isMVP: true },
-      { id: "translate-pdf", name: "Translate PDF", description: "Add AI translations as blue text below the original text on each page. The original text remains visible.", icon: Languages, color: "text-purple-600", isMVP: true },
+      { id: "ai-summarizer", name: "AI Summarizer", description: "Not available in the web build — requires a Gemini API key. Desktop build only.", icon: Sparkles, color: "text-purple-600", isMVP: true },
+      { id: "translate-pdf", name: "Translate PDF", description: "Not available in the web build — requires a Gemini API key. Desktop build only.", icon: Languages, color: "text-purple-600", isMVP: true },
     ]
   }
 ];

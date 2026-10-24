@@ -7,6 +7,7 @@ import DownloadState from '../../components/tools/DownloadState';
 import { addPageNumbers } from '../../lib/pdf';
 import { logError } from '../../lib/logger';
 import { useToast } from '../../contexts/ToastContext';
+import { useManagedObjectUrl } from '../../hooks/useObjectUrl';
 
 type Step = 'upload' | 'configure' | 'processing' | 'download';
 type Position = 'top-left' | 'top-center' | 'top-right' | 'bottom-left' | 'bottom-center' | 'bottom-right';
@@ -18,6 +19,7 @@ export default function AddPageNumbers() {
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [resultSize, setResultSize] = useState<string>('');
   const { showToast } = useToast();
+  const { create: createObjectUrl, revoke: revokeObjectUrl } = useManagedObjectUrl();
 
   const handleFilesSelected = (newFiles: File[]) => {
     if (newFiles.length > 0) {
@@ -34,7 +36,7 @@ export default function AddPageNumbers() {
       const pdfBytes = await addPageNumbers(file, position);
       
       const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-      const url = URL.createObjectURL(blob);
+      const url = createObjectUrl(blob);
       
       setResultUrl(url);
       setResultSize((blob.size / 1024 / 1024).toFixed(2) + ' MB');
@@ -53,10 +55,8 @@ export default function AddPageNumbers() {
   const startOver = () => {
     setFile(null);
     setPosition('bottom-center');
-    if (resultUrl) {
-      URL.revokeObjectURL(resultUrl);
-      setResultUrl(null);
-    }
+    revokeObjectUrl();
+    setResultUrl(null);
     setStep('upload');
   };
 

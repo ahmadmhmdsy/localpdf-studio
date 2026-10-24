@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { Camera, X, Plus, Image as ImageIcon, RefreshCw } from 'lucide-react';
+import { X, Plus, Image as ImageIcon } from 'lucide-react';
 import ToolLayout from '../../components/tools/ToolLayout';
 import ProcessingState from '../../components/tools/ProcessingState';
 import DownloadState from '../../components/tools/DownloadState';

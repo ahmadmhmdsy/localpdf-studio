@@ -254,7 +254,7 @@ describe('release-facing containment claims', () => {
   it('keeps the disabled tool list non-empty for the installer assertion', () => {
     expect(disabledToolNames.length).toBeGreaterThan(0);
     expect(disabledToolNames).toEqual(
-      expect.arrayContaining(['OCR PDF', 'Compress PDF', 'AI Summarizer', 'Scan to PDF', 'Blackout PDF']),
+      expect.arrayContaining(['Compress PDF', 'AI Summarizer', 'Scan to PDF', 'Blackout PDF']),
     );
   });
 
