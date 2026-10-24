@@ -60,10 +60,14 @@ export default defineConfig(() => {
             // Core - always loaded
             'core': ['react', 'react-dom', 'react-router-dom'],
             // PDF processing - loaded when tool accessed
-            'pdf-lib': ['pdf-lib', 'pdfjs-dist'],
+            'pdf-lib': ['pdf-lib'],
+            'pdfjs': ['pdfjs-dist'],
             // Heavy libraries - dynamic only
             'tesseract': ['tesseract.js'],
-            'office-parsers': ['mammoth', 'docx', 'exceljs'],
+            // One chunk per office library: each tool loads only the one it needs.
+            'mammoth': ['mammoth'],
+            'docx': ['docx'],
+            'exceljs': ['exceljs'],
             'ai': ['@google/genai'],
           },
         },

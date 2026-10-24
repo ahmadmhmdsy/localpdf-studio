@@ -9,6 +9,10 @@ import { join } from 'node:path';
 const DIST_DIR = 'dist';
 const ASSETS_DIR = join(DIST_DIR, 'assets');
 const SIZE_LIMIT_KB = 800; // 800 KB per chunk
+// Lazily loaded vendor chunks that cannot be split further, with their own limit.
+// exceljs resolves to its prebuilt dist/exceljs.min.js (dependencies bundled in),
+// and only the Excel tools load it.
+const CHUNK_LIMITS_KB = { exceljs: 1000 };
 const GROWTH_THRESHOLD = 0.1; // 10% growth
 
 if (!existsSync(ASSETS_DIR)) {
@@ -24,8 +28,10 @@ for (const file of files) {
   const sizeKB = content.length / 1024;
   sizes.set(file, sizeKB);
 
-  if (sizeKB > SIZE_LIMIT_KB) {
-    console.error(`FAIL: ${file} is ${sizeKB.toFixed(1)} KB (limit: ${SIZE_LIMIT_KB} KB)`);
+  const chunkName = file.replace(/-[\w-]{8}\.js$/, '');
+  const limitKB = CHUNK_LIMITS_KB[chunkName] ?? SIZE_LIMIT_KB;
+  if (sizeKB > limitKB) {
+    console.error(`FAIL: ${file} is ${sizeKB.toFixed(1)} KB (limit: ${limitKB} KB)`);
     process.exit(1);
   }
 }
