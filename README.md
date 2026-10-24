@@ -1,138 +1,140 @@
 # LocalPDF Studio
 
-A PDF manipulation tool built with React that runs in your browser. Merge, split, convert, annotate, and edit PDFs locally; every tool shows its data boundary, and tools that would require a network or camera service are unavailable in the public beta.
+**A privacy-first PDF toolkit that runs entirely on your device.** Merge, split, edit, sign, convert and OCR your PDFs in the browser or in a native desktop app. Your files are never uploaded.
 
-![CI](https://github.com/anomalyco/localpdf-studio/actions/workflows/ci.yml/badge.svg)
-![GitHub License](https://img.shields.io/badge/license-MIT-blue)
+![CI](https://github.com/ahmadmhmdsy/localpdf-studio/actions/workflows/ci.yml/badge.svg)
+![License](https://img.shields.io/badge/license-MIT-blue)
+![Tests](https://img.shields.io/badge/unit%20tests-765%20passing-brightgreen)
+![Stack](https://img.shields.io/badge/React%2019-Vite%206-646cff)
 
-## Features
+---
 
-### 🗂️ Organize
-Merge, split, rotate, reorder, remove, and extract pages from PDFs.
+## Why LocalPDF Studio
 
-### 🎨 Edit & Annotate
-Full editor with text, drawing, image, and signature tools. Keyboard shortcuts (press `?` to see all).
+Most online PDF tools upload your document to their servers. LocalPDF Studio doesn't:
 
-### 🔄 Convert
-- PDF ↔ Word, Excel, PowerPoint, JPG, HTML
-- Scan to PDF (camera capture) and OCR PDFs — unavailable in the public beta
+- **🔒 Local processing.** Every enabled tool works on the file inside your browser tab. No upload, no account, no tracking of document content.
+- **🧾 Honest about every tool.** Each tool has a release state (`stable`, `limited` or `disabled`). Its page shows what it does, what it doesn't do yet, and where your data goes. Tools that aren't ready are switched off, not shipped broken.
+- **🛡️ Locked down by default.** A strict Content-Security-Policy allows no third-party hosts, scripts or workers. OCR engines and language data are self-hosted. The browser tests check that tool routes contact only the app's own origin.
+- **🖥️ Web and desktop.** The same code also ships as a lightweight [Tauri 2](docs/desktop.md) desktop app with native file dialogs.
 
-### 🔒 Security
-Repair damaged PDFs (parse/resave only). Add/remove passwords and the dedicated blackout/redaction workflow are disabled in the public beta and are not a confidentiality boundary.
+## Highlights
 
-### 🤖 AI-Powered
-AI Summarizer and Translate PDF — unavailable in the public web beta. No file, prompt, or filename is sent to Google Gemini from the browser.
+### 🔍 OCR: make scanned PDFs searchable *(new)*
+- Recognizes text on scanned pages with **Tesseract running in your browser**. The worker, the WASM core and the English language data are all served from the app itself.
+- Adds an **invisible, word-aligned text layer**, so search and selection line up with the scanned image, even on rotated pages.
+- Skips pages that already have text, so search hits are not doubled.
+- **Cancellable at any point**: the Cancel button stops the engine, even in the middle of a page.
+- **Optional page range** (`1-3, 7`), plus clear limits: 200 pages and 50 MB per run.
 
-### ⚡ Performance
-- Enabled tools process the selected file in the browser; each tool's data handling is disclosed in the UI
-- 100MB file size limit
-- Dark mode support
-- Bundle-split for fast loading (pdf-lib, tesseract, office parsers split into separate chunks)
+### ✏️ Editor
+A full-page editor that adds text, drawings, images and visual signatures, with page thumbnails, undo/redo and keyboard shortcuts (press `?`).
 
-## Prerequisites
+### 🗂️ Organize and convert
+Merge, split, rotate, crop, reorder, extract and compare pages. Convert between PDF and JPG, Word, Excel, PowerPoint and HTML, with page numbers, watermarks and repair alongside.
 
-- [fnm](https://github.com/Schniz/fnm)
-- Node.js `22.14.0` (exact supported runtime)
-- npm `11.16.0` (exact supported runtime, activated with Corepack)
+### ♿ Built to a quality bar
+- 765 unit and component tests (Vitest + Testing Library).
+- Playwright smoke and **axe accessibility** gates against the production build.
+- Lighthouse CI, a bundle-size budget, and type checking and linting in CI.
+- Dark mode, an onboarding tour, toast notifications, and per-tool error boundaries.
 
-## Quick Start
+## Tool status
+
+The source of truth is [`src/config/featureRegistry.ts`](src/config/featureRegistry.ts). The app shows each tool's limitations on the tool's own page.
+
+| State | Tools |
+|---|---|
+| ✅ **Stable** | Merge PDF · PDF to JPG · Rotate PDF · Crop PDF · Compare PDF |
+| 🟡 **Limited**: works, with documented limits | OCR PDF *(English)* · Split PDF · Remove Pages · Extract Pages · Organize PDF · Repair PDF · JPG to PDF · HTML to PDF · Word to PDF · Excel to PDF · PowerPoint to PDF · PDF to PDF/A *(best-effort, not conformant)* · PDF to Word · PDF to Excel · Add Page Numbers · Add Watermark · Edit PDF *(adds overlays)* · Sign PDF *(visual signature, not certificate-backed)* |
+| ⛔ **Disabled**: work in progress | Compress PDF · Scan to PDF · PDF to PowerPoint · Protect PDF · Unlock PDF · Redact (Blackout) PDF · AI Summarizer · Translate PDF |
+
+The Phase A plan for turning the disabled tools on is in [`docs/superpowers/plans/2026-10-24-phase-a-tools.md`](docs/superpowers/plans/2026-10-24-phase-a-tools.md).
+
+## Quick start
+
+Requirements: Node.js `22.14.0` and npm `11.16.0` (pinned in `package.json` engines; [fnm](https://github.com/Schniz/fnm) + Corepack recommended).
 
 ```sh
-# Activate the exact supported runtime
-fnm install 22.14.0
-fnm use 22.14.0
-corepack enable npm
-corepack prepare npm@11.16.0 --activate
-node --version        # must print v22.14.0
-npm --version         # must print 11.16.0
+fnm install 22.14.0 && fnm use 22.14.0
+corepack enable npm && corepack prepare npm@11.16.0 --activate
 
-# Install the exact locked dependency graph
-npm ci
-
-# No API key setup is required for the web build.
-# AI Summarizer and Translate PDF are unavailable in the public beta, and the
-# browser build neither reads nor accepts an API key.
-
-# Start development server (port 3000)
-npm run dev
+npm ci          # install the exact locked dependency graph
+npm run dev     # http://localhost:3000
 ```
 
-> **⚠️ API keys:** the public web build contains no API key and accepts none. `VITE_GEMINI_API_KEY` is no longer read by the application, because any `VITE_*` value is inlined into public client JavaScript and readable by anyone who loads the page. The desktop build stores a user-owned key in the on-disk app store (`settings.json`, key `geminiApiKey`) and is configured from the Settings UI. AI tools are unavailable in the public web beta.
+No API keys or environment setup are needed. The web build neither reads nor accepts an API key. `VITE_*` values would be inlined into public JavaScript, so `VITE_GEMINI_API_KEY` is intentionally not read.
 
-## Available Commands
+### Desktop app
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start dev server at port 3000 |
-| `npm run build` | Production build to `dist/` |
-| `npm run preview` | Preview production build |
-| `npm run typecheck` | TypeScript type checking |
+```sh
+npm run tauri:dev     # requires Rust + MSVC build tools on Windows
+npm run tauri:build
+```
+
+See [docs/desktop.md](docs/desktop.md) for prerequisites and details.
+
+## Commands
+
+| Command | What it does |
+|---|---|
+| `npm run dev` | Dev server on port 3000 |
+| `npm run build` | Production build into `dist/` |
+| `npm run preview` | Serve the production build |
+| `npm run typecheck` | TypeScript (`tsc --noEmit`) |
 | `npm run lint` | ESLint |
-| `npm test` | Run all tests (Vitest) |
-| `npm run test:coverage` | Run tests with coverage report |
-| `npm run test:e2e` | Run production-browser smoke and accessibility gates (Playwright) |
-| `npm run clean` | Remove `dist/` |
-| `npx vitest run src/pages/tools/MergePdf.test.tsx` | Run a single test file |
+| `npm test` | Unit and component tests (Vitest) |
+| `npm run test:coverage` | Tests with a coverage report |
+| `npm run test:e2e` | Playwright smoke and accessibility gates against the production build |
+| `npm run check:bundle` | Per-chunk bundle-size budget |
+| `npm run test:lhci` | Lighthouse CI |
 
-### Browser tests (Playwright)
+Browser tests need Chromium installed once (`npx playwright install chromium`) and a build (`npm run build`). `npm run test:e2e` starts its own `vite preview` server on `127.0.0.1:4173`.
 
-The browser gate runs against the **production build**, not the dev server. Install the Chromium browser once, then build and run the suite:
+## Tech stack
 
-```sh
-npx playwright install chromium   # one-time browser download
-npm run build                     # the preview server serves dist/
-npm run test:e2e                  # smoke + accessibility gates
-```
+| Area | Choice |
+|---|---|
+| UI | React 19, TypeScript, Tailwind CSS v4 |
+| Build | Vite 6, with heavy libraries split into lazy chunks |
+| PDF | pdf-lib (writing), pdfjs-dist (rendering and text) |
+| OCR | tesseract.js 5, self-hosted worker, core and `tessdata_fast` data |
+| Office | mammoth, docx, exceljs |
+| State | Zustand |
+| Desktop | Tauri 2 (Rust) |
+| Testing | Vitest, Testing Library, Playwright, axe-core, Lighthouse CI |
 
-`npm run test:e2e` starts its own `vite preview` server on `127.0.0.1:4173` via the Playwright `webServer` config, so no server needs to be running first. On CI, Chromium is installed with `npx playwright install --with-deps chromium` before the suite runs. See `e2e/` for the smoke and axe specs.
-
-## Tech Stack
-
-- **Framework:** React 19, TypeScript
-- **Build:** Vite 6
-- **Styling:** Tailwind CSS v4
-- **PDF:** pdf-lib, pdfjs-dist
-- **State:** Zustand (4 stores)
-- **AI:** @google/genai (Gemini API; desktop store only — web routes disabled)
-- **Office:** mammoth, docx, exceljs
-- **OCR:** tesseract.js
-- **Testing:** Vitest + React Testing Library (514+ tests)
-
-## Project Structure
+## Project structure
 
 ```
 src/
-├── components/       # Reusable UI (editor, tools, layout)
-│   ├── editor/       # Editor-specific (Canvas, Toolbar, Sidebar, etc.)
-│   ├── tools/        # Shared tool UI (FileUploadZone, ProcessingState, etc.)
-│   └── ui/           # Generic UI (ToastContainer, ConfirmModal, etc.)
-├── pages/
-│   └── tools/        # 31 individual tool pages
-├── lib/              # Utility functions (pdf, ai, compress, security, etc.)
-├── store/            # Zustand stores (document, tools, annotations, toast)
-├── contexts/         # React contexts (EditorContext, ToastContext)
-├── hooks/            # Custom hooks (useKeyboardShortcuts)
-├── constants/        # Shared constants (tools list, colors, limits)
-└── tests/            # Test setup, fixtures, utilities
+├── components/   # editor, shared tool UI (upload zone, processing state, availability gate), layout
+├── config/       # featureRegistry: release state, privacy class and limits for every tool
+├── pages/tools/  # one page per tool (31)
+├── lib/          # PDF, OCR, compression, conversion and security logic
+├── store/        # Zustand stores
+├── constants/    # tool catalog, limits
+└── tests/        # setup, fixtures, helpers
+e2e/              # Playwright smoke + accessibility specs
+src-tauri/        # desktop shell
+docs/             # privacy data flow, release inventory, plans, competitive analysis
 ```
 
-## Architecture
+## Privacy and security
 
-- **Routes:** All 31 tools are hard-coded in `src/App.tsx` under `/tools/:tool-name`
-- **Editor:** Route `/editor` with canvas, sidebar, and properties panel
-- **Error Handling:** Per-tool `ToolErrorBoundary` + global `ErrorBoundary`
-- **Notifications:** Toast system (`ToastContext` + `ToastContainer`) replaces all `alert()` calls
-- **AI Retry:** `withRetry()` utility in `src/lib/ai.ts` with exponential backoff (3 attempts)
-- **State:** 4 granular Zustand stores; legacy `useEditor()` marked deprecated
+- [docs/privacy/data-flow.md](docs/privacy/data-flow.md) describes, per tool, where data goes and the release gate a tool must pass before it is enabled.
+- [docs/release/production-inventory.md](docs/release/production-inventory.md) holds the audit evidence for every tool's release state.
+- Known limits are stated plainly. Signing is visual, not cryptographic. Redaction and password protection are disabled until they are real. OCR currently supports English only.
 
-## Environment Variables
+## Roadmap
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `APP_URL` | No | Base URL for self-referential links and callbacks. |
-
-The browser build accepts no API key. `VITE_GEMINI_API_KEY` is intentionally not read; the desktop build uses the on-disk app store instead (see warning above).
+- **Compression:** real image downsampling is implemented and awaits verification before release.
+- **Protect / Unlock:** real AES encryption via a self-hosted qpdf (WASM) build.
+- **True redaction** that removes the underlying content, not just covers it.
+- **Scan to PDF** with an image-file fallback.
+- More OCR languages and non-Latin scripts.
+- Higher-fidelity Office conversions.
 
 ## License
 
-MIT
+[MIT](LICENSE)
