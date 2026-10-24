@@ -6,7 +6,6 @@ import ProcessingState from '../../components/tools/ProcessingState';
 import DownloadState from '../../components/tools/DownloadState';
 import { pdfToJpgs } from '../../lib/image';
 import { logError } from '../../lib/logger';
-import { saveAs } from 'file-saver';
 import { useToast } from '../../contexts/ToastContext';
 
 type Step = 'upload' | 'configure' | 'processing' | 'download';

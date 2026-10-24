@@ -5,9 +5,11 @@ interface ProcessingStateProps {
   description?: string;
   progress?: number;
   statusMessage?: string;
+  /** Custom step labels. Defaults to generic steps if not provided. */
+  steps?: string[];
 }
 
-const PROCESSING_STEPS = [
+const DEFAULT_STEPS = [
   'Validating files',
   'Processing pages…',
   'Finalizing',
@@ -18,8 +20,10 @@ export default function ProcessingState({
   description,
   progress = 0,
   statusMessage,
+  steps,
 }: ProcessingStateProps) {
   const clampedProgress = Math.min(100, Math.max(0, progress));
+  const activeSteps = steps && steps.length > 0 ? steps : DEFAULT_STEPS;
   
   const getActiveStep = (): number => {
     if (clampedProgress < 35) return 0;
@@ -112,10 +116,10 @@ export default function ProcessingState({
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontFamily: "'DM Mono', monospace",
+              fontFamily: 'monospace',
               fontSize: '20px',
               fontWeight: 500,
-              color: 'var(--accent)',
+              color: 'var(--accent-text)',
             }}
           >
             {Math.round(clampedProgress)}%
@@ -125,7 +129,7 @@ export default function ProcessingState({
         <h2
           className="processing-title"
           style={{
-            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            fontFamily: 'sans-serif',
             fontSize: '20px',
             fontWeight: 700,
             marginBottom: '8px',
@@ -140,7 +144,7 @@ export default function ProcessingState({
             color: 'var(--text-3)',
             fontSize: '14px',
             marginBottom: '28px',
-            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            fontFamily: 'sans-serif',
           }}
         >
           {description || 'Please wait while we process your document locally.'}
@@ -153,7 +157,7 @@ export default function ProcessingState({
           maxWidth: '300px',
           margin: '0 auto',
         }}>
-          {PROCESSING_STEPS.map((step, index) => {
+          {activeSteps.map((step, index) => {
             const isActive = index === activeStep;
             const isDone = index < activeStep;
 
@@ -167,7 +171,7 @@ export default function ProcessingState({
                   gap: '12px',
                   fontSize: '13px',
                   color: isActive ? 'var(--text-2)' : isDone ? 'var(--accent-2)' : 'var(--text-3)',
-                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontFamily: 'sans-serif',
                   transition: 'color var(--transition)',
                 }}
               >
@@ -177,8 +181,8 @@ export default function ProcessingState({
                     width: '8px',
                     height: '8px',
                     borderRadius: '50%',
-                    background: isActive ? 'var(--accent)' : isDone ? 'var(--accent-2)' : 'var(--surface-2)',
-                    border: `1px solid ${isActive ? 'var(--accent)' : isDone ? 'var(--accent-2)' : 'var(--border)'}`,
+                    background: isActive ? 'var(--accent-solid)' : isDone ? 'var(--accent-2)' : 'var(--surface-2)',
+                    border: `1px solid ${isActive ? 'var(--accent-solid)' : isDone ? 'var(--accent-2)' : 'var(--border)'}`,
                     flexShrink: 0,
                     transition: 'all var(--transition)',
                     boxShadow: isActive ? '0 0 8px rgba(255,107,157,0.5)' : 'none',

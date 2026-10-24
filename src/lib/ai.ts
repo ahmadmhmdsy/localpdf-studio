@@ -13,20 +13,18 @@ let apiKeyCache: string | null = null;
 
 /**
  * Resolve the Gemini API key from the most specific to least specific source:
- *   1. tauri-plugin-store (desktop: user-configured via Settings UI)
- *   2. import.meta.env.VITE_GEMINI_API_KEY (web: build-time injected)
- * Returns null if neither is set.
+ *   1. in-memory cache (populated by a previous resolve or the Settings UI)
+ *   2. tauri-plugin-store (desktop: user-configured via Settings UI)
+ *
+ * There is deliberately no build-time environment fallback: a VITE_ variable is
+ * inlined into the public browser bundle, so the web build never holds a key.
+ * Returns null if neither source has a value.
  */
 export async function resolveApiKey(): Promise<string | null> {
   if (apiKeyCache) return apiKeyCache;
   const fromStore = await getStoreValue<string>('geminiApiKey');
   if (fromStore && fromStore.trim()) {
     apiKeyCache = fromStore.trim();
-    return apiKeyCache;
-  }
-  const fromEnv = import.meta.env.VITE_GEMINI_API_KEY;
-  if (fromEnv && typeof fromEnv === 'string' && fromEnv.trim()) {
-    apiKeyCache = fromEnv.trim();
     return apiKeyCache;
   }
   return null;
@@ -53,7 +51,7 @@ export async function getGenAIAsync(): Promise<GoogleGenAI> {
   if (!key) {
     throw new Error(
       'Gemini API key not configured. Open Settings to add your key, ' +
-      'or set VITE_GEMINI_API_KEY in your environment for web builds.'
+      'or call resolveApiKey() first.'
     );
   }
   genAI = new GoogleGenAI({ apiKey: key });
@@ -62,22 +60,22 @@ export async function getGenAIAsync(): Promise<GoogleGenAI> {
 
 /**
  * @deprecated Prefer getGenAIAsync(). Kept for back-compat with code paths
- * that cannot be made async (e.g. synchronous React renderers). Falls back to
- * the build-time env var; throws if missing.
+ * that cannot be made async (e.g. synchronous React renderers). Uses only the
+ * in-memory cache populated by resolveApiKey() or the Settings UI; throws when no
+ * in-memory key is present. There is no build-time environment fallback.
  */
 export function getGenAI(): GoogleGenAI {
   if (genAI) return genAI;
-  // Prefer the in-memory cache (set by resolveApiKey() or the Settings UI)
-  // before falling back to the build-time env var. This lets users update
-  // their key at runtime without a page reload.
-  const key = apiKeyCache ?? import.meta.env.VITE_GEMINI_API_KEY;
-  if (key && typeof key === 'string' && key.trim()) {
+  // Only the in-memory cache is safe here: any build-time value would be
+  // readable by anyone loading the published browser bundle.
+  const key = apiKeyCache;
+  if (key && key.trim()) {
     genAI = new GoogleGenAI({ apiKey: key.trim() });
     return genAI;
   }
   throw new Error(
     'Gemini API key not configured. Open Settings to add your key, ' +
-    'call resolveApiKey() first, or set VITE_GEMINI_API_KEY in your environment.'
+    'or call resolveApiKey() first.'
   );
 }
 
@@ -87,37 +85,62 @@ interface RetryOptions {
   maxDelay?: number;
 }
 
+/**
+ * Determine if an error is retryable.
+ * - HTTP 429 (rate limit): retryable
+ * - HTTP 5xx (server error): retryable
+ * - HTTP 4xx (client error, except 429): NOT retryable
+ * - Network errors (fetch throws): retryable
+ * - Other errors: NOT retryable (fail fast)
+ */
+function isRetryableError(error: unknown): boolean {
+  const status = (error as { status?: number; code?: number })?.status
+    ?? (error as { status?: number; code?: number })?.code;
+
+  if (typeof status === 'number') {
+    if (status === 429) return true;
+    if (status >= 500) return true;
+    if (status >= 400 && status < 500) return false;
+  }
+
+  if (error instanceof TypeError && error.message.includes('fetch')) return true;
+  if ((error as { retryable?: boolean })?.retryable) return true;
+
+  return false;
+}
+
 export async function withRetry<T>(
   fn: () => Promise<T>,
   options: RetryOptions = {}
 ): Promise<T> {
   const { maxAttempts = 3, baseDelay = 1000, maxDelay = 10000 } = options;
-  
+
   let lastError: Error | undefined;
-  
+
   for (let attempt = 1; attempt <= maxAttempts; attempt++) {
     try {
       return await fn();
     } catch (error) {
       lastError = error instanceof Error ? error : new Error(String(error));
-      
-      // Don't retry on the last attempt
+
       if (attempt === maxAttempts) {
         break;
       }
-      
-      // Calculate exponential backoff delay
+
+      if (!isRetryableError(error)) {
+        console.warn('Non-retryable error encountered, failing fast:', lastError.message);
+        break;
+      }
+
       const delay = Math.min(baseDelay * Math.pow(2, attempt - 1), maxDelay);
-      
-      // Add some jitter to prevent thundering herd
       const jitteredDelay = delay + Math.random() * 500;
-      
+
       console.warn(`API call failed (attempt ${attempt}/${maxAttempts}), retrying in ${jitteredDelay}ms...`, error);
-      
+
       await new Promise(resolve => setTimeout(resolve, jitteredDelay));
     }
   }
-  
+
   throw lastError;
 }
 
@@ -150,7 +173,6 @@ export async function summarizePdf(text: string, onProgress?: (chunk: number, to
   const CHUNK_SIZE = 25000;
   const OVERLAP = 500;
 
-  // Split text into overlapping chunks
   const chunks: string[] = [];
   let start = 0;
   while (start < text.length) {
@@ -160,7 +182,6 @@ export async function summarizePdf(text: string, onProgress?: (chunk: number, to
     start = end - OVERLAP;
   }
 
-  // Single chunk - summarize directly
   if (chunks.length === 1) {
     return withRetry(async () => {
       const response = await getGenAI().models.generateContent({
@@ -171,7 +192,6 @@ export async function summarizePdf(text: string, onProgress?: (chunk: number, to
     });
   }
 
-  // Multiple chunks - summarize each then combine
   const chunkSummaries: string[] = [];
   for (let i = 0; i < chunks.length; i++) {
     const summary = await withRetry(async () => {
@@ -185,7 +205,6 @@ export async function summarizePdf(text: string, onProgress?: (chunk: number, to
     onProgress?.(i + 1, chunks.length);
   }
 
-  // Combine chunk summaries into a final summary
   const combinedText = chunkSummaries.join('\n\n');
   return withRetry(async () => {
     const response = await getGenAI().models.generateContent({
@@ -243,7 +262,7 @@ export async function translatePdf(
         pageIndex: pageNum - 1,
       });
     }
-    
+
     onProgress?.(pageNum, totalPages);
   }
 
@@ -252,28 +271,24 @@ export async function translatePdf(
 
 async function translateTextBatch(texts: string[], targetLang: string): Promise<string[]> {
   return withRetry(async () => {
-    // Create a numbered list of texts to translate
     const batchText = texts.map((text, i) => `[${i + 1}] ${text}`).join('\n\n');
-    
+
     const model = getGenAI().models.generateContent({
       model: 'gemini-2.0-flash',
       contents: `Translate the following numbered text items to ${targetLang}. Return ONLY the translations, one per line, in the same order as the input. Do not include the numbers or any additional text:\n\n${batchText}`,
     });
-    
+
     const response = await model;
     const translatedText = response.text || '';
-    
-    // Split the response back into individual translations
+
     const translations = translatedText.split('\n').map((line: string) => {
-      // Remove any leading numbers like "1. " or "[1] "
       return line.replace(/^\d+[.)]\s*/, '').replace(/^\[\d+\]\s*/, '').trim();
     }).filter((line: string) => line.length > 0);
-    
-    // If we got fewer translations than inputs, pad with originals
+
     while (translations.length < texts.length) {
       translations.push(texts[translations.length]);
     }
-    
+
     return translations.slice(0, texts.length);
   });
 }

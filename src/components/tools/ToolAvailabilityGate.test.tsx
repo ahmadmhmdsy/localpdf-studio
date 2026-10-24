@@ -1,10 +1,10 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { screen } from '@testing-library/react';
 import ToolAvailabilityGate from './ToolAvailabilityGate';
 import { renderWithProviders } from '../../tests/utils';
 
 const DISABLED_IDS = [
-  'scan-to-pdf', 'compress-pdf', 'ocr-pdf', 'pdf-to-powerpoint',
+  'scan-to-pdf', 'compress-pdf', 'pdf-to-powerpoint',
   'blackout-pdf', 'decrypt-pdf', 'protect-pdf', 'ai-summarizer',
   'translate-pdf',
 ] as const;
@@ -32,6 +32,9 @@ describe('ToolAvailabilityGate', () => {
       </ToolAvailabilityGate>
     );
     expect(screen.getByText('WORKFLOW_CONTENT')).toBeInTheDocument();
+    expect(screen.getByRole('note', { name: 'Data handling' })).toHaveTextContent(
+      /processed in your browser/i
+    );
     // No limitation alert, no unavailable state
     expect(screen.queryByText(/unavailable/i)).not.toBeInTheDocument();
     expect(screen.queryByText(/limitation/i)).not.toBeInTheDocument();
@@ -62,7 +65,10 @@ describe('ToolAvailabilityGate', () => {
     expect(screen.getByRole('heading', { name: /unavailable/i })).toBeInTheDocument();
     // Shows the tool name and registry limitation
     expect(screen.getAllByText(/Protect PDF/i).length).toBeGreaterThan(0);
-    expect(screen.getByText(/Protection is a no-op/i)).toBeInTheDocument();
+    expect(screen.getByText(/temporarily unavailable/i)).toBeInTheDocument();
+    expect(screen.getByRole('note', { name: 'Data handling' })).toHaveTextContent(
+      /processed in your browser/i
+    );
     // Truthful: no success/security/local-processing claims on this screen
     const body = document.body.textContent || '';
     expect(body.toLowerCase()).not.toContain('success');
@@ -92,3 +98,24 @@ describe('ToolAvailabilityGate', () => {
     }
   });
 });
+
+for (const toolId of ['ai-summarizer', 'translate-pdf', 'scan-to-pdf'] as const) {
+  it(`does not mount ${toolId}`, () => {
+    const workflow = vi.fn();
+    // Passed as an element, not called inline: React only invokes the
+    // component when the gate actually mounts its children.
+    function BlockedWorkflow() {
+      workflow();
+      return <div data-testid="workflow-mounted" />;
+    }
+
+    renderWithProviders(
+      <ToolAvailabilityGate toolId={toolId} toolName="Blocked tool">
+        <BlockedWorkflow />
+      </ToolAvailabilityGate>
+    );
+
+    expect(workflow).not.toHaveBeenCalled();
+    expect(screen.queryByTestId('workflow-mounted')).not.toBeInTheDocument();
+  });
+}

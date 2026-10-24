@@ -32,9 +32,9 @@ export default function StepTrack({ steps, currentStep }: StepTrackProps) {
               display: 'flex',
               alignItems: 'center',
               gap: '6px',
-              fontFamily: "'DM Mono', monospace",
+              fontFamily: 'monospace',
               fontSize: '11px',
-              color: isActive ? 'var(--accent)' : isDone ? 'var(--accent-2)' : 'var(--text-3)',
+              color: isActive ? 'var(--accent-text)' : isDone ? 'var(--accent-2)' : 'var(--text-3)',
               padding: '6px 12px',
               borderRadius: '100px',
               border: '1px solid transparent',
@@ -51,14 +51,14 @@ export default function StepTrack({ steps, currentStep }: StepTrackProps) {
                 width: '18px',
                 height: '18px',
                 borderRadius: '50%',
-                background: isActive ? 'var(--accent)' : isDone ? 'var(--accent-2)' : 'var(--surface-2)',
-                border: `1px solid ${isActive ? 'var(--accent)' : isDone ? 'var(--accent-2)' : 'var(--border)'}`,
+                background: isActive ? 'var(--accent-solid)' : isDone ? 'var(--accent-2)' : 'var(--surface-2)',
+                border: `1px solid ${isActive ? 'var(--accent-solid)' : isDone ? 'var(--accent-2)' : 'var(--border)'}`,
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
                 fontSize: '10px',
                 fontWeight: 600,
-                fontFamily: "'Plus Jakarta Sans', sans-serif",
+                fontFamily: 'sans-serif',
                 transition: 'all var(--transition)',
                 color: isActive || isDone ? 'var(--bg)' : 'var(--text-2)',
                 boxShadow: isActive ? '0 0 12px rgba(255,107,157,0.4)' : 'none',
@@ -76,7 +76,7 @@ export default function StepTrack({ steps, currentStep }: StepTrackProps) {
                 />
               ) : (
                 <span style={{ 
-                  fontFamily: "'Plus Jakarta Sans', sans-serif",
+                  fontFamily: 'sans-serif',
                   fontSize: '10px',
                   fontWeight: 600,
                 }}>
@@ -99,7 +99,7 @@ export default function StepTrack({ steps, currentStep }: StepTrackProps) {
             </div>
             <span
               style={{
-                fontFamily: "'DM Mono', monospace",
+                fontFamily: 'monospace',
                 fontSize: '11px',
                 letterSpacing: '0.02em',
               }}

@@ -9,7 +9,7 @@ import {
   isTauri,
   setStoreValue,
 } from '../../lib/native';
-import { clearApiKeyCache, getCachedApiKey, resolveApiKey } from '../../lib/ai';
+import { clearApiKeyCache, resolveApiKey } from '../../lib/ai';
 import { cn } from '../../lib/utils';
 
 interface ApiKeySettingsProps {
@@ -22,8 +22,8 @@ interface ApiKeySettingsProps {
  *
  * Persistence strategy:
  *   - Tauri: stored in tauri-plugin-store (settings.json, key: geminiApiKey).
- *   - Web: no persistence; the key is supplied at build time via env. The
- *     dialog shows a hint instead of an input in the browser.
+ *   - Web: no persistence and no build-time key. AI tools are unavailable in
+ *     the public web beta, so the dialog is informational in the browser.
  */
 export default function ApiKeySettings({ open, onClose }: ApiKeySettingsProps) {
   const { showToast } = useToast();
@@ -34,7 +34,8 @@ export default function ApiKeySettings({ open, onClose }: ApiKeySettingsProps) {
 
   const refreshStatus = useCallback(async () => {
     if (!isTauri()) {
-      setHasKey(Boolean(getCachedApiKey() || import.meta.env.VITE_GEMINI_API_KEY));
+      // No build-time web key exists: the public bundle can never hold one.
+      setHasKey(false);
       return;
     }
     const v = await getStoreValue<string>('geminiApiKey');
@@ -135,10 +136,10 @@ export default function ApiKeySettings({ open, onClose }: ApiKeySettingsProps) {
         onClick={(e) => e.stopPropagation()}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '6px' }}>
-          <Key size={20} aria-hidden="true" style={{ color: 'var(--accent)' }} />
+          <Key size={20} aria-hidden="true" style={{ color: 'var(--accent-text)' }} />
           <h2
             id="api-key-settings-title"
-            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif", fontSize: '18px', fontWeight: 700 }}
+            style={{ fontFamily: 'sans-serif', fontSize: '18px', fontWeight: 700 }}
           >
             Gemini API Key
           </h2>
@@ -157,7 +158,7 @@ export default function ApiKeySettings({ open, onClose }: ApiKeySettingsProps) {
         <p style={{ color: 'var(--text-3)', fontSize: '13px', marginBottom: '20px' }}>
           {isTauri()
             ? 'Stored locally in the app’s secure store. Used only for AI tools.'
-            : 'On the web, the API key is provided at build time via VITE_GEMINI_API_KEY. This dialog is informational.'}
+            : 'AI tools are unavailable in the public web beta. No API key is stored in the browser.'}
         </p>
 
         {!isTauri() ? (
@@ -166,14 +167,11 @@ export default function ApiKeySettings({ open, onClose }: ApiKeySettingsProps) {
             border: '1px solid var(--border)',
             borderRadius: '12px',
             padding: '14px 16px',
-            fontFamily: "'DM Mono', monospace",
+            fontFamily: 'monospace',
             fontSize: '12px',
             color: 'var(--text-2)',
           }}>
-            <div>Status: {hasKey ? 'configured (env)' : 'not configured'}</div>
-            <div style={{ marginTop: '8px', color: 'var(--text-3)' }}>
-              To change the key on web, update your .env file and rebuild.
-            </div>
+            <div>Status: not configured</div>
           </div>
         ) : (
           <>
@@ -193,7 +191,7 @@ export default function ApiKeySettings({ open, onClose }: ApiKeySettingsProps) {
                 width: '100%', padding: '12px 14px', fontSize: '14px',
                 background: 'rgba(0,0,0,0.25)', color: 'var(--text)',
                 border: '1px solid var(--border)', borderRadius: '12px',
-                outline: 'none', fontFamily: "'DM Mono', monospace",
+                outline: 'none', fontFamily: 'monospace',
               }}
             />
             <div style={{ display: 'flex', gap: '10px', marginTop: '18px', justifyContent: 'flex-end' }}>

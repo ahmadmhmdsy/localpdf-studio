@@ -9,6 +9,7 @@ import { getPdfPageThumbnails } from '../../lib/image';
 import { signPdf, SignatureAnnotation } from '../../lib/security';
 import { logError } from '../../lib/logger';
 import { useToast } from '../../contexts/ToastContext';
+import { useManagedObjectUrl } from '../../hooks/useObjectUrl';
 
 type Step = 'upload' | 'loading_thumbnails' | 'configure' | 'processing' | 'download';
 
@@ -28,6 +29,7 @@ export default function SignPdf() {
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [resultSize, setResultSize] = useState<string>('');
   const { showToast } = useToast();
+  const { create: createObjectUrl, revoke: revokeObjectUrl } = useManagedObjectUrl();
 
   // Initialize signature_pad whenever the drawing canvas mounts.
   useEffect(() => {
@@ -110,7 +112,7 @@ export default function SignPdf() {
       const pdfBytes = await signPdf(file, signatures);
       
       const blob = new Blob([pdfBytes], { type: 'application/pdf' });
-      const url = URL.createObjectURL(blob);
+      const url = createObjectUrl(blob);
       
       setResultUrl(url);
       setResultSize((blob.size / 1024 / 1024).toFixed(2) + ' MB');
@@ -134,7 +136,7 @@ export default function SignPdf() {
     setCurrentSignatureData(null);
     setIsDrawing(false);
     if (resultUrl) {
-      URL.revokeObjectURL(resultUrl);
+      revokeObjectUrl();
       setResultUrl(null);
     }
     setStep('upload');
@@ -143,7 +145,7 @@ export default function SignPdf() {
   return (
     <ToolLayout 
       title="Sign PDF" 
-      description="Sign yourself or request electronic signatures from others."
+      description="Add your handwritten signature to a PDF document. Draw your signature and place it anywhere on the page."
     >
       {step === 'upload' && (
         <FileUploadZone 

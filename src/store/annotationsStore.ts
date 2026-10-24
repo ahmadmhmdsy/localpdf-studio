@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { get, set } from 'idb-keyval';
+import { set } from 'idb-keyval';
 import { PageMeta, Annotation } from '../contexts/EditorContext';
 
 interface HistoryState {
@@ -65,7 +65,7 @@ export const useAnnotationsStore = create<AnnotationsState>((setStore, getStore)
     });
   },
 
-  undo: (pages) => {
+  undo: (_pages) => {
     const { history, historyIndex } = getStore();
     if (historyIndex > 0) {
       const newIndex = historyIndex - 1;
@@ -84,7 +84,7 @@ export const useAnnotationsStore = create<AnnotationsState>((setStore, getStore)
     return null;
   },
 
-  redo: (pages) => {
+  redo: (_pages) => {
     const { history, historyIndex } = getStore();
     if (historyIndex < history.length - 1) {
       const newIndex = historyIndex + 1;

@@ -7,6 +7,7 @@ import { lazy, Suspense } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/layout/Layout';
 import Home from './pages/Home';
+import NotFound from './pages/NotFound';
 import Editor from './pages/Editor';
 import { EditorProvider } from './contexts/EditorContext';
 import { ToastProvider } from './contexts/ToastContext';
@@ -49,6 +50,7 @@ const PdfToExcel = lazy(() => import('./pages/tools/PdfToExcel'));
 const PowerpointToPdf = lazy(() => import('./pages/tools/PowerpointToPdf'));
 const PdfToPowerpoint = lazy(() => import('./pages/tools/PdfToPowerpoint'));
 const TranslatePdf = lazy(() => import('./pages/tools/TranslatePdf'));
+const Limitations = lazy(() => import('./pages/Limitations'));
 
 function ToolRoute({ element, name, toolId }: { element: React.ReactNode; name: string; toolId: ToolId }) {
   return (
@@ -73,6 +75,7 @@ export default function App() {
           <Route path="/" element={<Layout />}>
             <Route index element={<Home />} />
             <Route path="editor" element={<Editor />} />
+            <Route path="limitations" element={<Limitations />} />
             <Route path="tools/merge-pdf" element={<ToolRoute element={<MergePdf />} name="Merge PDF" toolId="merge-pdf" />} />
             <Route path="tools/split-pdf" element={<ToolRoute element={<SplitPdf />} name="Split PDF" toolId="split-pdf" />} />
             <Route path="tools/pdf-to-jpg" element={<ToolRoute element={<PdfToJpg />} name="PDF to JPG" toolId="pdf-to-jpg" />} />
@@ -108,6 +111,7 @@ export default function App() {
             <Route path="tools/powerpoint-to-pdf" element={<ToolRoute element={<PowerpointToPdf />} name="PowerPoint to PDF" toolId="powerpoint-to-pdf" />} />
             <Route path="tools/pdf-to-powerpoint" element={<ToolRoute element={<PdfToPowerpoint />} name="PDF to PowerPoint" toolId="pdf-to-powerpoint" />} />
             <Route path="tools/translate-pdf" element={<ToolRoute element={<TranslatePdf />} name="Translate PDF" toolId="translate-pdf" />} />
+            <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>
         </Suspense>

@@ -35,7 +35,7 @@ export default function Home() {
           <span>to work with PDFs in one place</span>
         </h1>
         <p className="mx-auto max-w-2xl text-lg text-[var(--text-2)]">
-          Every tool you need to use PDFs, at your fingertips. All are 100% FREE and process locally in your browser for maximum privacy.
+          Every tool you need to use PDFs, at your fingertips. Most tools process in your browser; AI, OCR, and camera tools are unavailable in the public beta and send nothing to an external service.
         </p>
       </div>
 
@@ -84,7 +84,7 @@ export default function Home() {
                           <Icon size={32} strokeWidth={1.5} />
                         </div>
                         <div>
-                          <h3 className={cn("mb-2 font-semibold text-[var(--text)] group-hover:text-[var(--accent)] transition-colors", isDimmed && "opacity-60 grayscale")}>
+                          <h3 className={cn("mb-2 font-semibold text-[var(--text)] group-hover:text-[var(--accent-text)] transition-colors", isDimmed && "opacity-60 grayscale")}>
                             {tool.name}
                           </h3>
                           <p className={cn("text-sm text-[var(--text-3)] line-clamp-3", isDimmed && "opacity-60 grayscale")}>

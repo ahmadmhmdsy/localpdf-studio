@@ -12,6 +12,7 @@ import { useDropzone } from 'react-dropzone';
 import { cn } from '../../lib/utils';
 import { useToast } from '../../contexts/ToastContext';
 import { PDF_ACCEPT } from '../../types/dropzone';
+import { useManagedObjectUrl } from '../../hooks/useObjectUrl';
 
 type Step = 'upload' | 'configure' | 'processing' | 'download';
 
@@ -23,6 +24,7 @@ export default function MergePdf() {
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [resultSize, setResultSize] = useState<string>('');
   const { showToast } = useToast();
+  const { create: createObjectUrl, revoke: revokeObjectUrl } = useManagedObjectUrl();
 
   const handleFilesSelected = (newFiles: File[]) => {
     setFiles((prev) => [...prev, ...newFiles]);
@@ -67,7 +69,7 @@ export default function MergePdf() {
       const mergedPdfBytes = await mergePdfs(files);
       
       const blob = new Blob([mergedPdfBytes], { type: 'application/pdf' });
-      const url = URL.createObjectURL(blob);
+      const url = createObjectUrl(blob);
       
       setResultUrl(url);
       setResultSize((blob.size / 1024 / 1024).toFixed(2) + ' MB');
@@ -86,7 +88,7 @@ export default function MergePdf() {
   const startOver = () => {
     setFiles([]);
     if (resultUrl) {
-      URL.revokeObjectURL(resultUrl);
+      revokeObjectUrl();
       setResultUrl(null);
     }
     setStep('upload');
@@ -132,7 +134,7 @@ export default function MergePdf() {
                 {...getRootProps()}
                 className={cn(
                   "flex items-center gap-2 px-4 py-2 rounded-[var(--radius-md)] border-2 border-dashed cursor-pointer transition-colors",
-                  isDragActive ? "border-[var(--accent)] bg-[var(--accent-dim)] text-[var(--accent)]" : "border-[var(--border)] hover:border-[var(--accent)] hover:text-[var(--accent)] text-[var(--text-2)]"
+                  isDragActive ? "border-[var(--accent)] bg-[var(--accent-dim)] text-[var(--accent-text)]" : "border-[var(--border)] hover:border-[var(--accent)] hover:text-[var(--accent-text)] text-[var(--text-2)]"
                 )}
               >
                 <input {...getInputProps()} />
@@ -163,7 +165,7 @@ export default function MergePdf() {
                             )}
                           >
                             <div className="flex items-center gap-4 overflow-hidden">
-                              <div {...provided.dragHandleProps} aria-label="Drag to reorder" className="text-[var(--text-3)] hover:text-[var(--accent)] cursor-grab active:cursor-grabbing transition-colors">
+                              <div {...provided.dragHandleProps} aria-label="Drag to reorder" className="text-[var(--text-3)] hover:text-[var(--accent-text)] cursor-grab active:cursor-grabbing transition-colors">
                                 <GripVertical size={20} />
                               </div>
                               <div className="w-10 h-10 rounded-full bg-[var(--accent)]/10 flex items-center justify-center flex-shrink-0">
@@ -194,7 +196,7 @@ export default function MergePdf() {
                             </div>
                             <button
                               onClick={() => removeFile(index)}
-                              className="p-2 text-[var(--text-3)] hover:text-[var(--accent)] hover:bg-[var(--accent-dim)] rounded-[var(--radius-sm)] transition-all duration-200 opacity-0 group-hover:opacity-100"
+                              className="p-2 text-[var(--text-3)] hover:text-[var(--accent-text)] hover:bg-[var(--accent-dim)] rounded-[var(--radius-sm)] transition-all duration-200 opacity-0 group-hover:opacity-100"
                               aria-label={`Remove ${file.name}`}
                             >
                               <X size={20} />
@@ -222,7 +224,7 @@ export default function MergePdf() {
             <button
               onClick={handleMerge}
               disabled={files.length < 2}
-              className="bg-[var(--accent)] hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-4 px-10 rounded-[var(--radius-xl)] text-lg transition-all shadow-lg shadow-[var(--accent)]/25"
+              className="bg-[var(--accent-solid)] hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-4 px-10 rounded-[var(--radius-xl)] text-lg transition-all shadow-lg shadow-[var(--accent)]/25"
             >
               Merge PDFs
             </button>

@@ -19,7 +19,8 @@ vi.mock('./pdfjs', () => ({
 }));
 
 const { mockGenerateAsync, mockZipInstance, mockThumbnail } = vi.hoisted(() => {
-  const t = 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNkYAAAAAYAAjCB0C8AAAAASUVORK5CYII=';
+  // JPEG data URL (1x1 pixel)
+  const t = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////2wBDAf//////////////////////////////////////////////////////////////////////////////////////wAARCAABAAEDASIAAhEBAxEB/8QAFAABAAAAAAAAAAAAAAAAAAAACf/EABQQAQAAAAAAAAAAAAAAAAAAAAD/xAAUAQEAAAAAAAAAAAAAAAAAAAAA/8QAFBEBAAAAAAAAAAAAAAAAAAAAAP/aAAwDAQACEQMRAD8AKwA//9k=';
   return {
     mockGenerateAsync: vi.fn(),
     mockZipInstance: {
@@ -80,13 +81,75 @@ describe('convertPdfToPowerpoint', () => {
     expect(slideNames).toHaveLength(2);
   });
 
-  it('writes one PNG per page', async () => {
+  it('writes one JPEG image per page (not PNG)', async () => {
+    const file = new File([new Uint8Array([1])], 'in.pdf');
+    await convertPdfToPowerpoint(file);
+    const jpgNames = mockZipInstance.file.mock.calls
+      .map((c) => c[0])
+      .filter((n: unknown) => typeof n === 'string' && /^ppt\/media\/image\d+\.jpg$/.test(n as string));
+    expect(jpgNames).toHaveLength(2);
+  });
+
+  it('does NOT write PNG images', async () => {
     const file = new File([new Uint8Array([1])], 'in.pdf');
     await convertPdfToPowerpoint(file);
     const pngNames = mockZipInstance.file.mock.calls
       .map((c) => c[0])
       .filter((n: unknown) => typeof n === 'string' && /^ppt\/media\/image\d+\.png$/.test(n as string));
-    expect(pngNames).toHaveLength(2);
+    expect(pngNames).toHaveLength(0);
+  });
+
+  it('declares JPEG content type in [Content_Types].xml', async () => {
+    const file = new File([new Uint8Array([1])], 'in.pdf');
+    await convertPdfToPowerpoint(file);
+    const contentTypesCall = mockZipInstance.file.mock.calls.find(
+      (c: unknown[]) => c[0] === '[Content_Types].xml'
+    );
+    expect(contentTypesCall).toBeDefined();
+    const contentTypesXml = contentTypesCall![1] as string;
+    expect(contentTypesXml).toContain('Extension="jpg"');
+    expect(contentTypesXml).toContain('ContentType="image/jpeg"');
+    expect(contentTypesXml).not.toContain('Extension="png"');
+  });
+
+  it('includes slide master XML', async () => {
+    const file = new File([new Uint8Array([1])], 'in.pdf');
+    await convertPdfToPowerpoint(file);
+    const names = mockZipInstance.file.mock.calls.map((c) => c[0]);
+    expect(names).toContain('ppt/slideMaster/slideMaster1.xml');
+  });
+
+  it('includes slide layout XML', async () => {
+    const file = new File([new Uint8Array([1])], 'in.pdf');
+    await convertPdfToPowerpoint(file);
+    const names = mockZipInstance.file.mock.calls.map((c) => c[0]);
+    expect(names).toContain('ppt/slideLayout/slideLayout1.xml');
+  });
+
+  it('includes slide master relationships', async () => {
+    const file = new File([new Uint8Array([1])], 'in.pdf');
+    await convertPdfToPowerpoint(file);
+    const names = mockZipInstance.file.mock.calls.map((c) => c[0]);
+    expect(names).toContain('ppt/slideMaster/_rels/slideMaster1.xml.rels');
+  });
+
+  it('includes slide layout relationships', async () => {
+    const file = new File([new Uint8Array([1])], 'in.pdf');
+    await convertPdfToPowerpoint(file);
+    const names = mockZipInstance.file.mock.calls.map((c) => c[0]);
+    expect(names).toContain('ppt/slideLayout/_rels/slideLayout1.xml.rels');
+  });
+
+  it('slide relationships reference .jpg files', async () => {
+    const file = new File([new Uint8Array([1])], 'in.pdf');
+    await convertPdfToPowerpoint(file);
+    const relsCall = mockZipInstance.file.mock.calls.find(
+      (c: unknown[]) => typeof c[0] === 'string' && /^ppt\/slides\/_rels\/slide1\.xml\.rels$/.test(c[0])
+    );
+    expect(relsCall).toBeDefined();
+    const relsXml = relsCall![1] as string;
+    expect(relsXml).toContain('.jpg');
+    expect(relsXml).not.toContain('.png');
   });
 
   it('generates a blob via generateAsync', async () => {

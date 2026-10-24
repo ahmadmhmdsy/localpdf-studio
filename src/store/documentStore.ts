@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { PDFDocument } from 'pdf-lib';
 import { pdfjsLib } from '../lib/pdfjs';
-import { get, set } from 'idb-keyval';
+import { set } from 'idb-keyval';
 import { PageMeta } from '../contexts/EditorContext';
 import { logError } from '../lib/logger';
 

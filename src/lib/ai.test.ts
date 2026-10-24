@@ -32,10 +32,12 @@ describe('withRetry', () => {
     expect(fn).toHaveBeenCalledTimes(1);
   });
 
-  it('retries on failure and succeeds', async () => {
+  it('retries on retryable failure and succeeds', async () => {
+    const error = new Error('Server Error');
+    (error as { status?: number }).status = 500;
     const fn = vi.fn()
-      .mockRejectedValueOnce(new Error('fail 1'))
-      .mockRejectedValueOnce(new Error('fail 2'))
+      .mockRejectedValueOnce(error)
+      .mockRejectedValueOnce(error)
       .mockResolvedValue('success');
     const result = await withRetry(fn, { maxAttempts: 3, baseDelay: 10 });
     expect(result).toBe('success');
@@ -43,21 +45,92 @@ describe('withRetry', () => {
   });
 
   it('throws after max attempts exhausted', async () => {
-    const fn = vi.fn().mockRejectedValue(new Error('always fails'));
-    await expect(withRetry(fn, { maxAttempts: 2, baseDelay: 10 })).rejects.toThrow('always fails');
+    const error = new Error('Server Error');
+    (error as { status?: number }).status = 500;
+    const fn = vi.fn().mockRejectedValue(error);
+    await expect(withRetry(fn, { maxAttempts: 2, baseDelay: 10 })).rejects.toThrow('Server Error');
     expect(fn).toHaveBeenCalledTimes(2);
   });
 
   it('throws the last error received', async () => {
+    const error1 = new Error('error 1');
+    (error1 as { status?: number }).status = 500;
+    const error2 = new Error('error 2');
+    (error2 as { status?: number }).status = 500;
     const fn = vi.fn()
-      .mockRejectedValueOnce(new Error('error 1'))
-      .mockRejectedValueOnce(new Error('error 2'));
+      .mockRejectedValueOnce(error1)
+      .mockRejectedValueOnce(error2);
     await expect(withRetry(fn, { maxAttempts: 2, baseDelay: 10 })).rejects.toThrow('error 2');
   });
 
   it('handles non-Error rejections', async () => {
     const fn = vi.fn().mockRejectedValue('string error');
     await expect(withRetry(fn, { maxAttempts: 1, baseDelay: 10 })).rejects.toThrow('string error');
+  });
+});
+
+describe('withRetry error classification', () => {
+  it('does NOT retry on 400 client errors', async () => {
+    const error = new Error('Bad Request');
+    (error as { status?: number }).status = 400;
+    const fn = vi.fn().mockRejectedValue(error);
+    await expect(withRetry(fn, { maxAttempts: 3, baseDelay: 10 })).rejects.toThrow('Bad Request');
+    expect(fn).toHaveBeenCalledTimes(1);
+  });
+
+  it('does NOT retry on 401 unauthorized errors', async () => {
+    const error = new Error('Unauthorized');
+    (error as { status?: number }).status = 401;
+    const fn = vi.fn().mockRejectedValue(error);
+    await expect(withRetry(fn, { maxAttempts: 3, baseDelay: 10 })).rejects.toThrow('Unauthorized');
+    expect(fn).toHaveBeenCalledTimes(1);
+  });
+
+  it('does NOT retry on 403 forbidden errors', async () => {
+    const error = new Error('Forbidden');
+    (error as { status?: number }).status = 403;
+    const fn = vi.fn().mockRejectedValue(error);
+    await expect(withRetry(fn, { maxAttempts: 3, baseDelay: 10 })).rejects.toThrow('Forbidden');
+    expect(fn).toHaveBeenCalledTimes(1);
+  });
+
+  it('DOES retry on 429 rate limit errors', async () => {
+    const error = new Error('Rate Limited');
+    (error as { status?: number }).status = 429;
+    const fn = vi.fn()
+      .mockRejectedValueOnce(error)
+      .mockResolvedValue('success');
+    const result = await withRetry(fn, { maxAttempts: 3, baseDelay: 10 });
+    expect(result).toBe('success');
+    expect(fn).toHaveBeenCalledTimes(2);
+  });
+
+  it('DOES retry on 500 server errors', async () => {
+    const error = new Error('Server Error');
+    (error as { status?: number }).status = 500;
+    const fn = vi.fn()
+      .mockRejectedValueOnce(error)
+      .mockResolvedValue('success');
+    const result = await withRetry(fn, { maxAttempts: 3, baseDelay: 10 });
+    expect(result).toBe('success');
+    expect(fn).toHaveBeenCalledTimes(2);
+  });
+
+  it('DOES retry on 503 service unavailable errors', async () => {
+    const error = new Error('Service Unavailable');
+    (error as { status?: number }).status = 503;
+    const fn = vi.fn()
+      .mockRejectedValueOnce(error)
+      .mockResolvedValue('success');
+    const result = await withRetry(fn, { maxAttempts: 3, baseDelay: 10 });
+    expect(result).toBe('success');
+    expect(fn).toHaveBeenCalledTimes(2);
+  });
+
+  it('does NOT retry on generic errors without status', async () => {
+    const fn = vi.fn().mockRejectedValue(new Error('Some random error'));
+    await expect(withRetry(fn, { maxAttempts: 3, baseDelay: 10 })).rejects.toThrow('Some random error');
+    expect(fn).toHaveBeenCalledTimes(1);
   });
 });
 
@@ -116,7 +189,6 @@ describe('extractPdfText', () => {
 describe('summarizePdf', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.stubEnv('VITE_GEMINI_API_KEY', 'test-key');
   });
 
   afterEach(() => {
@@ -131,7 +203,9 @@ describe('summarizePdf', () => {
   });
 
   it('calls Gemini once for short text and returns the response text', async () => {
-    const { summarizePdf } = await import('./ai');
+    mockGetStoreValue.mockResolvedValue('test-key');
+    const { summarizePdf, resolveApiKey } = await import('./ai');
+    await resolveApiKey();
     mockGenerateContent.mockResolvedValueOnce({ text: 'A short summary.' });
     const out = await summarizePdf('Some short content to summarize.');
     expect(out).toBe('A short summary.');
@@ -139,14 +213,18 @@ describe('summarizePdf', () => {
   });
 
   it('falls back to a placeholder when the model returns no text', async () => {
-    const { summarizePdf } = await import('./ai');
+    mockGetStoreValue.mockResolvedValue('test-key');
+    const { summarizePdf, resolveApiKey } = await import('./ai');
+    await resolveApiKey();
     mockGenerateContent.mockResolvedValueOnce({ text: '' });
     const out = await summarizePdf('Anything will do.');
     expect(typeof out).toBe('string');
   });
 
   it('chunks long text into multiple parts and reports progress', async () => {
-    const { summarizePdf } = await import('./ai');
+    mockGetStoreValue.mockResolvedValue('test-key');
+    const { summarizePdf, resolveApiKey } = await import('./ai');
+    await resolveApiKey();
     mockGenerateContent
       .mockResolvedValueOnce({ text: 'chunk summary 1' })
       .mockResolvedValueOnce({ text: 'chunk summary 2' })
@@ -163,7 +241,6 @@ describe('summarizePdf', () => {
 describe('translatePdf and language list', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    vi.stubEnv('VITE_GEMINI_API_KEY', 'test-key');
   });
 
   afterEach(() => {
@@ -197,7 +274,9 @@ describe('translatePdf and language list', () => {
   });
 
   it('extracts one TranslateResult per text item with a fallback translation', async () => {
-    const { translatePdf } = await import('./ai');
+    mockGetStoreValue.mockResolvedValue('test-key');
+    const { translatePdf, resolveApiKey } = await import('./ai');
+    await resolveApiKey();
     const { pdfjsLib } = await import('./pdfjs');
     const mockPdf = {
       numPages: 1,
@@ -224,7 +303,7 @@ describe('translatePdf and language list', () => {
 
 
 // ─────────────────────────────────────────────────────────────────────────────
-// API key resolution (Tauri store → env fallback)
+// API key resolution (in-memory cache → Tauri store; no build-time web key)
 // ─────────────────────────────────────────────────────────────────────────────
 
 const mockGetStoreValue = vi.fn();
@@ -245,9 +324,9 @@ describe('resolveApiKey', () => {
     vi.resetModules();
   });
 
-  it('returns null when neither store nor env has a key', async () => {
+  it('returns null when the store has no key, even if a build-time key exists', async () => {
     mockGetStoreValue.mockResolvedValueOnce(null);
-    vi.stubEnv('VITE_GEMINI_API_KEY', '');
+    vi.stubEnv('VITE_GEMINI_API_KEY', 'must-not-be-used');
     vi.resetModules();
     const { resolveApiKey } = await import('./ai');
     expect(await resolveApiKey()).toBeNull();
@@ -264,12 +343,12 @@ describe('resolveApiKey', () => {
     vi.unstubAllEnvs();
   });
 
-  it('falls back to env when store returns null', async () => {
+  it('ignores a build-time web key when the store returns null', async () => {
     mockGetStoreValue.mockResolvedValueOnce(null);
-    vi.stubEnv('VITE_GEMINI_API_KEY', 'env-key-456');
+    vi.stubEnv('VITE_GEMINI_API_KEY', 'must-not-be-used');
     vi.resetModules();
     const { resolveApiKey } = await import('./ai');
-    expect(await resolveApiKey()).toBe('env-key-456');
+    expect(await resolveApiKey()).toBeNull();
     vi.unstubAllEnvs();
   });
 
@@ -322,13 +401,12 @@ describe('sync getGenAI()', () => {
     vi.unstubAllEnvs();
   });
 
-  it('uses env var when set', async () => {
-    vi.stubEnv('VITE_GEMINI_API_KEY', 'env-only');
+  it('does not use a build-time web key', async () => {
+    vi.stubEnv('VITE_GEMINI_API_KEY', 'must-not-be-used');
+    mockGetStoreValue.mockResolvedValueOnce(null);
     vi.resetModules();
     const { getGenAI } = await import('./ai');
-    const client = getGenAI();
-    expect(client).toBeInstanceOf(MockGenAI);
-    expect((client as unknown as { opts: { apiKey: string } }).opts.apiKey).toBe('env-only');
+    expect(() => getGenAI()).toThrow(/API key not configured/);
     vi.unstubAllEnvs();
   });
 });

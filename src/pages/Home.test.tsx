@@ -48,10 +48,13 @@ describe('Home', () => {
       expect(screen.getByRole('heading', { name: /every tool you need to work with PDFs/i })).toBeInTheDocument();
     });
 
-    it('displays subtitle about free and local processing', () => {
+    it('displays a subtitle that states the browser-local and containment boundary', () => {
       renderHome();
-      expect(screen.getByText(/100% FREE/i)).toBeInTheDocument();
-      expect(screen.getByText(/process locally in your browser/i)).toBeInTheDocument();
+      expect(screen.getByText(/Most tools process in your browser/i)).toBeInTheDocument();
+      expect(
+        screen.getByText(/AI, OCR, and camera tools are unavailable in the public beta/i),
+      ).toBeInTheDocument();
+      expect(screen.queryByText(/100% FREE/i)).not.toBeInTheDocument();
     });
   });
 
@@ -113,7 +116,7 @@ describe('Home', () => {
       renderHome();
       expect(screen.getByText(/combine PDFs in the order/i)).toBeInTheDocument();
       expect(screen.getByText(/reduce file size/i)).toBeInTheDocument();
-      expect(screen.getByText(/get AI-generated summary/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/Not available in the web build/i).length).toBeGreaterThan(0);
     });
 
     it('uses theme-specific WCAG AA foregrounds for availability badges', () => {

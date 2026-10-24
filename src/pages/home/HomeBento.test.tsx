@@ -13,8 +13,8 @@ function renderBento() {
   );
 }
 
-function recentChips() {
-  return within(screen.getByLabelText('Recently used'));
+function quickPicks() {
+  return within(screen.getByLabelText('Example tools to try'));
 }
 
 const ALL_TOOLS = TOOL_CATEGORIES.flatMap((category) => category.tools);
@@ -46,7 +46,7 @@ describe('HomeBento availability messaging', () => {
     renderBento();
 
     const heroTile = screen.getByRole('heading', { level: 1 }).closest('article') as HTMLElement;
-    expect(heroTile).toHaveTextContent(`${count} tools, 7 categories`);
+    expect(heroTile).toHaveTextContent(`${count} tools across ${TOOL_CATEGORIES.length} categories`);
     const search = screen.getByPlaceholderText(new RegExp(`^Search ${count} tools`));
     expect(search).toBeInTheDocument();
     expect(search.getAttribute('placeholder')).not.toMatch(/redact/i);
@@ -124,7 +124,7 @@ describe('HomeBento availability messaging', () => {
     };
     renderBento();
 
-    const recent = recentChips();
+    const recent = quickPicks();
     const chip = recent.getByText(/^\s*Compress\b/i).closest('a, span');
     expect(chip).toBeTruthy();
     expect(chip!.tagName).toBe('A');
@@ -139,7 +139,7 @@ describe('HomeBento availability messaging', () => {
     };
     renderBento();
 
-    const recent = recentChips();
+    const recent = quickPicks();
     const chip = recent.getByText(/^\s*Compress\b/i).closest('a, span');
     expect(chip).toBeTruthy();
     expect(chip!.tagName).toBe('SPAN');
@@ -154,7 +154,7 @@ describe('HomeBento availability messaging', () => {
     };
     renderBento();
 
-    const recent = recentChips();
+    const recent = quickPicks();
     const chip = recent.getByText(/^\s*Translate\b/i).closest('a, span');
     expect(chip).toBeTruthy();
     expect(chip!.tagName).toBe('SPAN');
@@ -168,7 +168,7 @@ describe('HomeBento availability messaging', () => {
     };
     renderBento();
 
-    const recent = recentChips();
+    const recent = quickPicks();
     const chip = recent.getByText(/^\s*Translate\b/i).closest('a, span');
     expect(chip).toBeTruthy();
     expect(chip!.tagName).toBe('A');
@@ -176,10 +176,111 @@ describe('HomeBento availability messaging', () => {
     expect(chip!.textContent).not.toMatch(/unavailable/i);
   });
 
-  it('preserves link behavior for available recent chips (Merge, Sign)', () => {
+  it('states the privacy boundary in place, with no self-targeting privacy link', () => {
     renderBento();
-    const recent = recentChips();
+
+    const privacyBlock = screen.getByRole('complementary', { name: 'Data handling' });
+    expect(privacyBlock).toHaveAttribute('id', 'privacy');
+    expect(privacyBlock).not.toHaveTextContent(/files never leave/i);
+    expect(privacyBlock).toHaveTextContent(/AI, OCR, and camera tools are currently unavailable/i);
+
+    // The note is the block itself, so a link to #privacy here would be a no-op jump.
+    const selfTargetingLinks = within(privacyBlock)
+      .queryAllByRole('link')
+      .filter((link) => link.getAttribute('href') === '#privacy');
+    expect(selfTargetingLinks).toEqual([]);
+  });
+
+  it('describes browser-local storage instead of claiming zero retained bytes', () => {
+    renderBento();
+
+    const privacyBlock = screen.getByRole('complementary', { name: 'Data handling' });
+
+    // The old block rendered a large "0" next to "The number of bytes we keep of your
+    // work." The editor really does persist the working document and the edit history
+    // in IndexedDB, so that number was false and the byte framing had to go.
+    expect(privacyBlock).not.toHaveTextContent(/bytes we keep/i);
+    expect(privacyBlock.querySelector('.num')).toBeNull();
+
+    // What the code actually does: process locally, keep a copy in this app's local
+    // storage on this device, and stay there until the reader clears it. The wording
+    // has to hold in the Tauri build too, where the surface is a WebView, not a browser.
+    expect(privacyBlock).toHaveTextContent(/where your work is stored/i);
+    expect(privacyBlock).toHaveTextContent(/local storage/i);
+    expect(privacyBlock).toHaveTextContent(/on this device/i);
+    expect(privacyBlock).toHaveTextContent(/until you clear it/i);
+    expect(privacyBlock).toHaveTextContent(/clear this app's stored data/i);
+    expect(privacyBlock).not.toHaveTextContent(/in your browser/i);
+
+    // The containment sentence stays.
+    expect(privacyBlock).toHaveTextContent(/AI, OCR, and camera tools are currently unavailable/i);
+  });
+
+  it('preserves link behavior for available quick-pick chips (Merge, Sign)', () => {
+    renderBento();
+    const recent = quickPicks();
     expect(recent.getByRole('link', { name: /Merge —/ })).toHaveAttribute('href', '/tools/merge-pdf');
     expect(recent.getByRole('link', { name: /Sign —/ })).toHaveAttribute('href', '/tools/sign-pdf');
+  });
+
+  it('derives the egress counter from the registry instead of asserting a measured zero', () => {
+    renderBento();
+
+    const networked = ALL_TOOLS.filter((tool) => TOOL_RELEASE_REGISTRY[tool.id].privacy !== 'local-only');
+    const available = networked.filter(
+      (tool) => TOOL_RELEASE_REGISTRY[tool.id].releaseState !== 'disabled',
+    );
+    // Non-vacuous: the registry really does classify network and camera tools.
+    expect(networked.map((tool) => tool.id)).toEqual(
+      expect.arrayContaining(['ai-summarizer', 'translate-pdf', 'scan-to-pdf']),
+    );
+
+    const tile = screen.getByText('Tools that can send data out').closest('article') as HTMLElement;
+    expect(tile).toHaveTextContent(String(available.length));
+    expect(tile).toHaveTextContent(
+      available.length === 0 ? /none available in this build/i : /of \d+ enabled/i,
+    );
+    // The old tile claimed a measured byte count that nothing measures.
+    expect(tile).not.toHaveTextContent(/bytes uploaded|always zero/i);
+  });
+
+  it('ships no absolute data-handling claim in its rendered claim surfaces', () => {
+    const { container } = renderBento();
+    // The tiles and the data-handling block are the copy that makes claims. The tool
+    // catalog below them is registry data, and a disabled tool keeps its own wording
+    // (OCR PDF says "on-device OCR"), which is a description, not a promise.
+    const claimText = [
+      container.querySelector('.bento-featured')?.textContent ?? '',
+      container.querySelector('.bento-privacy-deep')?.textContent ?? '',
+      container.querySelector('.bento-recent')?.textContent ?? '',
+    ].join(' ');
+
+    expect(claimText.length).toBeGreaterThan(0);
+    for (const pattern of [
+      /on-device/i,
+      /zero servers/i,
+      /nothing persists/i,
+      /always zero/i,
+      /tracking pixels/i,
+      /nothing phones home/i,
+      /privacy guarantee/i,
+      /recently used/i,
+    ]) {
+      expect(claimText, `rendered home claim matched ${pattern}`).not.toMatch(pattern);
+    }
+
+    // The containment and retention statements are the ones that must survive.
+    expect(claimText).toMatch(/AI, OCR, and camera tools are unavailable in the public beta/i);
+    expect(claimText).toMatch(/local storage/i);
+  });
+
+  it('presents the sample strip as examples, not as a record of the reader\'s work', () => {
+    renderBento();
+
+    const strip = screen.getByLabelText('Example tools to try');
+    expect(strip).toHaveAttribute('id', 'quick-picks');
+    expect(screen.getByText('Quick picks')).toBeInTheDocument();
+    // The chips advertise what a tool does; they are not invented documents.
+    expect(strip.textContent).not.toMatch(/Q3|investor|proposal|paper notes|asset brief/i);
   });
 });

@@ -37,12 +37,9 @@ export default function Sidebar() {
         >
           <span aria-hidden="true">▤</span> Visual Editor
         </Link>
-        <a href="#recent" className="bento-side-link">
-          <span aria-hidden="true">↻</span> Recent
-        </a>
-        <a href="#favorites" className="bento-side-link">
-          <span aria-hidden="true">★</span> Favorites
-        </a>
+        <Link to="/#quick-picks" className="bento-side-link">
+          <span aria-hidden="true">↻</span> Quick picks
+        </Link>
       </nav>
 
       <nav className="bento-side-group" aria-label="Quick tools">
@@ -63,12 +60,9 @@ export default function Sidebar() {
 
       <nav className="bento-side-group" aria-label="Help">
         <span className="bento-side-label">Help</span>
-        <a href="#shortcuts" className="bento-side-link">
-          <span aria-hidden="true">?</span> Shortcuts
-        </a>
-        <a href="#settings" className="bento-side-link">
-          <span aria-hidden="true">⏷</span> Settings
-        </a>
+        <Link to="/#privacy" className="bento-side-link">
+          <span aria-hidden="true">ⓘ</span> Data handling
+        </Link>
       </nav>
 
       <div className="bento-side-foot">
@@ -81,7 +75,7 @@ export default function Sidebar() {
         >
           {darkMode ? '☀ Light' : '☾ Dark'}
         </button>
-        <span><span className="dot" />v1.0 · local-only</span>
+        <span><span className="dot" />v1.0 · local-first</span>
       </div>
     </aside>
   );

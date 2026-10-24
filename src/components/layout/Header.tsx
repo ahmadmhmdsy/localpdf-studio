@@ -32,14 +32,14 @@ export default function Header() {
             <div className="flex h-9 w-9 items-center justify-center rounded-lg" style={{ background: 'var(--accent)' }}>
               <FileText size={18} className="text-white" />
             </div>
-            <span className="text-lg font-bold tracking-tight hidden sm:inline" style={{ color: 'var(--text)', fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+            <span className="text-lg font-bold tracking-tight hidden sm:inline" style={{ color: 'var(--text)', fontFamily: 'sans-serif' }}>
               LocalPDF Studio
             </span>
           </Link>
           <Link
             to="/editor"
             className="hidden md:inline-block text-sm font-semibold px-3.5 py-1.5 rounded-md transition-colors"
-            style={{ color: 'var(--accent)', background: 'var(--accent-dim)' }}
+            style={{ color: 'var(--accent-text)', background: 'var(--accent-dim)' }}
           >
             Visual Editor
           </Link>
@@ -49,7 +49,7 @@ export default function Header() {
                 {link.label}
               </Link>
             ))}
-            <Link to="/" className="text-sm font-medium transition-colors" style={{ color: 'var(--accent)' }}>
+            <Link to="/" className="text-sm font-medium transition-colors" style={{ color: 'var(--accent-text)' }}>
               All PDF Tools
             </Link>
           </div>
@@ -99,7 +99,7 @@ export default function Header() {
           aria-label="Site navigation"
         >
           <div className="flex items-center justify-between px-6 py-4 border-b" style={{ borderColor: 'var(--border)' }}>
-            <span className="text-base font-bold tracking-tight" style={{ fontFamily: 'Plus Jakarta Sans, sans-serif' }}>
+            <span className="text-base font-bold tracking-tight" style={{ fontFamily: 'sans-serif' }}>
               LocalPDF Studio
             </span>
             <button
@@ -117,7 +117,7 @@ export default function Header() {
               to="/editor"
               onClick={closeMobile}
               className="text-base font-semibold px-4 py-3 rounded-lg"
-              style={{ color: 'var(--accent)', background: 'var(--accent-dim)' }}
+              style={{ color: 'var(--accent-text)', background: 'var(--accent-dim)' }}
             >
               Visual Editor
             </Link>
@@ -136,7 +136,7 @@ export default function Header() {
               to="/"
               onClick={closeMobile}
               className="text-base font-medium px-4 py-3 rounded-lg transition-colors hover:bg-[var(--surface-2)]"
-              style={{ color: 'var(--accent)' }}
+              style={{ color: 'var(--accent-text)' }}
             >
               All PDF Tools
             </Link>

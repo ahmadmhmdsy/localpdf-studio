@@ -162,7 +162,7 @@ export default function DownloadState({
         <h2
           className="download-title"
           style={{
-            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            fontFamily: 'sans-serif',
             fontSize: '22px',
             fontWeight: 700,
             marginBottom: '8px',
@@ -177,7 +177,7 @@ export default function DownloadState({
             color: 'var(--text-3)',
             fontSize: '14px',
             marginBottom: '6px',
-            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            fontFamily: 'sans-serif',
           }}
         >
           {description}
@@ -186,9 +186,9 @@ export default function DownloadState({
         {fileSize && (
           <p
             style={{
-              fontFamily: "'DM Mono', monospace",
+              fontFamily: 'monospace',
               fontSize: '13px',
-              color: 'var(--accent-2)',
+              color: 'var(--text-2)',
               marginBottom: '32px',
             }}
           >

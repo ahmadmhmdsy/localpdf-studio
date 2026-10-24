@@ -44,10 +44,12 @@ describe('MergePdf', () => {
       expect(screen.getByText(/combine PDFs in the order/i)).toBeInTheDocument();
     });
 
-    it('shows privacy notice about local processing', () => {
+    it('does not make an absolute local-only privacy claim', () => {
       renderWithProviders(<MergePdf />);
-      
-      expect(screen.getByText(/files never leave your device/i)).toBeInTheDocument();
+
+      // The route-level disclosure is rendered by ToolAvailabilityGate in App.tsx;
+      // the upload zone itself must not claim that files never leave the device.
+      expect(screen.queryByText(/files never leave your device/i)).not.toBeInTheDocument();
     });
   });
 

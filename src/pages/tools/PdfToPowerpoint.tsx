@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Presentation, FileCheck, AlertCircle } from 'lucide-react';
+import { Presentation, AlertCircle } from 'lucide-react';
 import ToolLayout from '../../components/tools/ToolLayout';
 import FileUploadZone from '../../components/tools/FileUploadZone';
 import ProcessingState from '../../components/tools/ProcessingState';

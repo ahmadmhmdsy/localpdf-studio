@@ -48,14 +48,13 @@ export default function SignatureModal({ isOpen, onClose, onSave }: SignatureMod
     return () => {
       // Cleanup: reset drawing state and clear canvas when modal closes
       // or before re-running on dependency change, so the next open
-      // doesn't show stale ink.
+      // doesn't show stale ink. Use the canvas captured above so the
+      // cleanup doesn't read a possibly-changed ref value.
       setIsDrawing(false);
       setIsEmpty(true);
-      if (canvasRef.current) {
-        const c = canvasRef.current.getContext('2d');
-        c?.clearRect(0, 0, canvasRef.current.width, canvasRef.current.height);
-        c?.beginPath();
-      }
+      const c = canvas.getContext('2d');
+      c?.clearRect(0, 0, canvas.width, canvas.height);
+      c?.beginPath();
     };
   }, [isOpen, clearCanvas]);
 

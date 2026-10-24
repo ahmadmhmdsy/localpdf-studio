@@ -18,6 +18,9 @@
   --text-2: #3d4250;
   --text-3: #7a7f8c;
   --accent: #4f46e5;          /* indigo */
+  /* indigo already clears 4.5:1 on the bento light surfaces (5.70-6.29:1) */
+  --accent-text: #4f46e5;
+  --accent-solid: #4f46e5;     /* white text on it: 6.29:1 */
   --accent-dim: rgba(79, 70, 229, 0.12);
   --accent-2: #22c55e;
   --accent-3: #f59e0b;
@@ -40,6 +43,8 @@
   --text-2: #c7c8cc;
   --text-3: #8a8d96;
   --accent: #818cf8;
+  --accent-text: #818cf8;      /* 5.41-6.51:1 on the bento dark surfaces */
+  --accent-solid: #5b52e8;     /* white text on it: 5.50:1; 3.13-3.53:1 vs dark surfaces */
   --accent-dim: rgba(129, 140, 248, 0.14);
   --accent-2: #34d399;
   --accent-3: #fbbf24;
@@ -256,7 +261,9 @@
   gap: 0.4rem;
   padding: 0.3rem 0.55rem;
   background: color-mix(in oklab, var(--accent-2) 14%, transparent);
-  color: var(--accent-2);
+  /* Text token, not the raw success accent: --accent-2 measures only ~2.1:1 on the
+     light bento surface. The badge keeps its green identity through the tint and dot. */
+  color: var(--text-2);
   border-radius: 100px;
   font-family: ui-monospace, "JetBrains Mono", monospace;
   font-size: 0.65rem;
@@ -265,7 +272,7 @@
   font-weight: 600;
 }
 [data-skin="bento"] .bento-privacy-badge .dot {
-  width: 6px; height: 6px; background: currentColor; border-radius: 50%;
+  width: 6px; height: 6px; background: var(--accent-2); border-radius: 50%;
 }
 
 /* ── Recent strip ── */
@@ -371,7 +378,7 @@
   border-color: var(--accent);
   transform: translateY(-1px);
 }
-[data-skin="bento"] .bento-tool:hover .name { color: var(--accent); }
+[data-skin="bento"] .bento-tool:hover .name { color: var(--accent-text); }
 [data-skin="bento"] .bento-tool .name {
   font-weight: 600;
   font-size: 0.95rem;
@@ -397,20 +404,11 @@
   color: var(--bg);
   border-radius: var(--radius-lg);
   display: grid;
-  grid-template-columns: auto 1fr auto;
+  /* Single column at every width: this block holds one child, so the old 780px
+     override repeated the value above it and changed nothing. */
+  grid-template-columns: 1fr;
   gap: 2rem;
   align-items: center;
-}
-@media (max-width: 780px) {
-  [data-skin="bento"] .bento-privacy-deep { grid-template-columns: 1fr; }
-}
-[data-skin="bento"] .bento-privacy-deep .num {
-  font-family: inherit;
-  font-weight: 800;
-  font-size: 5rem;
-  letter-spacing: -0.04em;
-  line-height: 1;
-  color: var(--accent-2);
 }
 [data-skin="bento"] .bento-privacy-deep h3 {
   font-size: 1.6rem;

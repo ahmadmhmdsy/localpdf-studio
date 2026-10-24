@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { File as FileIcon, X, Type, ChevronLeft, ChevronRight, Palette } from 'lucide-react';
+import { File as FileIcon, X, Type, ChevronLeft, ChevronRight } from 'lucide-react';
 import ToolLayout from '../../components/tools/ToolLayout';
 import FileUploadZone from '../../components/tools/FileUploadZone';
 import ProcessingState from '../../components/tools/ProcessingState';
@@ -7,7 +7,7 @@ import DownloadState from '../../components/tools/DownloadState';
 import { getPdfPageThumbnails } from '../../lib/image';
 import { editPdf, TextAnnotation } from '../../lib/edit';
 import { logError } from '../../lib/logger';
-import { cn } from '../../lib/utils';
+
 import { useToast } from '../../contexts/ToastContext';
 
 type Step = 'upload' | 'loading_thumbnails' | 'configure' | 'processing' | 'download';

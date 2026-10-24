@@ -1,5 +1,5 @@
-import { useEffect, useState, useRef } from 'react';
-import { pdfjsLib } from '../../lib/pdfjs';
+import { useRef } from 'react';
+
 import { useDocumentStore } from '../../store/documentStore';
 import { useToolsStore } from '../../store/toolsStore';
 import {

@@ -2,6 +2,7 @@ import { describe, it, expect } from 'vitest';
 import {
   TOOL_RELEASE_REGISTRY,
   getToolAvailability,
+  getToolPrivacyNotice,
   isToolAvailable,
   type ToolId,
   type ReleaseState,
@@ -27,7 +28,7 @@ const EXPECTED_STATES: Record<ToolId, ReleaseState> = {
   'scan-to-pdf': 'disabled',
   'compress-pdf': 'disabled',
   'repair-pdf': 'limited',
-  'ocr-pdf': 'disabled',
+  'ocr-pdf': 'limited',
   'jpg-to-pdf': 'limited',
   'html-to-pdf': 'limited',
   'word-to-pdf': 'limited',
@@ -101,7 +102,7 @@ describe('TOOL_RELEASE_REGISTRY', () => {
     const disabled = ALL_IDS.filter((id) => TOOL_RELEASE_REGISTRY[id].releaseState === 'disabled');
     expect(disabled.sort()).toEqual([
       'ai-summarizer', 'blackout-pdf', 'compress-pdf', 'decrypt-pdf',
-      'ocr-pdf', 'pdf-to-powerpoint', 'protect-pdf', 'scan-to-pdf',
+      'pdf-to-powerpoint', 'protect-pdf', 'scan-to-pdf',
       'translate-pdf',
     ].sort());
     const stable = ALL_IDS.filter((id) => TOOL_RELEASE_REGISTRY[id].releaseState === 'stable');
@@ -165,6 +166,7 @@ describe('isToolAvailable', () => {
   it('returns true for stable and limited tools', () => {
     expect(isToolAvailable('merge-pdf')).toBe(true);
     expect(isToolAvailable('split-pdf')).toBe(true);
+    expect(isToolAvailable('ocr-pdf')).toBe(true);
   });
 
   it('returns false for disabled tools', () => {
@@ -172,10 +174,20 @@ describe('isToolAvailable', () => {
     expect(isToolAvailable('decrypt-pdf')).toBe(false);
     expect(isToolAvailable('protect-pdf')).toBe(false);
     expect(isToolAvailable('compress-pdf')).toBe(false);
-    expect(isToolAvailable('ocr-pdf')).toBe(false);
     expect(isToolAvailable('scan-to-pdf')).toBe(false);
     expect(isToolAvailable('pdf-to-powerpoint')).toBe(false);
     expect(isToolAvailable('ai-summarizer')).toBe(false);
     expect(isToolAvailable('translate-pdf')).toBe(false);
+  });
+});
+
+describe('getToolPrivacyNotice', () => {
+  it('describes each privacy class without claiming network-free processing', () => {
+    expect(getToolPrivacyNotice('merge-pdf')).toMatch(/browser/i);
+    expect(getToolPrivacyNotice('merge-pdf')).not.toMatch(/never leave/i);
+    expect(getToolPrivacyNotice('ai-summarizer')).toMatch(/unavailable/i);
+    expect(getToolPrivacyNotice('ai-summarizer')).toMatch(/Google Gemini/i);
+    expect(getToolPrivacyNotice('scan-to-pdf')).toMatch(/camera/i);
+    expect(getToolPrivacyNotice('scan-to-pdf')).toMatch(/unavailable/i);
   });
 });

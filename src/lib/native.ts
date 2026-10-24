@@ -141,6 +141,14 @@ function getStore(file: string): Promise<unknown> {
   return p;
 }
 
+/** Minimal interface for the plugin-store API; used by all store operations. */
+interface StoreLike {
+  get<T>(k: string): Promise<T | undefined>;
+  set<T>(k: string, v: T): Promise<void>;
+  delete(k: string): Promise<boolean>;
+  save(): Promise<void>;
+}
+
 /**
  * Read a key from the on-disk Tauri store.
  * Returns null when running in a browser or when the key is missing.
@@ -150,13 +158,6 @@ export async function getStoreValue<T = string>(
   file = 'settings.json'
 ): Promise<T | null> {
   if (!isTauri()) return null;
-  // Lazy interface for the plugin-store API; minimal shape we use.
-  interface StoreLike {
-    get<T>(k: string): Promise<T | undefined>;
-    set<T>(k: string, v: T): Promise<void>;
-    delete(k: string): Promise<boolean>;
-    save(): Promise<void>;
-  }
   const store = (await getStore(file)) as StoreLike;
   const v = await store.get<T>(key);
   return (v === undefined ? null : v) as T | null;
@@ -169,12 +170,6 @@ export async function setStoreValue<T = string>(
   file = 'settings.json'
 ): Promise<void> {
   if (!isTauri()) return;
-  interface StoreLike {
-    get<T>(k: string): Promise<T | undefined>;
-    set<T>(k: string, v: T): Promise<void>;
-    delete(k: string): Promise<boolean>;
-    save(): Promise<void>;
-  }
   const store = (await getStore(file)) as StoreLike;
   await store.set(key, value);
   await store.save();
@@ -186,12 +181,6 @@ export async function deleteStoreValue(
   file = 'settings.json'
 ): Promise<void> {
   if (!isTauri()) return;
-  interface StoreLike {
-    get<T>(k: string): Promise<T | undefined>;
-    set<T>(k: string, v: T): Promise<void>;
-    delete(k: string): Promise<boolean>;
-    save(): Promise<void>;
-  }
   const store = (await getStore(file)) as StoreLike;
   await store.delete(key);
   await store.save();

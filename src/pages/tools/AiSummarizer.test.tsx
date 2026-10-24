@@ -15,6 +15,11 @@ vi.mock('../../lib/ai', () => ({
   summarizePdf: summarizePdfMock,
 }));
 
+vi.mock('../../store', () => ({
+  useToolsStore: (selector: (state: { aiConsentGiven: boolean; setAiConsentGiven: (v: boolean) => void }) => unknown) =>
+    selector({ aiConsentGiven: true, setAiConsentGiven: vi.fn() }),
+}));
+
 describe('AiSummarizer', () => {
   let user: ReturnType<typeof userEvent.setup>;
 

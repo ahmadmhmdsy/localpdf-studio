@@ -3,6 +3,7 @@ import { AlertTriangle, CircleSlash, Home } from 'lucide-react';
 import type { ToolId } from '../../config/featureRegistry';
 import { getToolAvailability } from '../../config/featureRegistry';
 import ToolLayout from './ToolLayout';
+import DataEgressNotice from '../privacy/DataEgressNotice';
 
 interface ToolAvailabilityGateProps {
   toolId: ToolId;
@@ -32,6 +33,7 @@ export default function ToolAvailabilityGate({
         title="This tool is unavailable"
         description="This tool is temporarily unavailable while known defects are being remedied. See the production inventory for the current remediation status."
       >
+        <DataEgressNotice toolId={toolId} />
         <div className="w-full max-w-xl" role="alert">
           <div className="rounded-lg border border-[var(--text-3)]/20 bg-[var(--surface)] p-6 pb-8 shadow-md">
             <p className="flex items-center gap-2 mb-4 text-sm font-semibold text-[var(--text-3)] uppercase tracking-wider">
@@ -50,7 +52,7 @@ export default function ToolAvailabilityGate({
           </div>
           <Link
             to="/"
-            className="mt-6 inline-flex items-center gap-2 rounded-[var(--radius-md,6px)] bg-[var(--accent)] px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-85"
+            className="mt-6 inline-flex items-center gap-2 rounded-[var(--radius-md,6px)] bg-[var(--accent-solid)] px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-85"
           >
             <Home size={16} aria-hidden="true" />
             Home
@@ -86,6 +88,7 @@ export default function ToolAvailabilityGate({
           </div>
         </div>
       )}
+      <DataEgressNotice toolId={toolId} />
       {children}
     </>
   );

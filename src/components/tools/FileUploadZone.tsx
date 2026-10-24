@@ -29,14 +29,42 @@ export default function FileUploadZone({
   const { showToast } = useToast();
 
   const validateMagicBytes = useCallback(async (file: File): Promise<boolean> => {
-    const pdfExtensions = ['.pdf'];
-    const isPdf = pdfExtensions.some(ext => file.name.toLowerCase().endsWith(ext));
+    const ext = file.name.toLowerCase().split('.').pop() || '';
+    
+    // Define magic byte signatures for supported file types
+    const signatures: Record<string, (header: Uint8Array) => boolean> = {
+      // PDF: %PDF
+      pdf: (h) => h[0] === 0x25 && h[1] === 0x50 && h[2] === 0x44 && h[3] === 0x46,
+      // JPEG: FF D8 FF
+      jpg: (h) => h[0] === 0xFF && h[1] === 0xD8 && h[2] === 0xFF,
+      jpeg: (h) => h[0] === 0xFF && h[1] === 0xD8 && h[2] === 0xFF,
+      // PNG: 89 50 4E 47
+      png: (h) => h[0] === 0x89 && h[1] === 0x50 && h[2] === 0x4E && h[3] === 0x47,
+      // GIF: GIF87a or GIF89a
+      gif: (h) => h[0] === 0x47 && h[1] === 0x49 && h[2] === 0x46 && h[3] === 0x38,
+      // BMP: BM
+      bmp: (h) => h[0] === 0x42 && h[1] === 0x4D,
+      // TIFF: II (little-endian) or MM (big-endian)
+      tiff: (h) => (h[0] === 0x49 && h[1] === 0x49) || (h[0] === 0x4D && h[1] === 0x4D),
+      tif: (h) => (h[0] === 0x49 && h[1] === 0x49) || (h[0] === 0x4D && h[1] === 0x4D),
+      // WebP: RIFF....WEBP
+      webp: (h) => h[0] === 0x52 && h[1] === 0x49 && h[2] === 0x46 && h[3] === 0x46,
+      // DOCX/XLSX/PPTX: PK (ZIP format)
+      docx: (h) => h[0] === 0x50 && h[1] === 0x4B,
+      xlsx: (h) => h[0] === 0x50 && h[1] === 0x4B,
+      pptx: (h) => h[0] === 0x50 && h[1] === 0x4B,
+      // DOC/XLS/PPT (old formats): D0 CF 11 E0
+      doc: (h) => h[0] === 0xD0 && h[1] === 0xCF && h[2] === 0x11 && h[3] === 0xE0,
+      xls: (h) => h[0] === 0xD0 && h[1] === 0xCF && h[2] === 0x11 && h[3] === 0xE0,
+      ppt: (h) => h[0] === 0xD0 && h[1] === 0xCF && h[2] === 0x11 && h[3] === 0xE0,
+    };
 
-    if (!isPdf) return true;
+    const validator = signatures[ext];
+    if (!validator) return true; // Unknown extension, skip validation
 
     try {
-      const header = new Uint8Array(await file.slice(0, 5).arrayBuffer());
-      return header[0] === 0x25 && header[1] === 0x50 && header[2] === 0x44 && header[3] === 0x46;
+      const header = new Uint8Array(await file.slice(0, 8).arrayBuffer());
+      return validator(header);
     } catch {
       return false;
     }
@@ -200,7 +228,7 @@ export default function FileUploadZone({
             <Upload 
               size={40} 
               style={{ 
-                color: 'var(--accent)',
+                color: 'var(--accent-text)',
                 filter: 'drop-shadow(0 0 8px rgba(255,107,157,0.5))',
               }}
               aria-hidden="true"
@@ -210,7 +238,7 @@ export default function FileUploadZone({
 
         <div className="drop-cta" style={{ textAlign: 'center' }}>
           <h2 style={{
-            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            fontFamily: 'sans-serif',
             fontSize: '22px',
             fontWeight: 700,
             letterSpacing: '-0.01em',
@@ -223,7 +251,7 @@ export default function FileUploadZone({
             color: 'var(--text-3)',
             fontSize: '14px',
             marginBottom: '28px',
-            fontFamily: "'Plus Jakarta Sans', sans-serif",
+            fontFamily: 'sans-serif',
           }}>
             {subtitle}
           </p>
@@ -293,20 +321,9 @@ export default function FileUploadZone({
           marginTop: '28px',
           color: 'var(--text-3)',
           fontSize: '11px',
-          fontFamily: "'DM Mono', monospace",
+          fontFamily: 'monospace',
           flexWrap: 'wrap',
         }}>
-          <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
-            <span style={{
-              width: '5px',
-              height: '5px',
-              borderRadius: '50%',
-              background: 'var(--accent-2)',
-              display: 'inline-block',
-              marginRight: '5px',
-            }} aria-hidden="true" />
-            Files never leave your device
-          </span>
           <span style={{ display: 'flex', alignItems: 'center', gap: '5px' }}>
             <span style={{
               width: '5px',

@@ -1,22 +1,22 @@
 import { useRef, useEffect } from 'react';
-import { useEditor, TextAnnotation, ImageAnnotation, CropAnnotation, DrawAnnotation, Point } from '../../contexts/EditorContext';
+import { useDocumentStore, useToolsStore, useAnnotationsStore } from '../../store';
 import { ANNOTATION_COLORS } from '../../constants/colors';
 import TextAnnotationItem from './annotations/TextAnnotationItem';
 import ImageAnnotationItem from './annotations/ImageAnnotationItem';
 import CropAnnotationItem from './annotations/CropAnnotationItem';
 import DrawAnnotationItem from './annotations/DrawAnnotationItem';
+import type { TextAnnotation, ImageAnnotation, CropAnnotation, DrawAnnotation, Point } from '../../contexts/EditorContext';
 
 export default function AnnotationLayer() {
-  const { 
-    pages, 
-    currentPage, 
-    annotations, 
-    activeTool, 
-    addAnnotation, 
-    setSelectedAnnotationId,
-    setActiveTool
-  } = useEditor();
-  
+  // Use granular store hooks instead of combined useEditor()
+  const pages = useDocumentStore((s) => s.pages);
+  const currentPage = useToolsStore((s) => s.currentPage);
+  const activeTool = useToolsStore((s) => s.activeTool);
+  const annotations = useAnnotationsStore((s) => s.annotations);
+  const addAnnotation = useAnnotationsStore((s) => s.addAnnotation);
+  const setSelectedAnnotationId = useAnnotationsStore((s) => s.setSelectedAnnotationId);
+  const setActiveTool = useToolsStore((s) => s.setActiveTool);
+
   const containerRef = useRef<HTMLDivElement>(null);
   const drawingSvgRef = useRef<SVGSVGElement>(null);
   const drawingPolylineRef = useRef<SVGPolylineElement>(null);
@@ -45,16 +45,16 @@ export default function AnnotationLayer() {
       const rect = containerRef.current.getBoundingClientRect();
       const x = (e.clientX - rect.left) / rect.width;
       const y = (e.clientY - rect.top) / rect.height;
-      
+
       currentDrawingRef.current = [{ x, y }];
       drawingSvgRef.current.style.display = 'block';
       drawingPolylineRef.current.setAttribute('points', `${x * 100}%,${y * 100}%`);
-      
+
       const handlePointerMove = (moveEvent: PointerEvent) => {
         const moveX = (moveEvent.clientX - rect.left) / rect.width;
         const moveY = (moveEvent.clientY - rect.top) / rect.height;
         currentDrawingRef.current.push({ x: moveX, y: moveY });
-        
+
         const pointsStr = currentDrawingRef.current.map(p => `${p.x * 100}%,${p.y * 100}%`).join(' ');
         drawingPolylineRef.current?.setAttribute('points', pointsStr);
       };
@@ -62,12 +62,12 @@ export default function AnnotationLayer() {
       const handlePointerUp = () => {
         window.removeEventListener('pointermove', handlePointerMove);
         window.removeEventListener('pointerup', handlePointerUp);
-        
+
         const points = [...currentDrawingRef.current];
         currentDrawingRef.current = [];
         if (drawingSvgRef.current) drawingSvgRef.current.style.display = 'none';
         if (drawingPolylineRef.current) drawingPolylineRef.current.setAttribute('points', '');
-        
+
         if (points.length > 1) {
           addAnnotation({
             id: `draw-${Date.now()}`,
@@ -76,7 +76,7 @@ export default function AnnotationLayer() {
             points: points,
             color: 'black',
             strokeWidth: 2,
-          });
+          }, pages);
         }
       };
 
@@ -104,12 +104,11 @@ export default function AnnotationLayer() {
         y,
         fontSize: 24,
         color: 'red',
-      });
+      }, pages);
       setActiveTool('select');
     } else if (activeTool === 'crop') {
       if (!containerRef.current) return;
 
-      // Check if a crop annotation already exists for this page
       const existingCrop = annotations.find(a => a.pageId === pageMeta.id && a.type === 'crop');
       if (existingCrop) {
         setSelectedAnnotationId(existingCrop.id);
@@ -127,12 +126,11 @@ export default function AnnotationLayer() {
         type: 'crop',
         x,
         y,
-        width: 0.5, // Default 50% width
-        height: 0.5, // Default 50% height
-      });
+        width: 0.5,
+        height: 0.5,
+      }, pages);
       setActiveTool('select');
     } else {
-      // If clicking on empty space with select tool, deselect
       if (e.target === containerRef.current) {
         setSelectedAnnotationId(null);
       }
@@ -140,15 +138,15 @@ export default function AnnotationLayer() {
   };
 
   return (
-    <div 
+    <div
       ref={containerRef}
       className={`absolute inset-0 z-10 ${activeTool !== 'pan' && activeTool !== 'select' ? 'touch-none' : ''}`}
       onPointerDown={handlePointerDown}
       style={{ cursor: activeTool === 'text' ? 'text' : activeTool === 'draw' ? 'crosshair' : 'default' }}
     >
-      <svg 
+      <svg
         ref={drawingSvgRef}
-        className="absolute inset-0 w-full h-full pointer-events-none" 
+        className="absolute inset-0 w-full h-full pointer-events-none"
         style={{ display: 'none' }}
       >
         <polyline
@@ -164,33 +162,33 @@ export default function AnnotationLayer() {
       {pageAnnotations.map((ann) => {
         if (ann.type === 'text') {
           return (
-            <TextAnnotationItem 
-              key={ann.id} 
-              annotation={ann as TextAnnotation} 
+            <TextAnnotationItem
+              key={ann.id}
+              annotation={ann as TextAnnotation}
               containerRef={containerRef}
             />
           );
         } else if (ann.type === 'image') {
           return (
-            <ImageAnnotationItem 
-              key={ann.id} 
-              annotation={ann as ImageAnnotation} 
+            <ImageAnnotationItem
+              key={ann.id}
+              annotation={ann as ImageAnnotation}
               containerRef={containerRef}
             />
           );
         } else if (ann.type === 'crop') {
           return (
-            <CropAnnotationItem 
-              key={ann.id} 
-              annotation={ann as CropAnnotation} 
+            <CropAnnotationItem
+              key={ann.id}
+              annotation={ann as CropAnnotation}
               containerRef={containerRef}
             />
           );
         } else if (ann.type === 'draw') {
           return (
-            <DrawAnnotationItem 
-              key={ann.id} 
-              annotation={ann as DrawAnnotation} 
+            <DrawAnnotationItem
+              key={ann.id}
+              annotation={ann as DrawAnnotation}
             />
           );
         }

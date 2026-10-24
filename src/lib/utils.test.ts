@@ -59,4 +59,27 @@ describe('sanitizeFilename', () => {
   it('removes null bytes', () => {
     expect(sanitizeFilename('file\x00.pdf')).toBe('file.pdf');
   });
+
+  it('handles Windows reserved filenames', () => {
+    expect(sanitizeFilename('CON.pdf')).toBe('_CON.pdf');
+    expect(sanitizeFilename('NUL')).toBe('_NUL');
+    expect(sanitizeFilename('com1.txt')).toBe('_com1.txt');
+  });
+
+  it('removes leading dots (hidden files)', () => {
+    expect(sanitizeFilename('.hidden.pdf')).toBe('hidden.pdf');
+  });
+
+  it('collapses multiple dots', () => {
+    expect(sanitizeFilename('file....pdf')).toBe('file.pdf');
+  });
+
+  it('returns "unnamed" for empty result', () => {
+    expect(sanitizeFilename('')).toBe('unnamed');
+    expect(sanitizeFilename('...')).toBe('unnamed');
+  });
+
+  it('trims whitespace', () => {
+    expect(sanitizeFilename('  report.pdf  ')).toBe('report.pdf');
+  });
 });

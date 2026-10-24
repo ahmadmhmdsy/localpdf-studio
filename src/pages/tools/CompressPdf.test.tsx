@@ -130,7 +130,7 @@ describe('CompressPdf', () => {
       await user.click(compressButton);
 
       expect(await screen.findByText('Compressing PDF...')).toBeInTheDocument();
-      expect(compressPdfMock).toHaveBeenCalledWith(pdfFile, 'medium');
+      expect(compressPdfMock).toHaveBeenCalledWith(pdfFile, 'medium', { images: 'off' });
 
       await act(async () => {
         compression.resolve(compressionResult);
@@ -140,6 +140,18 @@ describe('CompressPdf', () => {
       expect(
         await screen.findByRole('link', { name: /download compressed_test\.pdf/i })
       ).toHaveAttribute('href', 'mock-url');
+    });
+
+    it('passes the chosen image re-compression preset', async () => {
+      renderWithProviders(<CompressPdf />);
+
+      const pdfFile = await generateDummyPdf(1, 'test.pdf');
+      await user.upload(screen.getByLabelText(/select PDF file/i), pdfFile);
+
+      await user.click(await screen.findByRole('radio', { name: /strong/i }));
+      await user.click(screen.getByRole('button', { name: /compress PDF/i }));
+
+      expect(compressPdfMock).toHaveBeenCalledWith(pdfFile, 'medium', { images: 'strong' });
     });
 
     it('shows compression results after processing', async () => {
@@ -171,12 +183,10 @@ describe('CompressPdf', () => {
       await user.upload(input, pdfFile);
       await user.click(screen.getByRole('button', { name: /compress PDF/i }));
 
-      // The download state shows "Re-packed from <original> to <new>".
-      // This is the honest size-summary — pdf-lib cannot re-compress
-      // streams, so the page intentionally does NOT show a "X% reduced"
-      // percentage. Asserting on the real copy keeps the test honest.
+      // The download state shows "Compressed from <original> to <new>"
+      // rather than a "X% reduced" claim, because the file can grow.
       await waitFor(() => {
-        expect(screen.getByText(/re-packed from/i)).toBeInTheDocument();
+        expect(screen.getByText(/compressed from/i)).toBeInTheDocument();
       }, { timeout: 3000 });
     });
   });
@@ -227,10 +237,10 @@ describe('CompressPdf', () => {
       await user.upload(input, pdfFile);
       await user.click(screen.getByRole('button', { name: /compress PDF/i }));
 
-      // The "Re-packed from X to Y" copy encodes both original and
+      // The "Compressed from X to Y" copy encodes both original and
       // resulting size; both surfaces are checked for by the regex.
       await waitFor(() => {
-        expect(screen.getByText(/re-packed from .* to/i)).toBeInTheDocument();
+        expect(screen.getByText(/compressed from .* to/i)).toBeInTheDocument();
       }, { timeout: 3000 });
     });
   });

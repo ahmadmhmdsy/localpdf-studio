@@ -56,14 +56,12 @@ export async function repairPdf(file: File): Promise<RepairResult> {
   } catch (error) {
     // Attempt 2: Aggressive recovery - try to extract what we can
     try {
-      const arrayBuffer = await file.arrayBuffer();
-      
       // Try to create a new PDF and copy any readable content
       const newPdf = await PDFDocument.create();
       
       // Last resort: create a minimal valid PDF with error message
       const page = newPdf.addPage([612, 792]);
-      const { width, height } = page.getSize();
+      const { height } = page.getSize();
       
       // Add error notice to the repaired PDF
       page.drawText('PDF Repair Notice', {

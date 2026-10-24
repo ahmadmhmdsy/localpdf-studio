@@ -104,7 +104,7 @@ describe('convertPowerpointToPdf', () => {
     expect(drawnTexts).toContain('orphan text');
   });
 
-  it('truncates drawn text to 100 characters per element', async () => {
+  it('truncates drawn text to 200 characters per element', async () => {
     const long = 'A'.repeat(500);
     mockAsync.mockResolvedValue(`<p:sp><a:t>${long}</a:t></p:sp>`);
     mockZipInstance.file.mockImplementation((name: string) =>
@@ -118,6 +118,6 @@ describe('convertPowerpointToPdf', () => {
       (c) => typeof c[0] === 'string' && c[0].startsWith('A'),
     )?.[0];
     expect(typeof longDrawn).toBe('string');
-    expect((longDrawn as string).length).toBe(100);
+    expect((longDrawn as string).length).toBe(200);
   });
 });

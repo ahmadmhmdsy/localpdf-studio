@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { File as FileIcon, X, GitCompare, ChevronLeft, ChevronRight } from 'lucide-react';
+import { X, GitCompare, ChevronLeft, ChevronRight } from 'lucide-react';
 import ToolLayout from '../../components/tools/ToolLayout';
 import FileUploadZone from '../../components/tools/FileUploadZone';
 import ProcessingState from '../../components/tools/ProcessingState';

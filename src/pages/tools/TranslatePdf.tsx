@@ -3,12 +3,13 @@ import { Languages, FileCheck, AlertCircle, ChevronDown } from 'lucide-react';
 import ToolLayout from '../../components/tools/ToolLayout';
 import FileUploadZone from '../../components/tools/FileUploadZone';
 import ProcessingState from '../../components/tools/ProcessingState';
-import { SUPPORTED_LANGUAGES } from '../../lib/ai';
+import { getGenAIAsync, SUPPORTED_LANGUAGES } from '../../lib/ai';
 import { saveAs } from 'file-saver';
-import { PDFDocument, rgb, StandardFonts } from 'pdf-lib';
+import { PDFDocument, rgb } from 'pdf-lib';
 import { pdfjsLib } from '../../lib/pdfjs';
-import { GoogleGenAI } from '@google/genai';
 import { logWarn } from '../../lib/logger';
+import { useToolsStore } from '../../store';
+import AiConsentDialog from '../../components/tools/AiConsentDialog';
 
 type Step = 'upload' | 'language' | 'translating' | 'done' | 'error';
 
@@ -19,6 +20,9 @@ export default function TranslatePdf() {
   const [progress, setProgress] = useState({ page: 0, total: 0 });
   const [resultData, setResultData] = useState<Uint8Array | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [showConsent, setShowConsent] = useState(false);
+  const aiConsentGiven = useToolsStore((s) => s.aiConsentGiven);
+  const setAiConsentGiven = useToolsStore((s) => s.setAiConsentGiven);
 
   const handleFilesSelected = (files: File[]) => {
     if (files.length === 1) {
@@ -31,11 +35,19 @@ export default function TranslatePdf() {
   const handleTranslate = async () => {
     if (!file) return;
 
+    // Check consent first
+    if (!aiConsentGiven) {
+      setShowConsent(true);
+      return;
+    }
+
     setStep('translating');
     setError(null);
 
     try {
-      const genAI = new GoogleGenAI({ apiKey: import.meta.env.VITE_GEMINI_API_KEY });
+      // Resolved from the in-memory cache or the desktop store only. The web
+      // build has no build-time key by design.
+      const genAI = await getGenAIAsync();
       const arrayBuffer = await file.arrayBuffer();
       
       // Load PDF
@@ -45,8 +57,11 @@ export default function TranslatePdf() {
       const pages = pdf.getPages();
       const totalPages = pages.length;
       
-      // Embed font for translated text
-      const font = await pdf.embedFont(StandardFonts.Helvetica);
+      // Embed Unicode font for translated text (supports non-Latin scripts)
+      const fontUrl = '/assets/fonts/LiberationSans-Regular.ttf';
+      const fontResponse = await fetch(fontUrl);
+      const fontBytes = await fontResponse.arrayBuffer();
+      const font = await pdf.embedFont(fontBytes);
       
       for (let i = 0; i < totalPages; i++) {
         setProgress({ page: i + 1, total: totalPages });
@@ -263,6 +278,16 @@ export default function TranslatePdf() {
           </button>
         </div>
       )}
+      <AiConsentDialog
+        isOpen={showConsent}
+        onAccept={() => {
+          setAiConsentGiven(true);
+          setShowConsent(false);
+          handleTranslate();
+        }}
+        onDecline={() => setShowConsent(false)}
+        toolName="Translate PDF"
+      />
     </ToolLayout>
   );
 }

@@ -8,9 +8,13 @@ describe('Footer', () => {
     expect(screen.getByText(/LocalPDF Studio/i)).toBeInTheDocument();
   });
 
-  it('mentions local processing', () => {
+  it('states the browser-local and containment boundary', () => {
     render(<Footer />);
-    expect(screen.getByText(/All processing is done locally/i)).toBeInTheDocument();
+    expect(screen.getByText(/Most tools are processed in your browser/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/AI, OCR, and camera tools are unavailable in the public beta/i),
+    ).toBeInTheDocument();
+    expect(screen.queryByText(/All processing is done locally/i)).not.toBeInTheDocument();
   });
 
   it('contains the current year', () => {

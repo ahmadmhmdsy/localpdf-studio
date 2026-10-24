@@ -13,8 +13,8 @@ const STEPS: TourStep[] = [
   {
     title: 'Welcome to LocalPDF Studio',
     description:
-      'A privacy-first PDF toolkit that runs entirely in your browser. ' +
-      'No files are ever uploaded to a server.',
+      'A privacy-first PDF toolkit that processes most tools in your browser. ' +
+      'Each tool shows how it handles your file before you start.',
   },
   {
     title: 'Pick a tool',
@@ -106,7 +106,6 @@ export default function OnboardingTour({ forceShow = false }: OnboardingTourProp
     });
     return () => document.removeEventListener('keydown', handleKey);
     // handleComplete is stable (see below) so it does not need to be a dep.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOpen]);
 
   const next = () => {
