@@ -1,9 +1,7 @@
 import {
   PDFDocument,
-  PDFFont,
   PDFName,
   PDFOperator,
-  StandardFonts,
   TextRenderingMode,
   beginText,
   endText,
@@ -17,20 +15,15 @@ import {
   type PDFPage,
 } from 'pdf-lib';
 import { pdfjsLib } from './pdfjs';
+import { GLYPHLESS_ADVANCE, GLYPHLESS_FONT_NAME, embedGlyphlessFont, encodeGlyphless } from './glyphlessFont';
 import { logError } from './logger';
 import { parsePageRanges } from './pdf';
 import { MAX_OCR_FILE_SIZE_BYTES, MAX_OCR_FILE_SIZE_MB, MAX_OCR_PAGES } from '../constants/limits';
 
-// Latin-script languages only: the text layer uses a standard PDF font, which
-// can only encode WinAnsi characters.
+// Each language needs its data in public/tesseract/lang (see the README there).
 export const OCR_LANGUAGES = [
   { code: 'eng', label: 'English' },
-  { code: 'fra', label: 'French' },
-  { code: 'deu', label: 'German' },
-  { code: 'spa', label: 'Spanish' },
-  { code: 'ita', label: 'Italian' },
-  { code: 'por', label: 'Portuguese' },
-  { code: 'nld', label: 'Dutch' },
+  { code: 'ara', label: 'Arabic' },
 ] as const;
 
 export type OcrLanguage = (typeof OCR_LANGUAGES)[number]['code'];
@@ -61,7 +54,7 @@ export interface OcrResult {
   pagesRecognized: number;
   pagesSkipped: number;
   wordsAdded: number;
-  /** Recognized characters the PDF font cannot encode; they are left out of the text layer. */
+  /** Recognized characters outside the Unicode BMP, which the text layer cannot encode; they are left out. */
   charactersDropped: number;
 }
 
@@ -170,7 +163,7 @@ export async function ocrPdf(
     worker = await createWorker(language, OEM.LSTM_ONLY, { ...paths, workerBlobURL: false });
     throwIfCancelled(signal);
 
-    const font = await pdf.embedFont(StandardFonts.Helvetica);
+    const fontRef = embedGlyphlessFont(pdf);
     const pages = pdf.getPages();
     const totalPages = pageIndices.length;
     const result = { pagesRecognized: 0, pagesSkipped: 0, wordsAdded: 0, charactersDropped: 0 };
@@ -218,7 +211,7 @@ export async function ocrPdf(
 
         onProgress?.({ ...position, status: 'embedding' });
         const toPdfPoint: ToPdfPoint = (x, y) => viewport.convertToPdfPoint(x, y) as [number, number];
-        const layer = textLayerOperators(data.words ?? [], font, addFont(pages[i], font), toPdfPoint);
+        const layer = textLayerOperators(data.words ?? [], pages[i].node.newFontDictionary(GLYPHLESS_FONT_NAME, fontRef), toPdfPoint);
         if (layer.operators.length > 0) appendIsolated(pdf, pages[i], layer.operators);
         result.pagesRecognized++;
         result.wordsAdded += layer.wordsAdded;
@@ -237,10 +230,6 @@ export async function ocrPdf(
   }
 }
 
-function addFont(page: PDFPage, font: PDFFont): PDFName {
-  return page.node.newFontDictionary(font.name, font.ref);
-}
-
 // Wrap the existing content in q/Q first, so a graphics state it leaves
 // changed cannot move the text layer.
 function appendIsolated(pdf: PDFDocument, page: PDFPage, operators: PDFOperator[]): void {
@@ -257,20 +246,17 @@ function appendIsolated(pdf: PDFDocument, page: PDFPage, operators: PDFOperator[
  */
 export function textLayerOperators(
   words: OcrWord[],
-  font: PDFFont,
   fontKey: PDFName,
   toPdfPoint: ToPdfPoint,
 ): { operators: PDFOperator[]; wordsAdded: number; charactersDropped: number } {
-  const encodable = new Set(font.getCharacterSet());
   const operators: PDFOperator[] = [];
   let wordsAdded = 0;
   let charactersDropped = 0;
 
   for (const word of words) {
-    const chars = [...word.text.trim()];
-    const text = chars.filter((c) => encodable.has(c.codePointAt(0)!)).join('');
-    charactersDropped += chars.length - text.length;
-    if (!text) continue;
+    const encoded = encodeGlyphless(toVisualOrder(word.text.trim()));
+    charactersDropped += encoded.dropped;
+    if (encoded.length === 0) continue;
 
     const { x0, y0, x1, y1 } = word.bbox;
     const origin = toPdfPoint(x0, y1);
@@ -284,24 +270,56 @@ export function textLayerOperators(
     const u = [(right[0] - origin[0]) / width, (right[1] - origin[1]) / width];
     const v = [(top[0] - origin[0]) / height, (top[1] - origin[1]) / height];
 
-    // Fit the font's full ascender-to-descender height into the box, and put
-    // the baseline one descender above the box bottom.
-    const size = (height / font.heightAtSize(height, { descender: true })) * height;
-    const descent = font.heightAtSize(size, { descender: true }) - font.heightAtSize(size, { descender: false });
-    const naturalWidth = font.widthOfTextAtSize(text, size);
-    if (naturalWidth <= 0) continue;
+    // The glyphless font is one em tall with no descender, so the font size is
+    // the box height and the baseline is the box bottom.
+    const size = height;
+    const naturalWidth = (encoded.length * GLYPHLESS_ADVANCE * size) / 1000;
 
     operators.push(
       beginText(),
       setFontAndSize(fontKey, size),
       setTextRenderingMode(TextRenderingMode.Invisible),
       setCharacterSqueeze((width / naturalWidth) * 100),
-      setTextMatrix(u[0], u[1], v[0], v[1], origin[0] + v[0] * descent, origin[1] + v[1] * descent),
-      showText(font.encodeText(text)),
+      setTextMatrix(u[0], u[1], v[0], v[1], origin[0], origin[1]),
+      showText(encoded.hex),
       endText(),
     );
     wordsAdded++;
   }
 
   return { operators, wordsAdded, charactersDropped };
+}
+
+// Characters pdf.js counts as right-to-left (bidi types R, AL, AN): Hebrew and
+// Arabic letters and Arabic-Indic digits (not the extended Persian digits), but not
+// marks or punctuation.
+const RTL_SCRIPT = /[\p{Script=Arabic}\p{Script=Hebrew}]/u;
+const ARABIC_INDIC_DIGIT = /[\u0660-\u0669\u06F0-\u06F9]/;
+const LTR_CHAR = /[\p{L}\p{N}]/u;
+const countsAsRtl = (char: string) =>
+  RTL_SCRIPT.test(char) && LTR_CHAR.test(char) && !/[\u06F0-\u06F9]/.test(char);
+
+/**
+ * PDF text is stored in visual (left-to-right display) order, and viewers
+ * reorder right-to-left runs back to logical order when extracting. Tesseract
+ * returns logical order, so a right-to-left word is reversed, keeping runs of
+ * Latin letters and digits (including Arabic-Indic digits) in their own order.
+ * Like pdf.js, a word is reordered only when at least 30% of it is
+ * right-to-left, or it is at most four characters long and has any.
+ */
+export function toVisualOrder(text: string): string {
+  const chars = [...text];
+  const rtlCount = chars.filter(countsAsRtl).length;
+  if (rtlCount === 0 || (rtlCount / text.length < 0.3 && text.length > 4)) return text;
+  const runs: { ltr: boolean; chars: string[] }[] = [];
+  for (const char of chars) {
+    const ltr = ARABIC_INDIC_DIGIT.test(char) || (LTR_CHAR.test(char) && !RTL_SCRIPT.test(char));
+    const last = runs[runs.length - 1];
+    if (last && last.ltr === ltr) last.chars.push(char);
+    else runs.push({ ltr, chars: [char] });
+  }
+  return runs
+    .reverse()
+    .map((run) => (run.ltr ? run.chars : run.chars.reverse()).join(''))
+    .join('');
 }

@@ -112,7 +112,7 @@ const REGISTRY: Record<ToolId, ToolAvailability> = {
     privacy: 'local-only',
     support: 'Adds a searchable, invisible text layer to scanned pages, entirely in the browser.',
     limitation:
-      'English only: the other listed languages have no data yet; cancellable; optional page range; limited to 200 pages and 50 MB; Latin-script languages only; high memory use on large files.',
+      'English and Arabic only; cancellable; optional page range; limited to 200 pages and 50 MB; high memory use on large files.',
   },
   'jpg-to-pdf': {
     releaseState: 'limited',

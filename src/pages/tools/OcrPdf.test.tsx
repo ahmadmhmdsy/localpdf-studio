@@ -57,11 +57,11 @@ describe('OcrPdf', () => {
     renderWithProviders(<OcrPdf />);
     await uploadPdf();
 
-    await user.selectOptions(await screen.findByLabelText(/document language/i), 'fra');
+    await user.selectOptions(await screen.findByLabelText(/document language/i), 'ara');
     await user.click(screen.getByRole('button', { name: /recognize text/i }));
 
     await waitFor(() => expect(screen.getByText(/OCR Complete/i)).toBeInTheDocument());
-    expect(vi.mocked(ocrPdf).mock.calls[0][1]).toMatchObject({ language: 'fra' });
+    expect(vi.mocked(ocrPdf).mock.calls[0][1]).toMatchObject({ language: 'ara' });
     expect(screen.getByText(/42 words added on 2 page\(s\)/)).toBeInTheDocument();
     expect(screen.getByText(/1 page\(s\) already had text/)).toBeInTheDocument();
   });

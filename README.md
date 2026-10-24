@@ -4,7 +4,7 @@
 
 ![CI](https://github.com/ahmadmhmdsy/localpdf-studio/actions/workflows/ci.yml/badge.svg)
 ![License](https://img.shields.io/badge/license-MIT-blue)
-![Tests](https://img.shields.io/badge/unit%20tests-765%20passing-brightgreen)
+![Tests](https://img.shields.io/badge/unit%20tests-775%20passing-brightgreen)
 ![Stack](https://img.shields.io/badge/React%2019-Vite%206-646cff)
 
 ---
@@ -21,7 +21,7 @@ Most online PDF tools upload your document to their servers. LocalPDF Studio doe
 ## Highlights
 
 ### 🔍 OCR: make scanned PDFs searchable *(new)*
-- Recognizes text on scanned pages with **Tesseract running in your browser**. The worker, the WASM core and the English language data are all served from the app itself.
+- Recognizes text on scanned pages with **Tesseract running in your browser**. The worker, the WASM core and the English and Arabic language data are all served from the app itself.
 - Adds an **invisible, word-aligned text layer**, so search and selection line up with the scanned image, even on rotated pages.
 - Skips pages that already have text, so search hits are not doubled.
 - **Cancellable at any point**: the Cancel button stops the engine, even in the middle of a page.
@@ -34,7 +34,7 @@ A full-page editor that adds text, drawings, images and visual signatures, with 
 Merge, split, rotate, crop, reorder, extract and compare pages. Convert between PDF and JPG, Word, Excel, PowerPoint and HTML, with page numbers, watermarks and repair alongside.
 
 ### ♿ Built to a quality bar
-- 765 unit and component tests (Vitest + Testing Library).
+- 775 unit and component tests (Vitest + Testing Library).
 - Playwright smoke and **axe accessibility** gates against the production build.
 - Lighthouse CI, a bundle-size budget, and type checking and linting in CI.
 - Dark mode, an onboarding tour, toast notifications, and per-tool error boundaries.
@@ -46,7 +46,7 @@ The source of truth is [`src/config/featureRegistry.ts`](src/config/featureRegis
 | State | Tools |
 |---|---|
 | ✅ **Stable** | Merge PDF · PDF to JPG · Rotate PDF · Crop PDF · Compare PDF |
-| 🟡 **Limited**: works, with documented limits | OCR PDF *(English)* · Split PDF · Remove Pages · Extract Pages · Organize PDF · Repair PDF · JPG to PDF · HTML to PDF · Word to PDF · Excel to PDF · PowerPoint to PDF · PDF to PDF/A *(best-effort, not conformant)* · PDF to Word · PDF to Excel · Add Page Numbers · Add Watermark · Edit PDF *(adds overlays)* · Sign PDF *(visual signature, not certificate-backed)* |
+| 🟡 **Limited**: works, with documented limits | OCR PDF *(English, Arabic)* · Split PDF · Remove Pages · Extract Pages · Organize PDF · Repair PDF · JPG to PDF · HTML to PDF · Word to PDF · Excel to PDF · PowerPoint to PDF · PDF to PDF/A *(best-effort, not conformant)* · PDF to Word · PDF to Excel · Add Page Numbers · Add Watermark · Edit PDF *(adds overlays)* · Sign PDF *(visual signature, not certificate-backed)* |
 | ⛔ **Disabled**: work in progress | Compress PDF · Scan to PDF · PDF to PowerPoint · Protect PDF · Unlock PDF · Redact (Blackout) PDF · AI Summarizer · Translate PDF |
 
 The Phase A plan for turning the disabled tools on is in [`docs/superpowers/plans/2026-10-24-phase-a-tools.md`](docs/superpowers/plans/2026-10-24-phase-a-tools.md).
@@ -124,7 +124,7 @@ docs/             # privacy data flow, release inventory, plans, competitive ana
 
 - [docs/privacy/data-flow.md](docs/privacy/data-flow.md) describes, per tool, where data goes and the release gate a tool must pass before it is enabled.
 - [docs/release/production-inventory.md](docs/release/production-inventory.md) holds the audit evidence for every tool's release state.
-- Known limits are stated plainly. Signing is visual, not cryptographic. Redaction and password protection are disabled until they are real. OCR currently supports English only.
+- Known limits are stated plainly. Signing is visual, not cryptographic. The dedicated blackout/redaction tool and password protection are disabled until they are real. OCR currently supports English and Arabic.
 
 ## Roadmap
 
@@ -132,7 +132,7 @@ docs/             # privacy data flow, release inventory, plans, competitive ana
 - **Protect / Unlock:** real AES encryption via a self-hosted qpdf (WASM) build.
 - **True redaction** that removes the underlying content, not just covers it.
 - **Scan to PDF** with an image-file fallback.
-- More OCR languages and non-Latin scripts.
+- More OCR languages (French, German, Spanish, …).
 - Higher-fidelity Office conversions.
 
 ## License

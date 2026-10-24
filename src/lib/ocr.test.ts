@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { PDFArray, PDFDocument, PDFName, StandardFonts, type PDFFont } from 'pdf-lib';
+import { PDFArray, PDFDocument, PDFName } from 'pdf-lib';
 
 // Mock tesseract.js (the real lib spawns a Web Worker that loads WASM, which
 // jsdom cannot run).
@@ -41,6 +41,7 @@ import {
   ocrPdf,
   ocrAssetPaths,
   textLayerOperators,
+  toVisualOrder,
   OcrCancelledError,
   OcrLanguageDataMissingError,
   OcrLimitError,
@@ -91,10 +92,10 @@ describe('ocrPdf', () => {
   });
 
   it('loads the worker, core and language data from the app origin, not a CDN', async () => {
-    await ocrPdf(await pdfFile(), { language: 'deu' });
+    await ocrPdf(await pdfFile(), { language: 'ara' });
 
-    expect(fetch).toHaveBeenCalledWith('/tesseract/lang/deu.traineddata.gz', { method: 'HEAD' });
-    expect(mockCreateWorker).toHaveBeenCalledWith('deu', 1, {
+    expect(fetch).toHaveBeenCalledWith('/tesseract/lang/ara.traineddata.gz', { method: 'HEAD' });
+    expect(mockCreateWorker).toHaveBeenCalledWith('ara', 1, {
       workerPath: '/tesseract/worker.min.js',
       corePath: '/tesseract/core',
       langPath: '/tesseract/lang',
@@ -276,16 +277,11 @@ describe('ocrPdf', () => {
 });
 
 describe('textLayerOperators', () => {
-  let font: PDFFont;
-  const key = PDFName.of('F1');
+  const key = PDFName.of('GlyphLessFont');
   const identity = (x: number, y: number): [number, number] => [x, 792 - y];
 
-  beforeEach(async () => {
-    font = await (await PDFDocument.create()).embedFont(StandardFonts.Helvetica);
-  });
-
   const ops = (list: OcrWord[], toPdf = identity) =>
-    textLayerOperators(list, font, key, toPdf).operators.map((op) => op.toString().trim());
+    textLayerOperators(list, key, toPdf).operators.map((op) => op.toString().trim());
 
   it('writes each word with invisible rendering mode', () => {
     const lines = ops(words(['Hello', 100, 100, 300, 140]).data.words);
@@ -294,25 +290,33 @@ describe('textLayerOperators', () => {
     expect(lines.at(-1)).toBe('ET');
   });
 
-  it('squeezes the word to the width of its box', () => {
-    const [word] = words(['Hello', 100, 100, 300, 140]).data.words;
-    const lines = ops([word]);
-    const tf = lines.find((l) => l.endsWith('Tf'))!;
-    const size = Number(tf.split(' ')[1]);
+  it('sizes the word to its box: font size is the box height, squeezed to the box width', () => {
+    const lines = ops(words(['Hello', 100, 100, 300, 140]).data.words);
+    const size = Number(lines.find((l) => l.endsWith('Tf'))!.split(' ')[1]);
     const tz = Number(lines.find((l) => l.endsWith('Tz'))!.split(' ')[0]);
-    expect((font.widthOfTextAtSize('Hello', size) * tz) / 100).toBeCloseTo(200, 5);
-    // The font's full height fits the 40 pt box.
-    expect(font.heightAtSize(size, { descender: true })).toBeCloseTo(40, 5);
+    expect(size).toBeCloseTo(40, 5);
+    // Every character advances half an em.
+    expect((5 * 0.5 * size * tz) / 100).toBeCloseTo(200, 5);
   });
 
-  it('places the baseline above the bottom of the box by the descender', () => {
+  it('places the baseline on the bottom of the box', () => {
     const lines = ops(words(['Hello', 100, 100, 300, 140]).data.words);
     const [a, b, c, d, e, f] = lines.find((l) => l.endsWith('Tm'))!.split(' ').map(Number);
     expect([a, b, c, d]).toEqual([1, 0, 0, 1]);
     expect(e).toBeCloseTo(100);
     // Box bottom is at PDF y = 792 - 140 = 652.
-    expect(f).toBeGreaterThan(652);
-    expect(f).toBeLessThan(652 + 40 / 2);
+    expect(f).toBeCloseTo(652);
+  });
+
+  it('writes the text as Unicode code points', () => {
+    const lines = ops(words(['Hi', 0, 0, 50, 20]).data.words);
+    expect(lines).toContain('<00480069> Tj');
+  });
+
+  it('writes Arabic in visual order', () => {
+    // "سلام" reversed: م ا ل س
+    const lines = ops(words(['سلام', 0, 0, 50, 20]).data.words);
+    expect(lines).toContain('<0645062706440633> Tj');
   });
 
   it('follows page rotation through the coordinate mapping', () => {
@@ -324,18 +328,37 @@ describe('textLayerOperators', () => {
     expect([c, d]).toEqual([-1, 0]);
   });
 
-  it('drops characters the font cannot encode and skips empty words', () => {
+  it('keeps any BMP script, drops characters outside it and skips empty words', () => {
     const result = textLayerOperators(
-      words(['   ', 0, 0, 0, 0], ['日本', 0, 0, 40, 20], ['Café→', 10, 10, 90, 30]).data.words,
-      font,
+      words(['   ', 0, 0, 0, 0], ['日本', 0, 0, 40, 20], ['Café→😀', 10, 10, 90, 30]).data.words,
       key,
       identity,
     );
-    expect(result.wordsAdded).toBe(1);
-    expect(result.charactersDropped).toBe(3);
+    expect(result.wordsAdded).toBe(2);
+    expect(result.charactersDropped).toBe(1);
   });
 
   it('skips words with an empty box', () => {
-    expect(textLayerOperators(words(['Flat', 10, 10, 10, 10]).data.words, font, key, identity).wordsAdded).toBe(0);
+    expect(textLayerOperators(words(['Flat', 10, 10, 10, 10]).data.words, key, identity).wordsAdded).toBe(0);
+  });
+});
+
+describe('toVisualOrder', () => {
+  it('leaves left-to-right text alone', () => {
+    expect(toVisualOrder('Hello')).toBe('Hello');
+  });
+
+  it('reverses an Arabic word', () => {
+    expect(toVisualOrder('سلام')).toBe('مالس');
+  });
+
+  it('keeps digits and Latin runs in reading order inside an Arabic word', () => {
+    expect(toVisualOrder('ص١٢')).toBe('١٢ص');
+    expect(toVisualOrder('بPDF')).toBe('PDFب');
+  });
+
+  it('leaves mostly-Latin words alone, as pdf.js does', () => {
+    expect(toVisualOrder('PDF،')).toBe('PDF،');
+    expect(toVisualOrder('Helloب')).toBe('Helloب');
   });
 });

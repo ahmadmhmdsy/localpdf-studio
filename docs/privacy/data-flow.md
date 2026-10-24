@@ -28,14 +28,14 @@ is the serving origin itself.
   layout, API key settings, and download state. `JetBrains Mono` was deliberately kept in the bento skin
   (the home page tiles and `src/theme/skins/bento.css`), where the monospace stack is the intended face
   rather than a dead reference.
-- **OCR assets are self-hosted, including English language data.** `src/lib/ocr.ts` loads
+- **OCR assets are self-hosted, including English and Arabic language data.** `src/lib/ocr.ts` loads
   `tesseract.js` on demand and passes it same-origin `workerPath`, `corePath` and `langPath` values
   under `${BASE_URL}tesseract/`, with `workerBlobURL: false` because the CSP has no `blob:` worker
   source. The `ocrAssets()` plugin in `vite.config.ts` serves and emits the worker and the LSTM core
   files (`dist/tesseract/`), so no CDN is contacted. Language data (`<lang>.traineddata.gz`) is served
-  from `public/tesseract/lang/`; only `eng` is included (tessdata_fast 4.1.0, source and checksums in
+  from `public/tesseract/lang/`; only `eng` and `ara` are included (tessdata_fast 4.1.0, source and checksums in
   that folder's README). For any other language `ocrPdf` stops with
-  `OcrLanguageDataMissingError` before starting a worker. OCR is enabled as `limited` (English only,
+  `OcrLanguageDataMissingError` before starting a worker. OCR is enabled as `limited` (English and Arabic only,
   cancellable, 200 pages / 50 MB). Its assets come from the app origin, so the CSP needs no new host
   (`script-src`/`connect-src 'self'` cover the worker and data), and the browser tests assert that the
   OCR route contacts no host other than the one serving the app.

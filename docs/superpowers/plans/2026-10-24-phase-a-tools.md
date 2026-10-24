@@ -13,19 +13,19 @@
 | Tool | State | What is done | What blocks release |
 |---|---|---|---|
 | compress-pdf | disabled | Real image recompression (`src/lib/compress.ts`) with presets: light 200 DPI / q0.8, balanced 150 / q0.65, strong 96 / q0.5. CMYK, indexed and 16-bit images are skipped. Result notes are shown in the UI. Unit-tested. | Independent verification on a real corpus; no cancellation; no per-file size limit. |
-| ocr-pdf | disabled | Self-hosted worker and core emitted by the `ocrAssets()` Vite plugin; invisible text layer positioned per word (rotation-aware); pages with text skipped; a missing-language-data error; English data (tessdata_fast 4.1.0) self-hosted; cancellation via `AbortSignal` with a Cancel button that terminates the worker; 200-page and 50 MB limits (`src/constants/limits.ts`) shown in the configure step; an optional page-range input (the page cap applies to the selected pages, so a long PDF can be done in parts). Unit-tested. | No e2e run; only English data; independent verification. |
+| ocr-pdf | limited | Self-hosted worker and core emitted by the `ocrAssets()` Vite plugin; invisible text layer positioned per word (rotation-aware); pages with text skipped; a missing-language-data error; English and Arabic data (tessdata_fast 4.1.0) self-hosted; a glyphless Unicode text layer (Arabic written in visual order, verified by a pdf.js round trip); cancellation via `AbortSignal` with a Cancel button that terminates the worker; 200-page and 50 MB limits (`src/constants/limits.ts`) shown in the configure step; an optional page-range input (the page cap applies to the selected pages, so a long PDF can be done in parts). Unit-tested. | No e2e run; only English and Arabic data; independent verification. |
 
 ---
 
 ## Workstream 1: Finish OCR (highest priority)
 
-1. **Language data — done for `eng` (option A).** Choose one source and record the source, license (Apache-2.0) and SHA-256 of each file in `public/tesseract/lang/README.md`:
+1. **Language data — done for `eng` and `ara` (option A).** Choose one source and record the source, license (Apache-2.0) and SHA-256 of each file in `public/tesseract/lang/README.md`:
    - A. Download `tessdata_fast` LSTM models into `public/tesseract/lang/<code>.traineddata.gz`. These are small (eng ≈ 2 MB gzipped) and have no npm dependency.
    - B. Add the `@tesseract.js-data/<lang>` npm packages and copy them in `ocrAssets()`. This keeps versions pinned in the lockfile.
-   - Start with `eng` only; add the other six languages once the size budget is agreed.
+   - Owner decision (2026-10-24): English and Arabic first; the other languages later.
 2. **Cancellation — done.** Add an `AbortSignal` to `OcrOptions`. Check it between pages and between render/recognize; `worker.terminate()` on abort. Add a "Cancel" button in the processing step that returns to configure. Test that abort mid-run terminates the worker and destroys the loading task.
 3. **Limits — done.** The page-range input reuses `parsePageRanges` from `src/lib/pdf.ts`; invalid ranges are shown next to the input. Reject files over a page cap (start at 200 pages) and a size cap before loading. Show the limit in the configure step. Add a page-range input (reuse the page-range parser from split/extract if it exists; otherwise add one in `src/lib/utils.ts` with tests).
-4. **Non-Latin scripts (later).** These need an embedded Unicode font (a subset of Noto via `@pdf-lib/fontkit`), which is a new dependency. Defer until the Latin release is verified.
+4. **Non-Latin scripts — done without a new dependency.** `src/lib/glyphlessFont.ts` builds a glyphless Type0/Identity-H font with a ToUnicode CMap (as Tesseract's own PDF renderer does), so any BMP script can be stored; right-to-left words are written in visual order (`toVisualOrder` in `src/lib/ocr.ts`).
 5. **e2e.** In `e2e/smoke.spec.ts`, keep the "disabled routes load no tesseract worker" assertion until the flip. At flip time, replace it with a test that runs OCR on a fixture scan and asserts that only same-origin requests were made and that the output's text is extractable.
 6. **Release flip (one commit, with user approval):** registry `releaseState`, the CSP `worker-src`/`connect-src` check, e2e allowed hosts, `docs/privacy/data-flow.md`, and `docs/release/production-inventory.md`.
 
