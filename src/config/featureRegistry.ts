@@ -98,7 +98,7 @@ const REGISTRY: Record<ToolId, ToolAvailability> = {
     privacy: 'local-only',
     support: 'Not available — disabled pending remediation; see the production inventory for audit evidence.',
     limitation:
-      'Optional lossy image downsampling is implemented but not yet independently verified; without it, size drops only when the source has unoptimized streams or metadata.',
+      'Lossy image presets, cancellation, a 100 MB limit and a never-larger fallback are implemented and unit-tested on a generated corpus, but not yet independently verified on real files; Lossless shrinks only files with unoptimized streams or metadata.',
   },
   'repair-pdf': {
     releaseState: 'limited',

@@ -1,19 +1,24 @@
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { File as FileIcon, X, Settings, AlertTriangle } from 'lucide-react';
 import ToolLayout from '../../components/tools/ToolLayout';
 import FileUploadZone from '../../components/tools/FileUploadZone';
 import ProcessingState from '../../components/tools/ProcessingState';
 import DownloadState from '../../components/tools/DownloadState';
-import { compressPdf, type ImageCompression } from '../../lib/compress';
+import {
+  CompressionCancelledError,
+  CompressionLimitError,
+  compressPdf,
+  type ImageCompression,
+} from '../../lib/compress';
+import { MAX_COMPRESS_FILE_SIZE_MB } from '../../constants/limits';
 import { logError } from '../../lib/logger';
 import { useToast } from '../../contexts/ToastContext';
 import { useManagedObjectUrl } from '../../hooks/useObjectUrl';
 
 type Step = 'upload' | 'configure' | 'processing' | 'download';
-type Quality = 'low' | 'medium' | 'high';
 
-const IMAGE_OPTIONS: { value: ImageCompression; label: string; hint: string }[] = [
-  { value: 'off', label: 'Off', hint: 'Images stay exactly as they are' },
+const PRESETS: { value: ImageCompression; label: string; hint: string }[] = [
+  { value: 'off', label: 'Lossless', hint: 'Re-pack the file; images stay exactly as they are' },
   { value: 'light', label: 'Light', hint: 'Up to 200 DPI, high quality' },
   { value: 'balanced', label: 'Balanced', hint: 'Up to 150 DPI, good for screens' },
   { value: 'strong', label: 'Strong', hint: 'Up to 96 DPI, smallest file' },
@@ -22,14 +27,17 @@ const IMAGE_OPTIONS: { value: ImageCompression; label: string; hint: string }[] 
 export default function CompressPdf() {
   const [step, setStep] = useState<Step>('upload');
   const [file, setFile] = useState<File | null>(null);
-  const [quality, setQuality] = useState<Quality>('medium');
-  const [images, setImages] = useState<ImageCompression>('off');
+  const [preset, setPreset] = useState<ImageCompression>('off');
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [resultSize, setResultSize] = useState<string>('');
   const [originalSize, setOriginalSize] = useState<string>('');
   const [resultNotes, setResultNotes] = useState<string[]>([]);
+  const [keptOriginal, setKeptOriginal] = useState(false);
+  const abortRef = useRef<AbortController | null>(null);
   const { showToast } = useToast();
   const { create: createObjectUrl, revoke: revokeObjectUrl } = useManagedObjectUrl();
+
+  useEffect(() => () => abortRef.current?.abort(), []);
 
   const handleFilesSelected = (newFiles: File[]) => {
     if (newFiles.length > 0) {
@@ -41,10 +49,14 @@ export default function CompressPdf() {
 
   const handleProcess = async () => {
     if (!file) return;
+    const controller = new AbortController();
+    abortRef.current = controller;
 
     setStep('processing');
     try {
-      const result = await compressPdf(file, quality, { images });
+      // The level only tunes save chunking; the preset decides the size.
+      const result = await compressPdf(file, 'medium', { images: preset, signal: controller.signal });
+      if (controller.signal.aborted) return;
 
       const blob = new Blob([result.bytes], { type: 'application/pdf' });
       const url = createObjectUrl(blob);
@@ -52,16 +64,29 @@ export default function CompressPdf() {
       setResultUrl(url);
       setResultSize((blob.size / 1024 / 1024).toFixed(2) + ' MB');
       setResultNotes(result.notes);
+      setKeptOriginal(result.keptOriginal);
       setStep('download');
     } catch (error) {
+      if (error instanceof CompressionCancelledError || controller.signal.aborted) {
+        // handleCancel has already returned to the configure step.
+        return;
+      }
       logError('Error compressing PDF:', error);
       showToast({
-        message: 'An error occurred. Please try again.',
+        message: error instanceof CompressionLimitError ? error.message : 'An error occurred. Please try again.',
         type: 'error',
         duration: 5000,
       });
       setStep('configure');
+    } finally {
+      if (abortRef.current === controller) abortRef.current = null;
     }
+  };
+
+  const handleCancel = () => {
+    abortRef.current?.abort();
+    abortRef.current = null;
+    setStep('configure');
   };
 
   const startOver = () => {
@@ -71,6 +96,7 @@ export default function CompressPdf() {
       setResultUrl(null);
     }
     setResultNotes([]);
+    setKeptOriginal(false);
     setStep('upload');
   };
 
@@ -117,75 +143,33 @@ export default function CompressPdf() {
             >
               <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5" aria-hidden="true" />
               <p>
-                Without image re-compression, size drops only when the source PDF had unoptimized
-                metadata or object streams. Image re-compression is irreversible: original pixels are
-                replaced and CMYK, indexed and 16-bit images are left as they are.
+                Lossless only shrinks files with unoptimized metadata or object streams. The other
+                levels are irreversible: original pixels are replaced, and CMYK, indexed and 16-bit
+                images are left as they are.
               </p>
             </div>
 
-            <div className="space-y-6">
-              <div className="flex items-center gap-2 text-[var(--text)] font-medium">
-                <Settings size={20} className="text-red-600" />
-                Compression Level
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <button
-                  onClick={() => setQuality('low')}
-                  className={`p-4 rounded-xl border-2 text-left transition-all ${
-                    quality === 'low'
-                      ? 'border-red-600 bg-red-50'
-                      : 'border-[var(--border)] hover:border-red-300 hover:bg-[var(--surface-2)]'
-                  }`}
-                >
-                  <div className="font-semibold text-[var(--text)] mb-1">Smaller file</div>
-                  <div className="text-sm text-[var(--text-3)]">More aggressive object-stream packing</div>
-                </button>
-
-                <button
-                  onClick={() => setQuality('medium')}
-                  className={`p-4 rounded-xl border-2 text-left transition-all ${
-                    quality === 'medium'
-                      ? 'border-red-600 bg-red-50'
-                      : 'border-[var(--border)] hover:border-red-300 hover:bg-[var(--surface-2)]'
-                  }`}
-                >
-                  <div className="font-semibold text-[var(--text)] mb-1">Recommended</div>
-                  <div className="text-sm text-[var(--text-3)]">Balanced packing</div>
-                </button>
-
-                <button
-                  onClick={() => setQuality('high')}
-                  className={`p-4 rounded-xl border-2 text-left transition-all ${
-                    quality === 'high'
-                      ? 'border-red-600 bg-red-50'
-                      : 'border-[var(--border)] hover:border-red-300 hover:bg-[var(--surface-2)]'
-                  }`}
-                >
-                  <div className="font-semibold text-[var(--text)] mb-1">Smoother progress</div>
-                  <div className="text-sm text-[var(--text-3)]">Smaller progress chunks for large files</div>
-                </button>
-              </div>
-            </div>
-
-            <fieldset className="mt-8 space-y-3">
-              <legend className="text-[var(--text)] font-medium mb-3">Re-compress images (lossy)</legend>
+            <fieldset className="space-y-3">
+              <legend className="flex items-center gap-2 text-[var(--text)] font-medium mb-3">
+                <Settings size={20} className="text-red-600" aria-hidden="true" />
+                Compression level
+              </legend>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                {IMAGE_OPTIONS.map((option) => (
+                {PRESETS.map((option) => (
                   <label
                     key={option.value}
                     className={`p-3 rounded-xl border-2 cursor-pointer transition-all focus-within:ring-2 focus-within:ring-red-500 ${
-                      images === option.value
+                      preset === option.value
                         ? 'border-red-600 bg-red-50'
                         : 'border-[var(--border)] hover:border-red-300 hover:bg-[var(--surface-2)]'
                     }`}
                   >
                     <input
                       type="radio"
-                      name="image-compression"
+                      name="compression-level"
                       value={option.value}
-                      checked={images === option.value}
-                      onChange={() => setImages(option.value)}
+                      checked={preset === option.value}
+                      onChange={() => setPreset(option.value)}
                       className="sr-only"
                     />
                     <div className="font-semibold text-[var(--text)]">{option.label}</div>
@@ -193,6 +177,10 @@ export default function CompressPdf() {
                   </label>
                 ))}
               </div>
+              <p className="text-sm text-[var(--text-3)]">
+                Light, Balanced and Strong re-encode images as JPEG. If the result is not smaller, you get
+                the original file back. Limit: {MAX_COMPRESS_FILE_SIZE_MB} MB per file.
+              </p>
             </fieldset>
           </div>
 
@@ -208,17 +196,29 @@ export default function CompressPdf() {
       )}
 
       {step === 'processing' && (
-        <ProcessingState
-          title="Compressing PDF..."
-          description="Please wait while we compress your document. This is happening locally in your browser."
-        />
+        <div className="flex flex-col items-center py-12">
+          <ProcessingState
+            title="Compressing PDF..."
+            description="Please wait while we compress your document. This is happening locally in your browser."
+          />
+          <button
+            onClick={handleCancel}
+            className="mt-6 px-6 py-2 rounded-lg border border-[var(--border)] text-[var(--text)] hover:bg-[var(--surface-2)] font-medium transition-colors"
+          >
+            Cancel
+          </button>
+        </div>
       )}
 
       {step === 'download' && resultUrl && (
         <div className="w-full max-w-2xl mx-auto flex flex-col gap-6">
           <DownloadState
             title="Done"
-            description={`Compressed from ${originalSize} to ${resultSize}. If the file got larger, the source PDF was already well-optimized.`}
+            description={
+              keptOriginal
+                ? `The file could not be made smaller, so your original ${originalSize} file is returned unchanged.`
+                : `Compressed from ${originalSize} to ${resultSize}.`
+            }
             fileName={`compressed_${file?.name || 'document.pdf'}`}
             fileUrl={resultUrl}
             fileSize={resultSize}
