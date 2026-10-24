@@ -52,7 +52,7 @@ describe('Home', () => {
       renderHome();
       expect(screen.getByText(/Most tools process in your browser/i)).toBeInTheDocument();
       expect(
-        screen.getByText(/AI, OCR, and camera tools are unavailable in the public beta/i),
+        screen.getByText(/AI and camera tools are unavailable in the public beta/i),
       ).toBeInTheDocument();
       expect(screen.queryByText(/100% FREE/i)).not.toBeInTheDocument();
     });

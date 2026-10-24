@@ -12,7 +12,7 @@ describe('Footer', () => {
     render(<Footer />);
     expect(screen.getByText(/Most tools are processed in your browser/i)).toBeInTheDocument();
     expect(
-      screen.getByText(/AI, OCR, and camera tools are unavailable in the public beta/i),
+      screen.getByText(/AI and camera tools are unavailable in the public beta/i),
     ).toBeInTheDocument();
     expect(screen.queryByText(/All processing is done locally/i)).not.toBeInTheDocument();
   });

@@ -121,7 +121,7 @@ export default function HomeBento() {
           </h1>
           <p style={{ color: 'var(--text-2)', fontSize: '1rem', maxWidth: '30em', marginBottom: '1.5rem' }}>
             {availabilitySummary.count} tools across {TOOL_CATEGORIES.length} categories. Open a file, do the work, close it. Most
-            tools run locally; AI, OCR, and camera tools are unavailable in the public beta.
+            tools run locally; AI and camera tools are unavailable in the public beta; OCR runs on your device.
           </p>
           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
             <Link to="/tools/merge-pdf" className="btn btn--pri">
@@ -240,7 +240,7 @@ export default function HomeBento() {
         <div>
           <h3>Where your work is stored.</h3>
           <p>
-            LocalPDF Studio processes most tools locally. AI, OCR, and camera tools are currently unavailable in the public beta; no file is sent to an external service from those routes. The
+            LocalPDF Studio processes most tools locally. AI and camera tools are currently unavailable in the public beta, and OCR runs on your device; no file is sent to an external service from those routes. The
             editor keeps your working document and edit history in this app's local storage on this device, until you clear it: use the Close File control in the editor to
             drop the stored file, or clear this app's stored data (site data in the browser, app data on the desktop).
           </p>
