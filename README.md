@@ -2,7 +2,7 @@
 
 A comprehensive, client-side PDF manipulation tool built with React. Merge, split, convert, annotate, and edit PDFs entirely in your browser — no data uploaded to servers.
 
-![CI](https://github.com/anomalyco/localpdf-studio/actions/workflows/ci.yml/badge.svg)
+![CI](https://github.com/ahmadmhmdsy/localpdf-studio/actions/workflows/ci.yml/badge.svg)
 ![GitHub License](https://img.shields.io/badge/license-MIT-blue)
 
 ## Features
