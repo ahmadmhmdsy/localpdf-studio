@@ -5,13 +5,13 @@ import JpgToPdf from './JpgToPdf';
 import { createDeferred, renderWithProviders } from '../../tests/utils';
 import { generateDummyImage, generateDummyImages } from '../../tests/fixtures/imageGenerator';
 
-const { jpgsToPdfMock } = vi.hoisted(() => ({
-  jpgsToPdfMock: vi.fn(),
+const { convertImagesToPdfMock } = vi.hoisted(() => ({
+  convertImagesToPdfMock: vi.fn(),
 }));
 
 // Mock image conversion library
 vi.mock('../../lib/image', () => ({
-  jpgsToPdf: jpgsToPdfMock,
+  convertImagesToPdf: convertImagesToPdfMock,
 }));
 
 describe('JpgToPdf', () => {
@@ -19,8 +19,11 @@ describe('JpgToPdf', () => {
 
   beforeEach(() => {
     user = userEvent.setup();
-    jpgsToPdfMock.mockReset();
-    jpgsToPdfMock.mockResolvedValue(new Uint8Array([1, 2, 3, 4, 5]));
+    convertImagesToPdfMock.mockReset();
+    convertImagesToPdfMock.mockResolvedValue({
+      bytes: new Uint8Array([1, 2, 3, 4, 5]),
+      skipped: [],
+    });
     vi.clearAllMocks();
   });
 
@@ -110,15 +113,93 @@ describe('JpgToPdf', () => {
     });
   });
 
+  describe('Page Layout Controls', () => {
+    const uploadImage = async () => {
+      const image = generateDummyImage('test.jpg');
+      const input = screen.getByLabelText(/select JPG images/i);
+      await user.upload(input, [image]);
+      await screen.findByRole('button', { name: /convert to PDF/i });
+      return image;
+    };
+
+    it('defaults to image-sized pages and hides the fit control', async () => {
+      renderWithProviders(<JpgToPdf />);
+      await uploadImage();
+
+      expect(screen.getByLabelText(/page size/i)).toHaveValue('image');
+      expect(screen.queryByLabelText(/image fit/i)).not.toBeInTheDocument();
+
+      expect(screen.getByRole('option', { name: 'Image size' })).toBeInTheDocument();
+      expect(screen.getByRole('option', { name: 'A4' })).toBeInTheDocument();
+      expect(screen.getByRole('option', { name: 'Letter' })).toBeInTheDocument();
+    });
+
+    it('shows the fit control for fixed page sizes and passes both options to the conversion', async () => {
+      renderWithProviders(<JpgToPdf />);
+      const image = await uploadImage();
+
+      await user.selectOptions(screen.getByLabelText(/page size/i), 'a4');
+      const fitSelect = screen.getByLabelText(/image fit/i);
+      expect(fitSelect).toHaveValue('contain');
+
+      await user.selectOptions(fitSelect, 'fill');
+      await user.click(screen.getByRole('button', { name: /convert to PDF/i }));
+
+      await waitFor(() => {
+        expect(convertImagesToPdfMock).toHaveBeenCalledWith([image], {
+          pageSize: 'a4',
+          fit: 'fill',
+        });
+      });
+    });
+
+    it('lists skipped files after a partial conversion', async () => {
+      convertImagesToPdfMock.mockResolvedValue({
+        bytes: new Uint8Array([1, 2, 3]),
+        skipped: ['broken.webp'],
+      });
+      renderWithProviders(<JpgToPdf />);
+      await uploadImage();
+
+      await user.click(screen.getByRole('button', { name: /convert to PDF/i }));
+
+      expect(await screen.findByText(/some images were skipped/i)).toBeInTheDocument();
+      expect(screen.getByText(/broken\.webp/)).toBeInTheDocument();
+    });
+
+    it('shows no skipped note when every image converts', async () => {
+      renderWithProviders(<JpgToPdf />);
+      await uploadImage();
+
+      await user.click(screen.getByRole('button', { name: /convert to PDF/i }));
+
+      expect(await screen.findByText(/PDF created successfully/i)).toBeInTheDocument();
+      expect(screen.queryByText(/some images were skipped/i)).not.toBeInTheDocument();
+    });
+
+    it('shows the conversion error and returns to the configure step', async () => {
+      convertImagesToPdfMock.mockRejectedValueOnce(
+        new Error('Could not convert these files because they could not be read as JPEG or PNG images: broken.webp')
+      );
+      renderWithProviders(<JpgToPdf />);
+      await uploadImage();
+
+      await user.click(screen.getByRole('button', { name: /convert to PDF/i }));
+
+      expect(await screen.findByText(/could not be read as JPEG or PNG images/i)).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /convert to PDF/i })).toBeInTheDocument();
+    });
+  });
+
   describe('Conversion Process', () => {
     it('shows processing and completes when conversion resolves', async () => {
       renderWithProviders(<JpgToPdf />);
 
       const image = generateDummyImage('test.jpg');
       const input = screen.getByLabelText(/select JPG images/i);
-      const conversion = createDeferred<Uint8Array>();
+      const conversion = createDeferred<{ bytes: Uint8Array; skipped: string[] }>();
       const result = new Uint8Array([1, 2, 3, 4, 5]);
-      jpgsToPdfMock.mockReturnValueOnce(conversion.promise);
+      convertImagesToPdfMock.mockReturnValueOnce(conversion.promise);
 
       await user.upload(input, [image]);
 
@@ -126,10 +207,13 @@ describe('JpgToPdf', () => {
       await user.click(convertButton);
 
       expect(await screen.findByText('Converting to PDF...')).toBeInTheDocument();
-      expect(jpgsToPdfMock).toHaveBeenCalledWith([image]);
+      expect(convertImagesToPdfMock).toHaveBeenCalledWith([image], {
+        pageSize: 'image',
+        fit: 'contain',
+      });
 
       await act(async () => {
-        conversion.resolve(result);
+        conversion.resolve({ bytes: result, skipped: [] });
         await conversion.promise;
       });
 

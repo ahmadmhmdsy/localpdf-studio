@@ -8,7 +8,7 @@ vi.mock('pdf-lib', () => ({
       save: vi.fn().mockResolvedValue(new Uint8Array([1, 2, 3])),
       embedFont: vi.fn().mockResolvedValue({ widthOfTextAtSize: () => 100, heightAtSize: () => 12 }),
       removePage: vi.fn(),
-      getPages: () => [{ getSize: () => ({ width: 612, height: 792 }), getRotation: () => ({ angle: 0 }), setRotation: vi.fn(), drawText: vi.fn(), drawRectangle: vi.fn() }],
+      getPages: () => Array.from({ length: 3 }, () => ({ getSize: () => ({ width: 612, height: 792 }), getRotation: () => ({ angle: 0 }), setRotation: vi.fn(), drawText: vi.fn(), drawRectangle: vi.fn() })),
       getPageCount: () => 3,
       getPageIndices: () => [0, 1, 2],
     }),
@@ -18,7 +18,7 @@ vi.mock('pdf-lib', () => ({
       save: vi.fn().mockResolvedValue(new Uint8Array([1, 2, 3])),
       embedFont: vi.fn().mockResolvedValue({ widthOfTextAtSize: () => 100, heightAtSize: () => 12 }),
       removePage: vi.fn(),
-      getPages: () => [{ getSize: () => ({ width: 612, height: 792 }), getRotation: () => ({ angle: 0 }), setRotation: vi.fn(), drawText: vi.fn(), drawRectangle: vi.fn() }],
+      getPages: () => Array.from({ length: 3 }, () => ({ getSize: () => ({ width: 612, height: 792 }), getRotation: () => ({ angle: 0 }), setRotation: vi.fn(), drawText: vi.fn(), drawRectangle: vi.fn() })),
       getPageCount: () => 3,
       getPageIndices: () => [0, 1, 2],
     }),
@@ -77,7 +77,7 @@ describe('addWatermark', () => {
   it('adds watermark text to PDF', async () => {
     const { addWatermark } = await import('./pdf');
     const file = new File(['dummy'], 'test.pdf', { type: 'application/pdf' });
-    const result = await addWatermark(file, 'CONFIDENTIAL');
+    const result = await addWatermark(file, { text: 'CONFIDENTIAL' });
     expect(result).toBeInstanceOf(Uint8Array);
   });
 });

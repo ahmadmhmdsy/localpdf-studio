@@ -117,16 +117,16 @@ const REGISTRY: Record<ToolId, ToolAvailability> = {
   'jpg-to-pdf': {
     releaseState: 'limited',
     privacy: 'local-only',
-    support: 'Browser image conversion works.',
+    support: 'JPG and PNG conversion works locally, with A4/Letter or image-sized pages.',
     limitation:
-      'Native MIME loss can skip picked files; photo pixels treated as PDF points produce nonstandard page sizes.',
+      'Images without density metadata fall back to 72 DPI; only JPEG and PNG are embedded, so other formats are listed and skipped; transparency is flattened.',
   },
   'html-to-pdf': {
     releaseState: 'limited',
     privacy: 'local-only',
-    support: 'Produces raster output.',
+    support: 'Produces paginated A4 raster output, portrait or landscape.',
     limitation:
-      'Single rasterized page for all content; no URL fetching; weak pagination/orientation for long or wide HTML.',
+      'Raster output, so text is not selectable; page breaks slice pixels and can cut a line or an image; external URLs are not fetched; A4 only.',
   },
   'word-to-pdf': {
     releaseState: 'limited',
@@ -199,8 +199,9 @@ const REGISTRY: Record<ToolId, ToolAvailability> = {
   'add-watermark': {
     releaseState: 'limited',
     privacy: 'local-only',
-    support: 'Watermarking works.',
-    limitation: 'Fixed text style only; some UI wording overstates image/custom behavior.',
+    support: 'Text and image watermarks work locally with size, opacity, rotation and page-range controls.',
+    limitation:
+      'Text watermarks are limited to Latin (WinAnsi) characters, so use an image watermark for Arabic and other scripts; the watermark is drawn into the page content, not flattened as security.',
   },
   'crop-pdf': {
     releaseState: 'stable',

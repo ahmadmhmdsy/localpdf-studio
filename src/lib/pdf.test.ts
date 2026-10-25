@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest';
 import {
   PDFDocument,
   PDFArray,
+  PDFDict,
+  PDFName,
   PDFRawStream,
   PDFRef,
   StandardFonts,
@@ -17,6 +19,8 @@ import {
   removePages,
   splitPdfToFiles,
   getSplitArchiveFileName,
+  addWatermark,
+  type WatermarkOptions,
 } from './pdf';
 import { generateDummyPdf } from '../tests/fixtures/pdfGenerator';
 
@@ -369,3 +373,315 @@ describe('getSplitArchiveFileName', () => {
     expect(getSplitArchiveFileName('notes')).toBe('split_notes.zip');
   });
 });
+
+/**
+ * A 1x1 transparent PNG. The fixtures' image headers are not decodable, so the
+ * image-watermark tests need this smallest real image that pdf-lib can embed.
+ */
+const ONE_PIXEL_PNG_BASE64 =
+  'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==';
+
+function onePixelPng(): Uint8Array {
+  return Uint8Array.from(atob(ONE_PIXEL_PNG_BASE64), (char) => char.charCodeAt(0));
+}
+
+/** Content stream of any page; blank pages have none. */
+async function readPageContent(bytes: Uint8Array, pageIndex: number): Promise<string> {
+  const doc = await PDFDocument.load(bytes);
+  const contents = doc.getPages()[pageIndex].node.Contents();
+  if (!contents) return '';
+
+  const streams: PDFRawStream[] = [];
+  const collect = (entry: unknown): void => {
+    const resolved = doc.context.lookup(entry as PDFRef);
+    if (resolved instanceof PDFRawStream) streams.push(resolved);
+    else if (resolved instanceof PDFArray) resolved.asArray().forEach(collect);
+  };
+
+  if (contents instanceof PDFArray) contents.asArray().forEach(collect);
+  else collect(contents);
+
+  return streams
+    .map((stream) =>
+      Array.from(decodePDFRawStream(stream).decode(), (byte) => String.fromCharCode(byte)).join(''),
+    )
+    .join('\n');
+}
+
+/** The six numbers of the text matrix that positions a drawText/drawImage call. */
+function readPlacementMatrix(content: string): { a: number; b: number; c: number; d: number; e: number; f: number } {
+  const match = content.match(
+    /(-?[\d.]+) (-?[\d.]+) (-?[\d.]+) (-?[\d.]+) (-?[\d.]+) (-?[\d.]+) Tm/,
+  );
+  if (!match) {
+    throw new Error(`Expected a text matrix in the page content stream:\n${content}`);
+  }
+  return {
+    a: Number(match[1]),
+    b: Number(match[2]),
+    c: Number(match[3]),
+    d: Number(match[4]),
+    e: Number(match[5]),
+    f: Number(match[6]),
+  };
+}
+
+/** Text metrics from the same font the watermark uses. */
+async function measureHelveticaBold(
+  text: string,
+  size: number,
+): Promise<{ width: number; height: number }> {
+  const doc = await PDFDocument.create();
+  const font = await doc.embedFont(StandardFonts.HelveticaBold);
+  return { width: font.widthOfTextAtSize(text, size), height: font.heightAtSize(size) };
+}
+
+/** Anchor expected for a box centred on the page, compensating for rotation. */
+function expectedRotationAnchor(
+  pageWidth: number,
+  pageHeight: number,
+  boxWidth: number,
+  boxHeight: number,
+  rotation: number,
+): { x: number; y: number } {
+  const radians = (rotation * Math.PI) / 180;
+  const halfWidth = boxWidth / 2;
+  const halfHeight = boxHeight / 2;
+  return {
+    x: pageWidth / 2 - (halfWidth * Math.cos(radians) - halfHeight * Math.sin(radians)),
+    y: pageHeight / 2 - (halfWidth * Math.sin(radians) + halfHeight * Math.cos(radians)),
+  };
+}
+
+describe('addWatermark', () => {
+  it('stamps the same text on every page by default', async () => {
+    const file = await generateSizedPdf([400, 400]);
+
+    const result = await addWatermark(file, { text: 'DRAFT' });
+
+    expect((await readPageContent(result, 0)).includes('Tj')).toBe(true);
+    expect((await readPageContent(result, 1)).includes('Tj')).toBe(true);
+  });
+
+  it('keeps the legacy diagonal gray 60pt style as the default', async () => {
+    const file = await generateBlankPdf();
+
+    const result = await addWatermark(file, { text: 'CONFIDENTIAL' });
+    const content = await readPageContent(result, 0);
+    const matrix = readPlacementMatrix(content);
+
+    // Default rotation is 45 degrees.
+    expect(matrix.a).toBeCloseTo(Math.SQRT1_2, 5);
+    expect(matrix.b).toBeCloseTo(Math.SQRT1_2, 5);
+    expect(matrix.c).toBeCloseTo(-Math.SQRT1_2, 5);
+    expect(matrix.d).toBeCloseTo(Math.SQRT1_2, 5);
+    expect(content).toMatch(/ 60 Tf/);
+    expect(content).toContain('0.5 0.5 0.5 rg');
+
+    const doc = await PDFDocument.load(result);
+    expect(doc.getPages()[0].node.Resources()?.toString()).toContain('/ca 0.3');
+  });
+
+  it('centres unrotated text on the page', async () => {
+    const file = await generateBlankPdf();
+    const { width: textWidth, height: textHeight } = await measureHelveticaBold('CENTERED', 40);
+
+    const result = await addWatermark(file, { text: 'CENTERED', fontSize: 40, rotation: 0 });
+    const drawn = readDrawnText(await readPageContent(result, 0));
+
+    expect(drawn.text).toBe('CENTERED');
+    expect(drawn.x).toBeCloseTo(PAGE_NUMBER_FIXTURE.width / 2 - textWidth / 2, 2);
+    expect(drawn.y).toBeCloseTo(PAGE_NUMBER_FIXTURE.height / 2 - textHeight / 2, 2);
+  });
+
+  it.each([45, 90, -30])('keeps text centred when rotated %i degrees', async (rotation) => {
+    const file = await generateBlankPdf();
+    const text = 'ROTATED';
+    const fontSize = 60;
+    const { width: textWidth, height: textHeight } = await measureHelveticaBold(text, fontSize);
+
+    const result = await addWatermark(file, { text, fontSize, rotation });
+    const matrix = readPlacementMatrix(await readPageContent(result, 0));
+    const { x, y } = expectedRotationAnchor(
+      PAGE_NUMBER_FIXTURE.width,
+      PAGE_NUMBER_FIXTURE.height,
+      textWidth,
+      textHeight,
+      rotation,
+    );
+
+    expect(matrix.e).toBeCloseTo(x, 2);
+    expect(matrix.f).toBeCloseTo(y, 2);
+    // Rotated about its own centre, the content stays fully inside the page.
+    expect(matrix.e).toBeGreaterThan(0);
+    expect(matrix.f).toBeGreaterThan(0);
+  });
+
+  it('honours font size, opacity and colour', async () => {
+    const file = await generateBlankPdf();
+
+    const result = await addWatermark(file, {
+      text: 'STYLE',
+      fontSize: 40,
+      opacity: 0.6,
+      rotation: 0,
+      color: { r: 0, g: 0, b: 1 },
+    });
+    const content = await readPageContent(result, 0);
+
+    expect(content).toMatch(/ 40 Tf/);
+    expect(content).toContain('0 0 1 rg');
+    const doc = await PDFDocument.load(result);
+    expect(doc.getPages()[0].node.Resources()?.toString()).toContain('/ca 0.6');
+  });
+
+  it('applies the watermark only to the requested page range', async () => {
+    const file = await generateSizedPdf([101, 102, 103]);
+
+    const result = await addWatermark(file, { text: 'RANGE', pageRange: '2' });
+
+    expect((await readPageContent(result, 0)).includes('Tj')).toBe(false);
+    expect((await readPageContent(result, 1)).includes('Tj')).toBe(true);
+    expect((await readPageContent(result, 2)).includes('Tj')).toBe(false);
+  });
+
+  it('treats a blank page range as every page', async () => {
+    const file = await generateSizedPdf([201, 202]);
+
+    const result = await addWatermark(file, { text: 'ALL', pageRange: '   ' });
+
+    expect((await readPageContent(result, 0)).includes('Tj')).toBe(true);
+    expect((await readPageContent(result, 1)).includes('Tj')).toBe(true);
+  });
+
+  it('rejects out-of-bounds and malformed page ranges', async () => {
+    const file = await generateSizedPdf([301, 302]);
+
+    await expect(addWatermark(file, { text: 'X', pageRange: '9' })).rejects.toThrow(
+      InvalidPageRangeError,
+    );
+    await expect(addWatermark(file, { text: 'X', pageRange: 'abc' })).rejects.toThrow(
+      InvalidPageRangeError,
+    );
+    await expect(addWatermark(file, { text: 'X', pageRange: 'abc' })).rejects.toThrow(
+      /positive integer/i,
+    );
+  });
+
+  it('embeds a PNG image at half the page width, centred', async () => {
+    const file = await generateBlankPdf();
+
+    const result = await addWatermark(file, {
+      image: onePixelPng(),
+      imageType: 'png',
+      rotation: 0,
+      opacity: 0.5,
+    });
+    const content = await readPageContent(result, 0);
+
+    expect(content).toContain('/Image');
+    expect(content).toContain(' Do');
+    // A 400pt-wide page gets a 200pt wide, square image centred at (100, 200).
+    expect(content).toContain('200 0 0 200 0 0 cm');
+    expect(content).toContain('1 0 0 1 100 200 cm');
+
+    const doc = await PDFDocument.load(result);
+    const resources = doc.getPages()[0].node.Resources();
+    expect(resources?.toString()).toContain('/ca 0.5');
+    // The XObject dictionary holds a real image stream, not just a drawn shape.
+    const xObjects = doc.context.lookup(resources!.lookup(PDFName.of('XObject'))) as PDFDict;
+    const [, imageRef] = xObjects.entries()[0];
+    const image = doc.context.lookup(imageRef) as PDFRawStream;
+    expect(image.dict.get(PDFName.of('Subtype'))?.toString()).toBe('/Image');
+  });
+
+  it('applies an image watermark to every page by default', async () => {
+    const file = await generateSizedPdf([400, 400]);
+
+    const result = await addWatermark(file, {
+      image: onePixelPng(),
+      imageType: 'png',
+      rotation: 0,
+    });
+
+    expect((await readPageContent(result, 0)).includes(' Do')).toBe(true);
+    expect((await readPageContent(result, 1)).includes(' Do')).toBe(true);
+  });
+
+  it('infers the image type from a PNG File', async () => {
+    const file = await generateBlankPdf();
+    const pngFile = new File([onePixelPng().buffer as ArrayBuffer], 'logo.png', {
+      type: 'image/png',
+    });
+
+    const result = await addWatermark(file, { image: pngFile, rotation: 0 });
+
+    expect((await readPageContent(result, 0)).includes(' Do')).toBe(true);
+  });
+
+  it('infers the image type from the file extension when the MIME type is missing', async () => {
+    const file = await generateBlankPdf();
+    const pngFile = new File([onePixelPng().buffer as ArrayBuffer], 'logo.PNG', { type: '' });
+
+    const result = await addWatermark(file, { image: pngFile, rotation: 0 });
+
+    expect((await readPageContent(result, 0)).includes(' Do')).toBe(true);
+  });
+
+  it('rejects an unreadable image with a readable error', async () => {
+    const file = await generateBlankPdf();
+
+    await expect(
+      addWatermark(file, { image: new Uint8Array([1, 2, 3]), imageType: 'png' }),
+    ).rejects.toThrow(/could not be read/i);
+  });
+
+  it('rejects an unsupported image format with a readable error', async () => {
+    const file = await generateBlankPdf();
+    const gifFile = new File([new Uint8Array([0x47, 0x49, 0x46])], 'logo.gif', {
+      type: 'image/gif',
+    });
+
+    await expect(addWatermark(file, { image: gifFile })).rejects.toThrow(/PNG or JPEG/i);
+  });
+
+  it('rejects non-Latin text instead of silently dropping glyphs', async () => {
+    const file = await generateBlankPdf();
+
+    // Arabic for "confidential" and Chinese for "confidential": both are
+    // outside the WinAnsi character set of the standard fonts.
+    await expect(addWatermark(file, { text: '\u0645\u062D\u0645\u064A' })).rejects.toThrow(
+      /Latin \(WinAnsi\)/i,
+    );
+    await expect(addWatermark(file, { text: '\u673A\u5BC6' })).rejects.toThrow(
+      /Latin \(WinAnsi\)/i,
+    );
+  });
+
+  it('requires exactly one watermark source', async () => {
+    const file = await generateBlankPdf();
+
+    await expect(addWatermark(file)).rejects.toThrow(/exactly one/i);
+    await expect(addWatermark(file, { text: '   ' })).rejects.toThrow(/exactly one/i);
+    await expect(addWatermark(file, { text: 'BOTH', image: onePixelPng() })).rejects.toThrow(
+      /exactly one/i,
+    );
+  });
+
+  it('rejects invalid numeric options with readable errors', async () => {
+    const file = await generateBlankPdf();
+
+    const invalidOptions: WatermarkOptions[] = [
+      { text: 'X', opacity: 2 },
+      { text: 'X', fontSize: 0 },
+      { text: 'X', rotation: Number.NaN },
+      { text: 'X', color: { r: 2, g: 0, b: 0 } },
+    ];
+    const expectedMessages = [/opacity/i, /font size/i, /rotation/i, /colour/i];
+
+    for (const [index, options] of invalidOptions.entries()) {
+      await expect(addWatermark(file, options)).rejects.toThrow(expectedMessages[index]);
+    }
+  });
+});
+

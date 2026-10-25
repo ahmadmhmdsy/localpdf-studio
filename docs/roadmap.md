@@ -55,6 +55,7 @@ This is the single place to see what is done, what is in review and what is next
 | README showcase: GIF, screenshots, Arabic README, fix for stale "OCR unavailable" copy | DONE | PR #3, merged |
 | This roadmap and the no-hardcoding rule | DONE | PR #4, merged |
 | OCR e2e (A1.3), shallow-tool fixes (A7.1, A7.2, A7.5, A7.7, A7.9, A7.10), generated tool routes (backlog #15) | IN REVIEW | [PR #6](https://github.com/ahmadmhmdsy/localpdf-studio/pull/6), `phase-a/next-items` |
+| HTML-to-PDF pagination and orientation (A7.3), DPI-aware JPG-to-PDF (A7.4), watermark options (A7.6), office-chunk recheck (A6.3) | IN REVIEW | [PR #7](https://github.com/ahmadmhmdsy/localpdf-studio/pull/7), `phase-a/shallow-tools-2` |
 
 **Tool release states on `main`, from `src/config/featureRegistry.ts`:**
 - `ocr-pdf` is `limited`.
@@ -124,7 +125,7 @@ Goal: every catalog tool delivers what its name promises, locally, or stays `dis
 |---|---|---|---|
 | A6.1 | pdf-to-pptx: the master, layout and `image/jpeg` content type now exist in `src/lib/pdf-to-pptx.ts`; the **theme part** and a schema-level package test are still missing | READY | Opens in PowerPoint and LibreOffice |
 | A6.2 | Desktop-only LibreOffice path for Word→PDF, PPT→PDF and the legacy .doc/.ppt/.xls formats: detect `soffice`, use a safe subprocess API with a timeout | PLANNED | The web build keeps its "lossy" label and rejects legacy formats clearly |
-| A6.3 | Recheck the office-parsers chunk against the 800 KB per-chunk budget (it was split in commit 2024473) | READY | `check:bundle` PASS |
+| A6.3 | Recheck the office-parsers chunk against the 800 KB per-chunk budget (it was split in commit 2024473) | DONE | `check:bundle` PASS: 66 chunks, 4622.3 KB total; the old office chunk is now exceljs 917.6 KB (under its own 1000 KB limit), mammoth 492.3 KB, docx 362.0 KB — nothing above the 800 KB default. |
 
 ### A7. Shallow tools
 
@@ -132,10 +133,10 @@ Goal: every catalog tool delivers what its name promises, locally, or stays `dis
 |---|---|---|---|
 | A7.1 | split-pdf | Output a ZIP of separate files (by range, every N pages, or one file per page) | IN REVIEW |
 | A7.2 | remove-pages | Copy the kept pages into a new document, so the deleted objects are gone | IN REVIEW |
-| A7.3 | html-to-pdf | Paginate by content height; add an orientation option | READY |
-| A7.4 | jpg-to-pdf | Pixels → points at the image DPI; fit options; fix the MIME-loss skip | READY |
+| A7.3 | html-to-pdf | Paginate by content height; add an orientation option | IN REVIEW | A4 pages sliced at exact page height with a Portrait/Landscape control; verified in the production build (4 portrait pages, 5 landscape pages, all A4 page sizes, every page raster distinct so no duplicated content). |
+| A7.4 | jpg-to-pdf | Pixels → points at the image DPI; fit options; fix the MIME-loss skip | IN REVIEW | Format from magic bytes (empty MIME still converts), DPI from JFIF/pHYs with a 72 fallback, A4/Letter with contain/fill, skipped files named instead of dropped; browser check: 300 DPI JPEG → 595.28×841.89 pt A4 page, image-size page 288×384 pt, WebP listed as skipped while the valid JPEG still converted. |
 | A7.5 | add-page-numbers | The UI has 6 positions while the copy promises 9. Add the 3 middle positions, or change the copy. | IN REVIEW |
-| A7.6 | add-watermark | Image watermark, font size, opacity, rotation, page range; fix the overstated copy | READY |
+| A7.6 | add-watermark | Image watermark, font size, opacity, rotation, page range; fix the overstated copy | IN REVIEW | Options-object API; text and image watermarks, rotation-safe centring, page-range validation, WinAnsi guard with a clear error; browser check: range "2" stamped once, the default range stamped all 3 pages, an image watermark drawn on 3 pages, Arabic text refused with no download. |
 | A7.7 | pdf-to-pdfa | Rename to "PDF/A-style" until a validator (veraPDF, desktop) confirms conformance | IN REVIEW |
 | A7.8 | sign-pdf | Keep the "visual signature" wording; certificate signing is a later project | ONGOING |
 | A7.9 | repair-pdf | Never return a placeholder PDF as "repaired"; report the failure instead (a real repair comes with A3.6) | IN REVIEW |
@@ -223,6 +224,9 @@ Each new tool is added through the feature registry and the catalog, with its li
 | 18 | `npm run tauri:dev` loaded an unreachable URL: `beforeDevCommand` ran `npm run dev`, whose `--port=3000 --host=0.0.0.0` overrode the Vite config's Tauri port (1420), so the shell asked for 1420 while Vite listened on 3000 | Desktop | Fixed in this PR: `dev:tauri-frontend` lets the Vite config own the host and port when `TAURI_DEV=1` |
 | 19 | The desktop shell shows the web data-handling note ("processed in your browser"), which is imprecise inside a Tauri window | Copy | Decide the wording with B1 i18n; the release gate forbids claiming more than is true |
 | 20 | No desktop e2e: CI only runs `rustfmt` and `cargo check` for `src-tauri`, with no WebDriver coverage | QA, Desktop | Verified once manually with tauri-driver 2.1.0 and msedgedriver 155 (home, SPA navigation, remove-pages). A repeatable spec needs a driver in CI; ask the owner before adding one |
+| 21 | The shared upload zone reports a magic-byte failure with "appears to be corrupted or not a valid PDF" even on image tools | Copy | A7.4 follow-up: make the message name the tool's accepted formats |
+| 22 | The upload zone's magic-byte list and each converter's real capability disagree: WebP is accepted at upload and then skipped at conversion | Upload UX | A7.4 follow-up: one source of truth for accepted formats (drop WebP from the accept list, or let the converter report every unsupported file) |
+| 23 | CI only triggers for pull requests whose base is `main`, so a stacked PR based on another feature branch stays unchecked until it is retargeted | CI | Workaround used in PR #7 (retarget to `main`); a `pull_request` filter on the working branches, or a documented retarget step in `CONTRIBUTING.md`, would fix it |
 
 ## 6.2 Real-file compression check (2026-10-25, generated PDFs, production build)
 
@@ -275,8 +279,8 @@ The rule allows: protocol constants that are fixed by a specification (for examp
 
 ## 9. Suggested order
 
-1. ~~Merge PR #2 and PR #3.~~ Done. A1.3 is done (IN REVIEW); A1.4 and A2.2 need real scans from the owner; A1.5 follows them; then the compression flip (owner approval).
-2. Start B1 (i18n and RTL), so later work doesn't add more hardcoded strings. In parallel, do A7 (shallow tools) and A7.10 (copy).
+1. ~~Merge PR #2 and PR #3.~~ Done. A1.3 is done (IN REVIEW in PR #6); A1.4 and A2.2 need real scans from the owner; A1.5 follows them; then the compression flip (owner approval).
+2. Start B1 (i18n and RTL), so later work doesn't add more hardcoded strings. The A7 shallow-tool work is in review: PR #6 (A1.3, A7.1, A7.2, A7.5, A7.7, A7.9, A7.10, backlog #15) and PR #7 (A7.3, A7.4, A7.6, A6.3); only A7.8 (sign-pdf wording) is ONGOING.
 3. Decide on qpdf → A3. Decide on the redaction engine → A4.
 4. A5.1, A6.1, and B8 (skin fixes).
 5. B2–B7, then Phases C, D and E in order.
@@ -285,9 +289,9 @@ The rule allows: protocol constants that are fixed by a specification (for examp
 
 Items found during the Phase A work that are easy to lose track of. Each one points to the milestone or decision that owns it.
 
-1. **PRs #2, #3 and #4 are merged.** The next slice is the branch `phase-a/next-items` (A1.3, A7.1, A7.2, A7.5, A7.7, A7.9, A7.10, backlog #15).
+1. **PRs #2, #3 and #4 are merged.** Two slices are open: PR #6, `phase-a/next-items` (A1.3, A7.1, A7.2, A7.5, A7.7, A7.9, A7.10, backlog #15), and PR #7, `phase-a/shallow-tools-2` (A7.3, A7.4, A7.6, A6.3). #7 was built on #6's branch, but its base is `main` because CI only runs for pull requests based on `main` (backlog #23); until #6 merges, #7's diff shows both slices.
 2. **Compression is not switched on.** It passed on generated files in the production build (§6.2). The real UI has not been checked with real scans, in Firefox, or on mobile (A2.2). The flip to `limited` needs the owner's OK.
-3. **OCR has no end-to-end test.** Its release checklist is incomplete (A1.3–A1.5).
+3. **OCR's release checklist is incomplete.** The e2e test is in PR #6 (A1.3); A1.4 (real scans) and A1.5 (CSP/data-flow audit) still need the owner's scans.
 4. **Decisions are waiting on the owner** (§8): qpdf, the redaction engine (PDFium vs AGPL MuPDF), the camera policy, the owner-password-only unlock policy, and the AI route.
 5. **The UI is English only.** Do B1 (i18n, Arabic and RTL) early. Every new screen built before B1 adds strings to move later.
 6. **Some tool descriptions copy competitor wording** (A7.10). Rewrite them before any public launch.

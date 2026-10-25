@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { DragDropContext, Droppable, Draggable, DropResult } from '@hello-pangea/dnd';
-import { Image as ImageIcon, X, GripVertical, Plus } from 'lucide-react';
+import { AlertTriangle, Image as ImageIcon, X, GripVertical, Plus } from 'lucide-react';
 import ToolLayout from '../../components/tools/ToolLayout';
 import FileUploadZone from '../../components/tools/FileUploadZone';
 import ProcessingState from '../../components/tools/ProcessingState';
 import DownloadState from '../../components/tools/DownloadState';
-import { jpgsToPdf } from '../../lib/image';
+import { convertImagesToPdf, type ImageFit, type ImagePageSize } from '../../lib/image';
+import { DEFAULT_FIT, DEFAULT_IMAGE_DPI, DEFAULT_PAGE_SIZE } from '../../constants/jpgToPdf';
 import { logError } from '../../lib/logger';
 import { useDropzone } from 'react-dropzone';
 import { cn } from '../../lib/utils';
@@ -14,11 +15,25 @@ import { IMAGE_ACCEPT } from '../../types/dropzone';
 
 type Step = 'upload' | 'configure' | 'processing' | 'download';
 
+const PAGE_SIZE_OPTIONS: { value: ImagePageSize; label: string }[] = [
+  { value: 'image', label: 'Image size' },
+  { value: 'a4', label: 'A4' },
+  { value: 'letter', label: 'Letter' },
+];
+
+const FIT_OPTIONS: { value: ImageFit; label: string }[] = [
+  { value: 'contain', label: 'Contain - keep the whole image, add margins' },
+  { value: 'fill', label: 'Fill - stretch the image to the page' },
+];
+
 export default function JpgToPdf() {
   const [step, setStep] = useState<Step>('upload');
   const [files, setFiles] = useState<File[]>([]);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [resultSize, setResultSize] = useState<string>('');
+  const [pageSize, setPageSize] = useState<ImagePageSize>(DEFAULT_PAGE_SIZE);
+  const [fit, setFit] = useState<ImageFit>(DEFAULT_FIT);
+  const [skippedFiles, setSkippedFiles] = useState<string[]>([]);
   const { showToast } = useToast();
 
   const handleFilesSelected = (newFiles: File[]) => {
@@ -50,9 +65,10 @@ export default function JpgToPdf() {
 
     setStep('processing');
     try {
-      const pdfBytes = await jpgsToPdf(files);
+      const { bytes, skipped } = await convertImagesToPdf(files, { pageSize, fit });
+      setSkippedFiles(skipped);
       
-      const blob = new Blob([pdfBytes], { type: 'application/pdf' });
+      const blob = new Blob([bytes], { type: 'application/pdf' });
       const url = URL.createObjectURL(blob);
       
       setResultUrl(url);
@@ -61,7 +77,10 @@ export default function JpgToPdf() {
     } catch (error) {
       logError('Error converting JPGs to PDF:', error);
       showToast({
-        message: 'An error occurred while converting. Please try again.',
+        message:
+          error instanceof Error && error.message
+            ? error.message
+            : 'An error occurred while converting. Please try again.',
         type: 'error',
         duration: 5000,
       });
@@ -71,6 +90,7 @@ export default function JpgToPdf() {
 
   const startOver = () => {
     setFiles([]);
+    setSkippedFiles([]);
     if (resultUrl) {
       URL.revokeObjectURL(resultUrl);
       setResultUrl(null);
@@ -168,6 +188,54 @@ export default function JpgToPdf() {
             </DragDropContext>
           </div>
 
+          <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-sm p-6 mb-8">
+            <h3 className="text-lg font-semibold text-[var(--text)] mb-4">Page layout</h3>
+            <div className="grid gap-4 sm:grid-cols-2">
+              <div>
+                <label htmlFor="page-size" className="block text-sm font-medium text-[var(--text-2)] mb-2">
+                  Page size
+                </label>
+                <select
+                  id="page-size"
+                  value={pageSize}
+                  onChange={(event) => setPageSize(event.target.value as ImagePageSize)}
+                  className="w-full p-3 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-[var(--text)]"
+                >
+                  {PAGE_SIZE_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {pageSize !== 'image' && (
+                <div>
+                  <label htmlFor="image-fit" className="block text-sm font-medium text-[var(--text-2)] mb-2">
+                    Image fit
+                  </label>
+                  <select
+                    id="image-fit"
+                    value={fit}
+                    onChange={(event) => setFit(event.target.value as ImageFit)}
+                    className="w-full p-3 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-[var(--text)]"
+                  >
+                    {FIT_OPTIONS.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+            </div>
+            <p className="text-sm text-[var(--text-3)] mt-3">
+              Image size keeps every page at the image&apos;s own dimensions, using the DPI stored in
+              the image ({DEFAULT_IMAGE_DPI} DPI when none is stored). A4 and Letter place every
+              image on the same standard page.
+            </p>
+          </div>
+
           <div className="flex justify-center">
             <button 
               onClick={handleConvert}
@@ -187,14 +255,30 @@ export default function JpgToPdf() {
       )}
 
       {step === 'download' && resultUrl && (
-        <DownloadState 
-          title="PDF created successfully!"
-          description="Your images have been combined into a single PDF file."
-          fileName="images.pdf"
-          fileUrl={resultUrl}
-          fileSize={resultSize}
-          onStartOver={startOver}
-        />
+        <div className="w-full max-w-[680px]">
+          <DownloadState 
+            title="PDF created successfully!"
+            description="Your images have been combined into a single PDF file."
+            fileName="images.pdf"
+            fileUrl={resultUrl}
+            fileSize={resultSize}
+            onStartOver={startOver}
+          />
+          {skippedFiles.length > 0 && (
+            <div role="status" className="mt-6 rounded-xl border border-yellow-300 bg-yellow-50 p-4 text-left">
+              <div className="flex items-start gap-3">
+                <AlertTriangle size={20} className="mt-0.5 flex-shrink-0 text-yellow-600" aria-hidden="true" />
+                <div>
+                  <h3 className="font-semibold text-yellow-800">Some images were skipped</h3>
+                  <p className="text-sm text-yellow-700 mt-1">
+                    These files could not be read as JPEG or PNG images, so they are not in the PDF:{' '}
+                    {skippedFiles.join(', ')}.
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       )}
     </ToolLayout>
   );
