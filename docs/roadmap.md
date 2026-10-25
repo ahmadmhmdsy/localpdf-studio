@@ -226,6 +226,7 @@ Each new tool is added through the feature registry and the catalog, with its li
 | 20 | No desktop e2e: CI only runs `rustfmt` and `cargo check` for `src-tauri`, with no WebDriver coverage | QA, Desktop | Verified once manually with tauri-driver 2.1.0 and msedgedriver 155 (home, SPA navigation, remove-pages). A repeatable spec needs a driver in CI; ask the owner before adding one |
 | 21 | The shared upload zone reports a magic-byte failure with "appears to be corrupted or not a valid PDF" even on image tools | Copy | A7.4 follow-up: make the message name the tool's accepted formats |
 | 22 | The upload zone's magic-byte list and each converter's real capability disagree: WebP is accepted at upload and then skipped at conversion | Upload UX | A7.4 follow-up: one source of truth for accepted formats (drop WebP from the accept list, or let the converter report every unsupported file) |
+| 23 | CI only triggers for pull requests whose base is `main`, so a stacked PR based on another feature branch stays unchecked until it is retargeted | CI | Workaround used in PR #7 (retarget to `main`); a `pull_request` filter on the working branches, or a documented retarget step in `CONTRIBUTING.md`, would fix it |
 
 ## 6.2 Real-file compression check (2026-10-25, generated PDFs, production build)
 
@@ -288,7 +289,7 @@ The rule allows: protocol constants that are fixed by a specification (for examp
 
 Items found during the Phase A work that are easy to lose track of. Each one points to the milestone or decision that owns it.
 
-1. **PRs #2, #3 and #4 are merged.** Two slices are open: PR #6, `phase-a/next-items` (A1.3, A7.1, A7.2, A7.5, A7.7, A7.9, A7.10, backlog #15), and PR #7, `phase-a/shallow-tools-2` (A7.3, A7.4, A7.6, A6.3), which is based on PR #6's branch and should be retargeted to `main` if #6 merges first.
+1. **PRs #2, #3 and #4 are merged.** Two slices are open: PR #6, `phase-a/next-items` (A1.3, A7.1, A7.2, A7.5, A7.7, A7.9, A7.10, backlog #15), and PR #7, `phase-a/shallow-tools-2` (A7.3, A7.4, A7.6, A6.3). #7 was built on #6's branch, but its base is `main` because CI only runs for pull requests based on `main` (backlog #23); until #6 merges, #7's diff shows both slices.
 2. **Compression is not switched on.** It passed on generated files in the production build (§6.2). The real UI has not been checked with real scans, in Firefox, or on mobile (A2.2). The flip to `limited` needs the owner's OK.
 3. **OCR's release checklist is incomplete.** The e2e test is in PR #6 (A1.3); A1.4 (real scans) and A1.5 (CSP/data-flow audit) still need the owner's scans.
 4. **Decisions are waiting on the owner** (§8): qpdf, the redaction engine (PDFium vs AGPL MuPDF), the camera policy, the owner-password-only unlock policy, and the AI route.
