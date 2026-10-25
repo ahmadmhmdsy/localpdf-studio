@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { get, set } from 'idb-keyval';
 import type { SkinId } from '../theme';
+import { DEFAULT_LOCALE, isLocale, type Locale } from '../i18n';
 
 /**
  * Persisted UI preferences (skin + darkMode) live in IndexedDB so they survive
@@ -11,6 +12,7 @@ const PREF_KEY = 'ui-preferences';
 type PersistedPrefs = {
   darkMode?: boolean;
   skin?: 'glass' | 'bento';
+  locale?: string;
 };
 
 async function loadPrefs(): Promise<PersistedPrefs> {
@@ -44,6 +46,8 @@ interface ToolsState {
   /** 'glass' = current floating-pill chrome with dark glassmorphism.
    *  'bento' = sidebar-nav + bento grid layout. */
   skin: SkinId;
+  /** Active UI language; Arabic drives `dir="rtl"` on <html>. */
+  locale: Locale;
   /** True until persisted preferences finish loading from IndexedDB.
    *  Prevents a flash of the wrong theme/skin on first paint. */
   hydrated: boolean;
@@ -58,6 +62,8 @@ interface ToolsState {
   setDarkMode: (darkMode: boolean) => void;
   toggleDarkMode: () => void;
   setSkin: (skin: SkinId) => void;
+  /** Switch the UI language and persist the choice with the other preferences. */
+  setLocale: (locale: Locale) => void;
   /** Read persisted prefs from IndexedDB and apply them. Call once at app boot. */
   hydrate: () => Promise<void>;
   togglePropertiesPanel: () => void;
@@ -71,6 +77,7 @@ export const useToolsStore = create<ToolsState>((setStore, getStore) => ({
   activeTool: null,
   darkMode: initialPrefs.darkMode ?? false,
   skin: initialPrefs.skin ?? 'glass',
+  locale: DEFAULT_LOCALE,
   hydrated: false,
   propertiesPanelVisible: true,
   aiConsentGiven: false,
@@ -81,13 +88,13 @@ export const useToolsStore = create<ToolsState>((setStore, getStore) => ({
   setDarkMode: (darkMode) => {
     setStore({ darkMode });
     const cur = getStore();
-    void savePrefs({ darkMode, skin: cur.skin });
+    void savePrefs({ darkMode, skin: cur.skin, locale: cur.locale });
   },
 
   toggleDarkMode: () => {
     setStore((state) => {
       const newDarkMode = !state.darkMode;
-      void savePrefs({ darkMode: newDarkMode, skin: state.skin });
+      void savePrefs({ darkMode: newDarkMode, skin: state.skin, locale: state.locale });
       return { darkMode: newDarkMode };
     });
   },
@@ -95,7 +102,13 @@ export const useToolsStore = create<ToolsState>((setStore, getStore) => ({
   setSkin: (skin) => {
     setStore({ skin });
     const cur = getStore();
-    void savePrefs({ darkMode: cur.darkMode, skin });
+    void savePrefs({ darkMode: cur.darkMode, skin, locale: cur.locale });
+  },
+
+  setLocale: (locale) => {
+    setStore({ locale });
+    const cur = getStore();
+    void savePrefs({ darkMode: cur.darkMode, skin: cur.skin, locale });
   },
 
   hydrate: async () => {
@@ -103,6 +116,7 @@ export const useToolsStore = create<ToolsState>((setStore, getStore) => ({
     setStore({
       darkMode: prefs.darkMode ?? false,
       skin: prefs.skin ?? 'glass',
+      locale: isLocale(prefs.locale) ? prefs.locale : DEFAULT_LOCALE,
       hydrated: true,
     });
   },

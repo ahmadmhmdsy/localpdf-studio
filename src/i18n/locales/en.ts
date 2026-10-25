@@ -1,0 +1,77 @@
+/**
+ * English messages (source locale).
+ *
+ * Every user-visible string in the shared shell and the shared tool chrome
+ * lives here; components read them through `useI18n()`. Keys are flat so a
+ * missing translation is a type error (see `ar.ts`, typed as
+ * `Record<MessageKey, string>`).
+ */
+export const en = {
+  'shell.brand': 'LocalPDF Studio',
+  'shell.skipToContent': 'Skip to main content',
+  'shell.visualEditor': 'Visual Editor',
+  'shell.allTools': 'All PDF Tools',
+  'shell.nav.mergePdf': 'Merge PDF',
+  'shell.nav.splitPdf': 'Split PDF',
+  'shell.nav.pdfToJpg': 'PDF to JPG',
+  'shell.nav.jpgToPdf': 'JPG to PDF',
+  'shell.nav.site': 'Site navigation',
+  'shell.theme.toLight': 'Switch to light mode',
+  'shell.theme.toDark': 'Switch to dark mode',
+  'shell.language.switch': 'Change language',
+  'shell.skin.change': 'Change skin (current: {label})',
+  'shell.skin.choose': 'Choose a skin',
+  'shell.menu.open': 'Open menu',
+  'shell.menu.close': 'Close menu',
+  'shell.settings.open': 'Open settings',
+  'shell.footer.copyright':
+    '© {year} LocalPDF Studio. Most tools are processed in your browser; AI and camera tools are unavailable in the public beta and send nothing; OCR runs on your device.',
+
+  'shell.sidebar.brandMark': 'LocalPDF',
+  'shell.sidebar.primary': 'Primary',
+  'shell.sidebar.home': 'LocalPDF Studio — home',
+  'shell.sidebar.workspace': 'Workspace',
+  'shell.sidebar.workspace.allTools': 'All Tools',
+  'shell.sidebar.workspace.visualEditor': 'Visual Editor',
+  'shell.sidebar.workspace.quickPicks': 'Quick picks',
+  'shell.sidebar.quickTools': 'Quick tools',
+  'shell.sidebar.quick': 'Quick',
+  'shell.sidebar.quick.mergePdf': 'Merge PDF',
+  'shell.sidebar.quick.splitPdf': 'Split PDF',
+  'shell.sidebar.quick.pdfJpg': 'PDF ↔ JPG',
+  'shell.sidebar.quick.signPdf': 'Sign PDF',
+  'shell.sidebar.help': 'Help',
+  'shell.sidebar.help.dataHandling': 'Data handling',
+  'shell.sidebar.light': 'Light',
+  'shell.sidebar.dark': 'Dark',
+  'shell.sidebar.version': 'v1.0 · local-first',
+
+  'chrome.upload.selectPdfs': 'Select PDF files',
+  'chrome.upload.dropPdfs': 'or drop PDFs here',
+  'chrome.upload.selectAria': 'Select PDF files',
+  'chrome.upload.choose': 'Choose files',
+  'chrome.upload.browse': 'Browse from disk…',
+  'chrome.upload.browseAria': 'Browse files from disk (native)',
+  'chrome.upload.maxSize': 'Maximum {max}MB per file',
+  'chrome.upload.tooLarge': 'File "{name}" exceeds the {max}MB size limit',
+  'chrome.upload.corrupted': 'File "{name}" appears to be corrupted or not a valid PDF',
+  'chrome.upload.nativePickerFailed': 'Native file picker failed: {message}',
+  'chrome.processing.aria': 'Processing your files',
+  'chrome.processing.title': 'Processing your files',
+  'chrome.processing.description': 'Please wait while we process your document locally.',
+  'chrome.processing.step.validating': 'Validating files',
+  'chrome.processing.step.pages': 'Processing pages…',
+  'chrome.processing.step.finalizing': 'Finalizing',
+  'chrome.download.defaultTitle': 'Merged successfully',
+  'chrome.download.defaultDescription': 'Your document is ready for download.',
+  'chrome.download.button': 'Download',
+  'chrome.download.buttonNamed': 'Download {name}',
+  'chrome.download.startOver': 'Start over',
+  'chrome.download.readFailed': 'Could not read the generated file for saving.',
+  'chrome.download.saveTitle': 'Save file',
+  'chrome.download.saved': 'Saved to {path}',
+  'chrome.download.saveFailed': 'Native save failed: {message}',
+  'chrome.steps.aria': 'Progress steps',
+} as const;
+
+export type MessageKey = keyof typeof en;

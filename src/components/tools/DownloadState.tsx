@@ -3,6 +3,7 @@ import { Download, RotateCcw } from 'lucide-react';
 import { useToast } from '../../contexts/ToastContext';
 import { isTauri, saveFile } from '../../lib/native';
 import { logError } from '../../lib/logger';
+import { useI18n } from '../../i18n/useI18n';
 
 interface DownloadStateProps {
   fileName?: string;
@@ -18,10 +19,13 @@ export default function DownloadState({
   fileUrl,
   fileSize,
   onStartOver,
-  title = 'Merged successfully',
-  description = 'Your document is ready for download.',
+  title,
+  description,
 }: DownloadStateProps) {
   const { showToast } = useToast();
+  const { t } = useI18n();
+  const resolvedTitle = title ?? t('chrome.download.defaultTitle');
+  const resolvedDescription = description ?? t('chrome.download.defaultDescription');
 
   /**
    * Resolve the file blob behind fileUrl (which may be a blob: URL or any
@@ -57,7 +61,7 @@ export default function DownloadState({
     const bytes = await fetchBytes();
     if (!bytes) {
       showToast({
-        message: 'Could not read the generated file for saving.',
+        message: t('chrome.download.readFailed'),
         type: 'error',
         duration: 4000,
       });
@@ -68,24 +72,26 @@ export default function DownloadState({
       const saved = await saveFile({
         defaultName: fileName || 'document.pdf',
         extensions: [ext],
-        title: 'Save file',
+        title: t('chrome.download.saveTitle'),
         data: bytes,
       });
       if (saved) {
         showToast({
-          message: 'Saved to ' + saved,
+          message: t('chrome.download.saved', { path: saved }),
           type: 'success',
           duration: 3000,
         });
       }
     } catch (err) {
       showToast({
-        message: 'Native save failed: ' + (err instanceof Error ? err.message : String(err)),
+        message: t('chrome.download.saveFailed', {
+          message: err instanceof Error ? err.message : String(err),
+        }),
         type: 'error',
         duration: 5000,
       });
     }
-  }, [fileUrl, fileName, fetchBytes, showToast]);
+  }, [fileUrl, fileName, fetchBytes, showToast, t]);
 
   return (
     <div
@@ -169,7 +175,7 @@ export default function DownloadState({
             color: 'var(--text)',
           }}
         >
-          {title}
+          {resolvedTitle}
         </h2>
 
         <p
@@ -180,7 +186,7 @@ export default function DownloadState({
             fontFamily: 'sans-serif',
           }}
         >
-          {description}
+          {resolvedDescription}
         </p>
 
         {fileSize && (
@@ -229,7 +235,9 @@ export default function DownloadState({
               }}
             >
               <Download size={18} />
-              Download{fileName ? ` ${fileName}` : ''}
+              {fileName
+                ? t('chrome.download.buttonNamed', { name: fileName })
+                : t('chrome.download.button')}
             </a>
           ) : (
             <button
@@ -254,7 +262,7 @@ export default function DownloadState({
               }}
             >
               <Download size={18} />
-              Download
+              {t('chrome.download.button')}
             </button>
           )}
 
@@ -278,7 +286,7 @@ export default function DownloadState({
             }}
           >
             <RotateCcw size={16} />
-            Start over
+            {t('chrome.download.startOver')}
           </button>
         </div>
       </div>

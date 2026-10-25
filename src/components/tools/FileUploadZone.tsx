@@ -6,6 +6,7 @@ import { useToast } from '../../contexts/ToastContext';
 import { PDF_ACCEPT } from '../../types/dropzone';
 import { MAX_FILE_SIZE_BYTES, MAX_FILE_SIZE_MB } from '../../constants/limits';
 import { isTauri, pickFilesAsFiles } from '../../lib/native';
+import { useI18n } from '../../i18n/useI18n';
 
 interface FileUploadZoneProps {
   onFilesSelected: (files: File[]) => void;
@@ -19,14 +20,19 @@ interface FileUploadZoneProps {
 
 export default function FileUploadZone({
   onFilesSelected,
-  title = "Select PDF files",
-  subtitle = "or drop PDFs here",
+  title,
+  subtitle,
   accept = PDF_ACCEPT,
   maxFiles = 0,
-  ariaLabel = "Select PDF files",
+  ariaLabel,
   maxSize = MAX_FILE_SIZE_BYTES
 }: FileUploadZoneProps) {
   const { showToast } = useToast();
+  const { t } = useI18n();
+
+  const resolvedTitle = title ?? t('chrome.upload.selectPdfs');
+  const resolvedSubtitle = subtitle ?? t('chrome.upload.dropPdfs');
+  const resolvedAriaLabel = ariaLabel ?? t('chrome.upload.selectAria');
 
   const validateMagicBytes = useCallback(async (file: File): Promise<boolean> => {
     const ext = file.name.toLowerCase().split('.').pop() || '';
@@ -77,7 +83,7 @@ export default function FileUploadZone({
       if (file.size > maxSize) {
         const sizeMB = (maxSize / 1024 / 1024).toFixed(0);
         showToast({
-          message: `File "${file.name}" exceeds the ${sizeMB}MB size limit`,
+          message: t('chrome.upload.tooLarge', { name: file.name, max: sizeMB }),
           type: 'error',
           duration: 5000,
         });
@@ -87,7 +93,7 @@ export default function FileUploadZone({
       const isValid = await validateMagicBytes(file);
       if (!isValid) {
         showToast({
-          message: `File "${file.name}" appears to be corrupted or not a valid PDF`,
+          message: t('chrome.upload.corrupted', { name: file.name }),
           type: 'error',
           duration: 5000,
         });
@@ -105,7 +111,7 @@ export default function FileUploadZone({
     if (validFiles.length > 0) {
       onFilesSelected(validFiles);
     }
-  }, [onFilesSelected, maxSize, validateMagicBytes, showToast]);
+  }, [onFilesSelected, maxSize, validateMagicBytes, showToast, t]);
 
   /**
    * Open the OS-native file dialog when running inside Tauri. The picked
@@ -128,7 +134,7 @@ export default function FileUploadZone({
       const files = await pickFilesAsFiles({
         extensions: extensions.length ? extensions : ['pdf'],
         multiple: maxFiles !== 1,
-        title,
+        title: resolvedTitle,
       });
       if (files.length > 0) {
         // Reuse the same validation pipeline as drop.
@@ -136,12 +142,14 @@ export default function FileUploadZone({
       }
     } catch (err) {
       showToast({
-        message: 'Native file picker failed: ' + (err instanceof Error ? err.message : String(err)),
+        message: t('chrome.upload.nativePickerFailed', {
+          message: err instanceof Error ? err.message : String(err),
+        }),
         type: 'error',
         duration: 5000,
       });
     }
-  }, [accept, maxFiles, onDrop, showToast, title]);
+  }, [accept, maxFiles, onDrop, showToast, resolvedTitle, t]);
 
   const { getRootProps, getInputProps, isDragActive } = useDropzone({
     onDrop,
@@ -165,7 +173,7 @@ export default function FileUploadZone({
         transition: 'border-color var(--transition), box-shadow var(--transition)',
       }}
     >
-      <input {...getInputProps()} aria-label={ariaLabel} />
+      <input {...getInputProps()} aria-label={resolvedAriaLabel} />
       
       <div
         className={cn('dropzone-card', isDragActive && 'drag-over')}
@@ -245,7 +253,7 @@ export default function FileUploadZone({
             marginBottom: '6px',
             color: 'var(--text)',
           }}>
-            {title}
+            {resolvedTitle}
           </h2>
           <p style={{
             color: 'var(--text-3)',
@@ -253,7 +261,7 @@ export default function FileUploadZone({
             marginBottom: '28px',
             fontFamily: 'sans-serif',
           }}>
-            {subtitle}
+            {resolvedSubtitle}
           </p>
 
           <div className="btn-row" style={{
@@ -281,14 +289,14 @@ export default function FileUploadZone({
             }}
             type="button"
             >
-              Choose files
+              {t('chrome.upload.choose')}
             </button>
             {isTauri() && (
               <button
                 className="btn"
                 type="button"
                 onClick={(e) => { e.stopPropagation(); void handleNativePick(); }}
-                aria-label="Browse files from disk (native)"
+                aria-label={t('chrome.upload.browseAria')}
                 style={{
                   display: 'inline-flex',
                   alignItems: 'center',
@@ -307,7 +315,7 @@ export default function FileUploadZone({
                 }}
               >
                 <FolderOpen size={18} aria-hidden="true" />
-                Browse from disk…
+                {t('chrome.upload.browse')}
               </button>
             )}
           </div>
@@ -333,7 +341,7 @@ export default function FileUploadZone({
               display: 'inline-block',
               marginRight: '5px',
             }} aria-hidden="true" />
-            Maximum {MAX_FILE_SIZE_MB}MB per file
+            {t('chrome.upload.maxSize', { max: MAX_FILE_SIZE_MB })}
           </span>
         </div>
       </div>

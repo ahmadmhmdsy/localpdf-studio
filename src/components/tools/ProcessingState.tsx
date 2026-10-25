@@ -1,4 +1,5 @@
 import { cn } from '../../lib/utils';
+import { useI18n } from '../../i18n/useI18n';
 
 interface ProcessingStateProps {
   title?: string;
@@ -9,12 +10,6 @@ interface ProcessingStateProps {
   steps?: string[];
 }
 
-const DEFAULT_STEPS = [
-  'Validating files',
-  'Processing pages…',
-  'Finalizing',
-];
-
 export default function ProcessingState({
   title,
   description,
@@ -22,8 +17,16 @@ export default function ProcessingState({
   statusMessage,
   steps,
 }: ProcessingStateProps) {
+  const { t } = useI18n();
   const clampedProgress = Math.min(100, Math.max(0, progress));
-  const activeSteps = steps && steps.length > 0 ? steps : DEFAULT_STEPS;
+  const activeSteps =
+    steps && steps.length > 0
+      ? steps
+      : [
+          t('chrome.processing.step.validating'),
+          t('chrome.processing.step.pages'),
+          t('chrome.processing.step.finalizing'),
+        ];
   
   const getActiveStep = (): number => {
     if (clampedProgress < 35) return 0;
@@ -46,7 +49,7 @@ export default function ProcessingState({
       }}
       role="status"
       aria-live="polite"
-      aria-label="Processing your files"
+      aria-label={t('chrome.processing.aria')}
     >
       <div
         className="processing-card"
@@ -136,7 +139,7 @@ export default function ProcessingState({
             color: 'var(--text)',
           }}
         >
-          {statusMessage || title || 'Processing your files'}
+          {statusMessage || title || t('chrome.processing.title')}
         </h2>
 
         <p
@@ -147,7 +150,7 @@ export default function ProcessingState({
             fontFamily: 'sans-serif',
           }}
         >
-          {description || 'Please wait while we process your document locally.'}
+          {description || t('chrome.processing.description')}
         </p>
 
         <div className="processing-steps" style={{

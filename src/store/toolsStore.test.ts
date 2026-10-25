@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { get, set } from 'idb-keyval';
 import { useToolsStore } from './toolsStore';
 
 vi.mock('idb-keyval', () => ({
@@ -17,6 +18,7 @@ describe('toolsStore', () => {
       zoom: 1,
       activeTool: null,
       darkMode: false,
+      locale: 'en',
     });
   });
 
@@ -87,6 +89,34 @@ describe('toolsStore', () => {
       useToolsStore.getState().setDarkMode(true);
       useToolsStore.getState().toggleDarkMode();
       expect(useToolsStore.getState().darkMode).toBe(false);
+    });
+  });
+
+  describe('locale', () => {
+    it('defaults to English', () => {
+      expect(useToolsStore.getState().locale).toBe('en');
+    });
+
+    it('switches to Arabic and persists it with the other preferences', () => {
+      useToolsStore.getState().setLocale('ar');
+      expect(useToolsStore.getState().locale).toBe('ar');
+      expect(set).toHaveBeenCalledWith('ui-preferences', {
+        darkMode: false,
+        skin: 'glass',
+        locale: 'ar',
+      });
+    });
+
+    it('hydrates a persisted Arabic choice', async () => {
+      vi.mocked(get).mockResolvedValueOnce({ locale: 'ar' });
+      await useToolsStore.getState().hydrate();
+      expect(useToolsStore.getState().locale).toBe('ar');
+    });
+
+    it('ignores an unsupported persisted locale', async () => {
+      vi.mocked(get).mockResolvedValueOnce({ locale: 'fr' });
+      await useToolsStore.getState().hydrate();
+      expect(useToolsStore.getState().locale).toBe('en');
     });
   });
 

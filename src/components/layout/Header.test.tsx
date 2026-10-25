@@ -1,8 +1,9 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import Header from './Header';
 import { renderWithProviders } from '../../tests/utils';
+import { useToolsStore } from '../../store/toolsStore';
 
 // Re-export under the same local name to keep the existing test bodies unchanged.
 // renderWithProviders already wraps in ToastProvider + EditorProvider + BrowserRouter.
@@ -13,6 +14,11 @@ describe('Header', () => {
 
   beforeEach(() => {
     user = userEvent.setup();
+    useToolsStore.setState({ locale: 'en' });
+  });
+
+  afterEach(() => {
+    useToolsStore.setState({ locale: 'en' });
   });
 
   it('renders the app title', () => {
@@ -44,6 +50,22 @@ describe('Header', () => {
   it('has an All PDF Tools link', () => {
     renderWithRouter(<Header />);
     expect(screen.getByRole('link', { name: /All PDF Tools/i })).toHaveAttribute('href', '/');
+  });
+
+  // ----- Language switch -----
+
+  it('switches the chrome to Arabic and back', async () => {
+    renderWithRouter(<Header />);
+    await user.click(screen.getByRole('button', { name: /Change language/i }));
+
+    expect(useToolsStore.getState().locale).toBe('ar');
+    expect(screen.getByRole('link', { name: 'كل أدوات PDF' })).toHaveAttribute('href', '/');
+    expect(screen.getByRole('link', { name: 'المحرر المرئي' })).toHaveAttribute('href', '/editor');
+    expect(screen.getByRole('button', { name: /تغيير اللغة/i })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: /تغيير اللغة/i }));
+    expect(useToolsStore.getState().locale).toBe('en');
+    expect(screen.getByRole('link', { name: /All PDF Tools/i })).toBeInTheDocument();
   });
 
   // ----- Mobile drawer -----

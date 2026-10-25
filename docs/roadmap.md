@@ -56,6 +56,7 @@ This is the single place to see what is done, what is in review and what is next
 | This roadmap and the no-hardcoding rule | DONE | PR #4, merged |
 | OCR e2e (A1.3), shallow-tool fixes (A7.1, A7.2, A7.5, A7.7, A7.9, A7.10), generated tool routes (backlog #15) | IN REVIEW | [PR #6](https://github.com/ahmadmhmdsy/localpdf-studio/pull/6), `phase-a/next-items` |
 | HTML-to-PDF pagination and orientation (A7.3), DPI-aware JPG-to-PDF (A7.4), watermark options (A7.6), office-chunk recheck (A6.3) | IN REVIEW | [PR #7](https://github.com/ahmadmhmdsy/localpdf-studio/pull/7), `phase-a/shallow-tools-2` |
+| i18n foundation and RTL (B1.1): typed English/Arabic catalogs, persisted locale, header language switcher, `dir="rtl"`, translated shell and tool chrome | IN REVIEW | [PR #8](https://github.com/ahmadmhmdsy/localpdf-studio/pull/8), `phase-b/i18n-foundation` |
 
 **Tool release states on `main`, from `src/config/featureRegistry.ts`:**
 - `ocr-pdf` is `limited`.
@@ -161,6 +162,16 @@ Goal: every catalog tool delivers what its name promises, locally, or stays `dis
 | B6 | **Command palette** (Ctrl+K), built from the feature registry, not a second list | None | Keyboard only; screen-reader labels |
 | B7 | **One result screen** for every tool: download, continue with another tool, start over | B4 | The same component on every tool page |
 | B8 | **Skin and visual fixes found during the README work:** the glass skin's header overlaps content at 1440 px; the editor's "Export Page" button is clipped in Bento; the "UNAVAILABLE" badge is misplaced in the glass skin; in editor dark mode the PDF page renders inverted | None | Screenshot tests per skin (Playwright) |
+
+**B1 slices:**
+
+| ID | Scope | Status |
+|---|---|---|
+| B1.1 | i18n foundation with no new dependency: flat `en`/`ar` catalogs in `src/i18n/locales/`, typed keys, interpolation, the locale in the persisted UI store, a `DocumentLanguage` component syncing `lang`/`dir` on `<html>`, a header language switcher, and the shared shell and tool chrome (Header, Sidebar, Footer, Layout skip link, FileUploadZone, ProcessingState, DownloadState, StepTrack) translated. RTL e2e plus an Arabic axe scan. | IN REVIEW |
+| B1.2 | Catalog data and the home page: tool names, descriptions, categories and the home hero/cards come from locale files; the other skins' home copy follows. | READY, after B1.1 |
+| B1.3 | Tool pages: `ToolLayout` title/description and every per-tool literal move to catalogs, one tool group per PR. | READY, after B1.1 |
+| B1.4 | Remaining surfaces: editor, onboarding tour, toasts, settings, error boundaries, Limitations, NotFound. | READY, after B1.2 and B1.3 |
+| B1.5 | Feedback loop: a test or lint guard that fails on new user-visible literals in migrated areas, and an Arabic copy review by the owner (native speaker) before release. | READY, after B1.4 |
 
 ---
 
@@ -280,7 +291,7 @@ The rule allows: protocol constants that are fixed by a specification (for examp
 ## 9. Suggested order
 
 1. ~~Merge PR #2 and PR #3.~~ Done. A1.3 is done (IN REVIEW in PR #6); A1.4 and A2.2 need real scans from the owner; A1.5 follows them; then the compression flip (owner approval).
-2. Start B1 (i18n and RTL), so later work doesn't add more hardcoded strings. The A7 shallow-tool work is in review: PR #6 (A1.3, A7.1, A7.2, A7.5, A7.7, A7.9, A7.10, backlog #15) and PR #7 (A7.3, A7.4, A7.6, A6.3); only A7.8 (sign-pdf wording) is ONGOING.
+2. B1 (i18n and RTL) has started: B1.1 (the no-dependency foundation plus the shared shell and tool chrome) is IN REVIEW in PR #8; B1.2 (catalog and home) and B1.3 (tool pages) follow. The A7 shallow-tool work is in review: PR #6 (A1.3, A7.1, A7.2, A7.5, A7.7, A7.9, A7.10, backlog #15) and PR #7 (A7.3, A7.4, A7.6, A6.3); only A7.8 (sign-pdf wording) is ONGOING.
 3. Decide on qpdf → A3. Decide on the redaction engine → A4.
 4. A5.1, A6.1, and B8 (skin fixes).
 5. B2–B7, then Phases C, D and E in order.
@@ -293,7 +304,7 @@ Items found during the Phase A work that are easy to lose track of. Each one poi
 2. **Compression is not switched on.** It passed on generated files in the production build (§6.2). The real UI has not been checked with real scans, in Firefox, or on mobile (A2.2). The flip to `limited` needs the owner's OK.
 3. **OCR's release checklist is incomplete.** The e2e test is in PR #6 (A1.3); A1.4 (real scans) and A1.5 (CSP/data-flow audit) still need the owner's scans.
 4. **Decisions are waiting on the owner** (§8): qpdf, the redaction engine (PDFium vs AGPL MuPDF), the camera policy, the owner-password-only unlock policy, and the AI route.
-5. **The UI is English only.** Do B1 (i18n, Arabic and RTL) early. Every new screen built before B1 adds strings to move later.
+5. **The UI is still mostly English.** B1.1 (in review) adds the catalogs, the store-backed locale, the header switcher, `dir="rtl"` and the translated shell and tool chrome. Tool pages, the catalog metadata and the editor follow in B1.2–B1.4, so every new screen must use the catalogs instead of literals.
 6. **Some tool descriptions copy competitor wording** (A7.10). Rewrite them before any public launch.
 7. **Known visual bugs** (B8):
    - the glass skin's header overlaps page content;

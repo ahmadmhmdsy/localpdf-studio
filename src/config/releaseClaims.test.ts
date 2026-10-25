@@ -217,10 +217,17 @@ const dataCounterTiles = counterTiles.filter((tile) => DATA_SUBJECT_PATTERN.test
 const footerSource = readSource('src/components/layout/Footer.tsx');
 const sidebarSource = readSource('src/components/layout/Sidebar.tsx');
 
+/**
+ * B1.1 moved the footer's containment sentence out of the component and into the
+ * English catalog, so the surface scan below has to read the catalog too — reading
+ * only Footer.tsx would silently stop checking the sentence that ships.
+ */
+const enCatalogSource = readSource('src/i18n/locales/en.ts');
+
 const containmentSurfaces: Record<string, string> = {
   Home: homeSource,
   HomeBento: homeBentoSource,
-  Footer: footerSource,
+  Footer: `${footerSource}\n${enCatalogSource}`,
   Sidebar: sidebarSource,
   'Tauri shortDescription': tauriConfig.bundle.shortDescription,
   'Tauri longDescription': tauriConfig.bundle.longDescription,
@@ -268,7 +275,7 @@ describe('release-facing containment claims', () => {
 
   it('states the containment boundary instead of a blanket local promise', () => {
     expect(homeSource).toMatch(/unavailable in the public beta/i);
-    expect(footerSource).toMatch(/unavailable in the public beta/i);
+    expect(enCatalogSource).toMatch(/unavailable in the public beta/i);
     expect(tauriConfig.bundle.longDescription).toMatch(/unavailable in this release/i);
   });
 
