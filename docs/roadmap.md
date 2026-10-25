@@ -216,6 +216,8 @@ Each new tool is added through the feature registry and the catalog, with its li
 | 12 | The `dev` script binds `0.0.0.0`, which exposes the dev server to the local network; consider `localhost` by default with an opt-in flag | Security | Ongoing |
 | 13 | The local branches `master`, `feat/tauri-desktop` and `task-28/finish-remaining-work`, and the task28 worktree, are fully merged into `main` (0 commits ahead) | Repo hygiene | Owner may delete them |
 | 14 | `docs/competitive-analysis.md` still described OCR as disabled and said "no code has changed" | Docs | Fixed in this PR |
+| 15 | The 31 tool routes in `src/App.tsx` are listed by hand instead of generated from the catalog and registry, so a new tool must be added in several places | Code health | Before A7 adds tools; a small PR |
+| 16 | `AGENTS.md`, `CONTRIBUTING.md` and the PR template disagreed with the code and CI; there were no shared Claude settings, subagents, commands or `docs/environment.md` | Docs, tooling | Fixed in this PR |
 
 ## 6.2 Real-file compression check (2026-10-25, generated PDFs, production build)
 
@@ -292,8 +294,8 @@ Items found during the Phase A work that are easy to lose track of. Each one poi
 8. **Stale local branches.** `master`, `feat/tauri-desktop`, `task-28/finish-remaining-work` and the task28 worktree are merged (0 commits ahead of `main`) and safe to delete. Nothing has been deleted (§8, item 9).
 9. **The dev server binds `0.0.0.0`.** It is reachable from other devices on the LAN. Bind to `localhost` by default and make LAN access opt-in through config.
 10. **136 lint warnings predate this work.** They are warnings, not errors, so CI passes. Pay them down in small PRs; don't mix them into feature PRs.
-11. **The agent and contributor docs disagree with the code and with each other:**
-    - `AGENTS.md` says the tool routes are hard-coded in `src/App.tsx`. That conflicts with the registry-driven rule in CLAUDE.md §6a.
-    - `CONTRIBUTING.md` says to add a Gemini API key to `.env`. `AGENTS.md` says the web build accepts no key.
-    - `CONTRIBUTING.md` points to `TASK.md` and `PLANNING.md`, not to this roadmap.
-    - The PR template lists only typecheck, lint, test and build. It is missing `check:bundle`, e2e, the roadmap ID, the release gate, and the no-hardcoding check.
+11. **The agent and contributor docs disagreed with the code and with each other** (fixed in this PR, backlog #16):
+    - The tool routes are listed by hand in `src/App.tsx`, against the registry-driven rule in CLAUDE.md §6a. `AGENTS.md` now records this as debt (backlog #15). The code is not changed yet.
+    - `CONTRIBUTING.md` said to add a Gemini API key to `.env`, but the web build accepts none.
+    - `CONTRIBUTING.md` pointed to `TASK.md` and `PLANNING.md` instead of this roadmap.
+    - The PR template listed only typecheck, lint, test and build. It now also has `check:bundle`, e2e, the roadmap ID, the release gate and the no-hardcoding check.

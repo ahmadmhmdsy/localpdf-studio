@@ -1,5 +1,7 @@
 # LocalPDF Studio — Agent Guide
 
+This file holds architecture and testing detail. Working rules (safety, the release gate, no hardcoding, validation labels) live in `CLAUDE.md`, and the plan lives in `docs/roadmap.md`. If this file and `CLAUDE.md` disagree, `CLAUDE.md` wins; fix this file in the same PR.
+
 ## Quick start
 
 Use the exact supported runtime before installing or validating the project:
@@ -22,10 +24,17 @@ npm run build        # production build to dist/
 npm run preview      # preview production build
 npm run typecheck    # tsc --noEmit
 npm run lint         # ESLint
-npm test             # all vitest tests (use -- --run for single run)
-npm run test:coverage  # vitest with coverage
+npm test             # all vitest tests, single run
+npm run test:coverage  # vitest with coverage (what CI runs)
+npm run test:e2e     # Playwright smoke and axe tests in e2e/
+npm run test:lhci    # Lighthouse CI against the production build
+npm run check:bundle # bundle-size budget (run after build)
+npm run cargo:check  # desktop Rust check (Windows, via scripts/with-msvc.cmd)
 npm run clean        # rimraf dist/
+npx tsx scripts/validate-feature-registry.ts  # registry consistency check
 ```
+
+- `npm run dev` currently binds `0.0.0.0`, so the dev server is reachable on the local network (roadmap backlog #12).
 
 - `.env*` is gitignored (except `.env.example`). The web build accepts no API key: AI tools (summarize, translate) are unavailable in the public web beta, and a `VITE_*` variable would be inlined into the public browser bundle. The desktop build stores a user-owned key via `tauri-plugin-store` instead. `APP_URL` in `.env` is for self-referential links.
 - Path alias `@/` → project root (`./`), NOT `src/`. Verified in `tsconfig.json` paths and `vite.config.ts` resolve.alias.
@@ -33,7 +42,8 @@ npm run clean        # rimraf dist/
 
 ## Architecture
 
-- **Entry:** `src/main.tsx` → `src/App.tsx` — 31 tool routes hard-coded under `/tools/:tool-name` via `lazy()` imports (code-split).
+- **Entry:** `src/main.tsx` → `src/App.tsx`. The 31 tool routes under `/tools/:tool-name` are currently listed by hand there, with `lazy()` imports (code-split). This is known debt against the no-hardcoding rule (CLAUDE.md §6a, roadmap backlog #15): the target is routes generated from the catalog and registry. Until then, a new tool needs its route added here too.
+- **Tool catalog and release gate:** UI metadata is in `src/constants/tools.ts`; release state, privacy class and limitation text are in `src/config/featureRegistry.ts`, mirrored in `docs/release/production-inventory.md`. `ToolRoute` wraps each tool in `ToolErrorBoundary` and `ToolAvailabilityGate`, which blocks processing for non-released tools. Never change a `releaseState` without the owner's explicit OK.
 - **Backward-compat aliases:** `/tools/redact-pdf` → `/tools/blackout-pdf`, `/tools/unlock-pdf` → `/tools/decrypt-pdf` (both use `<Navigate>` redirect).
 - **Editor page:** `src/pages/Editor.tsx` at route `/editor`. Press `?` for keyboard shortcuts.
 - **Shared tool UI:** `src/components/tools/` (ToolLayout, FileUploadZone, ProcessingState, DownloadState, StepTrack). Every tool page uses these.
@@ -44,7 +54,7 @@ npm run clean        # rimraf dist/
 - **pdfjs worker:** `src/lib/pdfjs.ts` uses `pdfjs-dist/build/pdf.worker.min.mjs?url` (Vite URL import) and sets `GlobalWorkerOptions.workerSrc`.
 - **Bundle splitting:** `vite.config.ts` defines manualChunks for core (react), pdf-lib, tesseract, office-parsers, ai. HMR can be disabled via `DISABLE_HMR=true` env var.
 - **CSP:** `index.html` has a strict CSP — `connect-src` allows `https://generativelanguage.googleapis.com` (Gemini) and `ws://localhost:*` (HMR).
-- **Task tracking:** `TASK.md` tracks active/completed tasks. `PLANNING.md` has project vision and architecture rationale.
+- **Task tracking:** `docs/roadmap.md` is the master plan, with milestone IDs, status rows and the issue backlog. `TASK.md` and `PLANNING.md` are historical (up to TASK-27); don't add new work there.
 
 ## Testing
 

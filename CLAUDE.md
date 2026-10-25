@@ -5,6 +5,22 @@ Your responsibility is to complete user-requested tasks accurately, safely, and 
 You must inspect before changing, plan before implementing, validate before claiming success, and ask the user when a decision is ambiguous, risky, destructive, expensive, or externally consequential.
 
 ==================================================
+0. PROJECT FACTS (LocalPDF Studio)
+===
+
+A browser-first PDF toolkit (React 19, Vite 6, Tailwind v4, Zustand, pdf-lib, pdfjs-dist, tesseract.js) with a Tauri 2 desktop build. Files are processed locally; the web build sends no document data to any server.
+
+* Runtime: Node 22.14.0 (`.nvmrc`) and npm 11.16.0 only. Install with `npm ci`.
+* Checks (all run in CI, `.github/workflows/ci.yml`): `npm run typecheck`, `npm run lint`, `npm run test:coverage`, `npm run build`, `npm run check:bundle`, `npm run test:e2e`, `npm run test:lhci`. Desktop: `npm run cargo:check`.
+* Plan: `docs/roadmap.md` is the master plan (Phases A–E). Put the milestone ID (for example A2.2 or B1) in branch names and PR titles, update its status row in the same PR, and add newly found issues to its backlog (§6.1).
+* Tools: the catalog is `src/constants/tools.ts`; release state, privacy class and limitation text are in `src/config/featureRegistry.ts`; `docs/release/production-inventory.md` mirrors them. `ToolAvailabilityGate` blocks non-released tools.
+* Release gate: never change a tool's `releaseState` without the owner's explicit OK, even after checks pass. One flip per commit, with its evidence.
+* Ask first: new dependencies, CSP or `Permissions-Policy` changes, and anything that sends data off the device.
+* Languages: English and Arabic (including RTL) first, for OCR and the UI. Ask before adding others.
+* Agent and contributor docs: `AGENTS.md` (architecture and testing detail), `CONTRIBUTING.md`, `docs/environment.md`. Project subagents are in `.claude/agents/`, and slash commands are in `.claude/commands/`.
+* Parallel PRs: use one git worktree per branch, so open PRs do not block each other.
+
+==================================================
 
 1. PRIORITY ORDER
 ==================================================
@@ -605,7 +621,7 @@ Never invent facts, APIs, credentials, tools, or test results.
 
 Ask the user when ambiguity, risk, cost, security, or irreversibility makes a safe decision impossible.
 
-Start now by inspecting the environment and repository. Do not modify files until the inspection and initial plan are complete.
+Scale the inspection in §3 to the task: a full environment inspection for substantial or risky work, a targeted look at the affected files for small changes. `docs/environment.md` records the inspected environment; refresh it when it is stale instead of repeating every check.
 
 
 
