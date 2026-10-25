@@ -220,6 +220,9 @@ Each new tool is added through the feature registry and the catalog, with its li
 | 15 | The 31 tool routes in `src/App.tsx` are listed by hand instead of generated from the catalog and registry, so a new tool must be added in several places | Code health | Fixed in this PR: routes are generated from the catalog and registry; `src/config/toolRoutes.ts` holds only the typed lazy-component map |
 | 16 | `AGENTS.md`, `CONTRIBUTING.md` and the PR template disagreed with the code and CI; there were no shared Claude settings, subagents, commands or `docs/environment.md` | Docs, tooling | Fixed in the roadmap PR |
 | 17 | Tool pages keep their own intro copy in `ToolLayout`, which duplicates the catalog and drifts from it (A7.10 had to edit 7 pages twice) | Code health | Move the header copy to the catalog/registry read, or to locale files, as part of B1 |
+| 18 | `npm run tauri:dev` loaded an unreachable URL: `beforeDevCommand` ran `npm run dev`, whose `--port=3000 --host=0.0.0.0` overrode the Vite config's Tauri port (1420), so the shell asked for 1420 while Vite listened on 3000 | Desktop | Fixed in this PR: `dev:tauri-frontend` lets the Vite config own the host and port when `TAURI_DEV=1` |
+| 19 | The desktop shell shows the web data-handling note ("processed in your browser"), which is imprecise inside a Tauri window | Copy | Decide the wording with B1 i18n; the release gate forbids claiming more than is true |
+| 20 | No desktop e2e: CI only runs `rustfmt` and `cargo check` for `src-tauri`, with no WebDriver coverage | QA, Desktop | Verified once manually with tauri-driver 2.1.0 and msedgedriver 155 (home, SPA navigation, remove-pages). A repeatable spec needs a driver in CI; ask the owner before adding one |
 
 ## 6.2 Real-file compression check (2026-10-25, generated PDFs, production build)
 

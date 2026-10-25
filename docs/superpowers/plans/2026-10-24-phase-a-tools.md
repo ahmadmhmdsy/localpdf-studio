@@ -34,6 +34,24 @@ Still open on this branch's path: A1.4 (real-scan OCR check: 10-page English, Ar
 
 ---
 
+## How the app was accessed for verification (2026-10-25)
+
+Two different access paths exist, and only one of them is automated in this repository.
+
+| Path | Driver | Status |
+|---|---|---|
+| Browser build (`dist/` via `npm run preview`) | Playwright chromium, `npm run test:e2e` | Automated in CI. Used for every e2e spec, including the new OCR spec. |
+| Tauri desktop shell | none in the repo | CI runs `cargo fmt --check` and `cargo check` only. `tauri-driver`, `msedgedriver` and a WebDriver client are not dependencies. |
+
+A one-off manual check of both paths was run on Windows 10.0.26200 (WebView2 runtime 155.0.4283.62):
+
+- **Browser driver — PASS.** A Playwright script drove the production preview (`vite preview`, 1280x820 and 390x844 viewports) through five steps and saved screenshots: home renders (h1, 27 tool cards), a disabled tool shows the "unavailable" gate with no file input (compress-pdf, still `disabled`), Split PDF with "one file per page" on a generated 5-page PDF produced `split_five-pages.zip` with 5 valid one-page PDFs (5,000 bytes), Remove Pages removing page 2 produced a 4-page PDF with a real download, and the mobile home page had no horizontal overflow (scrollWidth = clientWidth = 390). Zero off-origin requests, zero page errors, zero failed requests; the only console output was the two known `<meta>` CSP notices (`frame-ancestors` and `X-Frame-Options` are ignored in a meta tag) repeated per navigation.
+- **Tauri driver — PASS after building the tooling.** `tauri-driver` 2.1.0 (installed with `cargo install`) plus `msedgedriver` 155.0.4283.62 (matching the installed WebView2 runtime) drove a `cargo build` debug binary of `src-tauri` (2m52s). WebDriver created a session, the WebView loaded `http://127.0.0.1:1420` with the real home page (h1, 27 tool links), an in-page click navigated to `/tools/split-pdf` (h1 "Split PDF", file input present), and a full Remove Pages workflow — file upload through the real `<input type=\"file\">`, page range "2", the action button, then `Pages removed successfully!` and a `Download removed_five-pages.pdf` button — completed inside the desktop window. The session was deleted and no processes were left behind.
+- **Finding (backlog #18, fixed here):** the desktop dev path was broken before this check. `tauri.conf.json` asks for `http://127.0.0.1:1420` and the Vite config honours `TAURI_DEV=1`, but `npm run dev` (used as `beforeDevCommand`) passed `--port=3000 --host=0.0.0.0`, and command-line flags override the config, so the shell loaded an unreachable 1420 while Vite listened on 3000. `npm run dev:tauri-frontend` now runs plain `vite` and lets the config decide (127.0.0.1:1420 under `tauri dev`, 3000 for the web). Verified by starting that script with `TAURI_DEV=1` and repeating the Tauri driver check against it.
+- **Gap (backlog #20):** none of this is repeatable in CI. A desktop spec needs a driver in the pipeline and the owner's approval for that tooling.
+
+---
+
 ## Workstream 1: Finish OCR (highest priority)
 
 1. **Language data — done for `eng` and `ara` (option A).** Choose one source and record the source, license (Apache-2.0) and SHA-256 of each file in `public/tesseract/lang/README.md`:
