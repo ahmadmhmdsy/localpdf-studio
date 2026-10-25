@@ -182,7 +182,7 @@ describe('HomeBento availability messaging', () => {
     const privacyBlock = screen.getByRole('complementary', { name: 'Data handling' });
     expect(privacyBlock).toHaveAttribute('id', 'privacy');
     expect(privacyBlock).not.toHaveTextContent(/files never leave/i);
-    expect(privacyBlock).toHaveTextContent(/AI, OCR, and camera tools are currently unavailable/i);
+    expect(privacyBlock).toHaveTextContent(/AI and camera tools are currently unavailable/i);
 
     // The note is the block itself, so a link to #privacy here would be a no-op jump.
     const selfTargetingLinks = within(privacyBlock)
@@ -213,7 +213,7 @@ describe('HomeBento availability messaging', () => {
     expect(privacyBlock).not.toHaveTextContent(/in your browser/i);
 
     // The containment sentence stays.
-    expect(privacyBlock).toHaveTextContent(/AI, OCR, and camera tools are currently unavailable/i);
+    expect(privacyBlock).toHaveTextContent(/AI and camera tools are currently unavailable/i);
   });
 
   it('preserves link behavior for available quick-pick chips (Merge, Sign)', () => {
@@ -270,7 +270,7 @@ describe('HomeBento availability messaging', () => {
     }
 
     // The containment and retention statements are the ones that must survive.
-    expect(claimText).toMatch(/AI, OCR, and camera tools are unavailable in the public beta/i);
+    expect(claimText).toMatch(/AI and camera tools are unavailable in the public beta/i);
     expect(claimText).toMatch(/local storage/i);
   });
 

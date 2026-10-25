@@ -41,7 +41,7 @@ export const TOOL_CATEGORIES: ToolCategory[] = [
     tools: [
       { id: "compress-pdf", name: "Compress PDF", description: "Reduce file size by re-packing streams and, optionally, downsampling embedded images.", icon: Minimize, color: "text-green-500", isMVP: true },
       { id: "repair-pdf", name: "Repair PDF", description: "Fix corrupted PDFs when possible with client-side repair.", icon: Wrench, color: "text-green-500", isMVP: true },
-      { id: "ocr-pdf", name: "OCR PDF", description: "Not available — disabled pending remediation. See the production inventory for details.", icon: ScanText, color: "text-green-500", isMVP: true },
+      { id: "ocr-pdf", name: "OCR PDF", description: "Make scanned PDFs searchable, on your device.", icon: ScanText, color: "text-green-500", isMVP: true },
     ]
   },
   {

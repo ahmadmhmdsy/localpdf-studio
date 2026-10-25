@@ -7,7 +7,28 @@
 ![Tests](https://img.shields.io/badge/unit%20tests-775%20passing-brightgreen)
 ![Stack](https://img.shields.io/badge/React%2019-Vite%206-646cff)
 
+**English** | [العربية](README.ar.md)
+
+<p align="center">
+  <img src="docs/assets/demo.gif" alt="LocalPDF Studio demo: the tool catalog, merging two PDFs in the browser, and the page editor" width="960">
+</p>
+
 ---
+
+## Screenshots
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/assets/screenshots/home-dark.png">
+  <img src="docs/assets/screenshots/home-light.png" alt="Home page with the tool catalog, release states and the local-first summary">
+</picture>
+
+| Merge PDF | OCR PDF |
+|---|---|
+| <picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/screenshots/merge-dark.png"><img src="docs/assets/screenshots/merge-light.png" alt="Merge PDF with two files ready to combine"></picture> | <picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/screenshots/ocr-dark.png"><img src="docs/assets/screenshots/ocr-light.png" alt="OCR PDF with language and page-range options"></picture> |
+| **Editor** | **Known limitations** |
+| <img src="docs/assets/screenshots/editor-light.png" alt="Page editor with thumbnails, toolbar and properties panel"> | <picture><source media="(prefers-color-scheme: dark)" srcset="docs/assets/screenshots/limitations-dark.png"><img src="docs/assets/screenshots/limitations-light.png" alt="Known limitations page listing each tool's status"></picture> |
+
+Screenshots follow your GitHub light or dark theme.
 
 ## Why LocalPDF Studio
 
