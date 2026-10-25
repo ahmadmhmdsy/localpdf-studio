@@ -17,7 +17,7 @@
 
 ---
 
-## Status after the second slice (2026-10-25, branch `phase-a/next-items`)
+## Status after the second slice (2026-10-25, [PR #6](https://github.com/ahmadmhmdsy/localpdf-studio/pull/6))
 
 | Item | What changed | Evidence |
 |---|---|---|

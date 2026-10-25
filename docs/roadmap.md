@@ -54,7 +54,7 @@ This is the single place to see what is done, what is in review and what is next
 | Compression WS2: corpus, cancel, 100 MB limit, never-larger fallback, preset UI | DONE | PR #2, merged |
 | README showcase: GIF, screenshots, Arabic README, fix for stale "OCR unavailable" copy | DONE | PR #3, merged |
 | This roadmap and the no-hardcoding rule | DONE | PR #4, merged |
-| OCR e2e (A1.3), shallow-tool fixes (A7.1, A7.2, A7.5, A7.7, A7.9, A7.10), generated tool routes (backlog #15) | IN REVIEW | `phase-a/next-items` (PR pending) |
+| OCR e2e (A1.3), shallow-tool fixes (A7.1, A7.2, A7.5, A7.7, A7.9, A7.10), generated tool routes (backlog #15) | IN REVIEW | [PR #6](https://github.com/ahmadmhmdsy/localpdf-studio/pull/6), `phase-a/next-items` |
 
 **Tool release states on `main`, from `src/config/featureRegistry.ts`:**
 - `ocr-pdf` is `limited`.
