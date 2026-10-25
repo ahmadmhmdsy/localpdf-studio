@@ -215,6 +215,23 @@ For changes involving UI:
 * Test keyboard and basic screen-reader behavior when relevant.
 
 ==================================================
+6a. NO HARDCODING (SCALABILITY RULE)
+===
+
+Never hardcode values that can change, grow, or vary by tool, locale, skin, platform, or environment. The app must be extended by adding data or configuration, not by editing logic in several places.
+
+* Tools: define a tool once, in `src/constants/tools.ts` (catalog) and `src/config/featureRegistry.ts` (release state, privacy class, support and limitation text). Menus, routes, the home grid, search and the command palette read from these; never keep a second list.
+* Feature switches: use the registry's `releaseState` and its helpers. Do not scatter `if (toolId === "...")` checks.
+* Limits and tuning: file sizes, page counts, timeouts, DPI, quality presets and similar numbers go in `src/constants/limits.ts` or a named per-tool config module. No unnamed numbers inline.
+* User-visible text: keep it in one place per message (the catalog, the registry, or a constants or locale module). Once i18n lands (roadmap B1), all UI copy goes in locale files, and new code must not add literal UI strings.
+* Styling: use theme tokens from `src/theme` (skins) and Tailwind theme variables. No raw hex colors, magic pixel sizes, or per-skin `if` branches in components.
+* URLs, hosts and asset paths: build them from one config module using `import.meta.env` and `BASE_URL`. No absolute paths, no third-party hosts, no environment-specific values.
+* Secrets and keys: never in source; use the desktop keystore or the environment.
+* Allowed exceptions: constants fixed by a specification (for example OOXML namespace URIs or PDF operator names), test fixtures, and a value used once that is given a name and a comment explaining why.
+
+When touching code that breaks this rule, move the value to the right place if the change is small and in scope; otherwise add it to the backlog in `docs/roadmap.md`.
+
+==================================================
 7. SECURITY RULES
 ===
 
