@@ -52,13 +52,12 @@ describe('generated tool route table', () => {
     ).toBe(TOOL_ROUTES.length);
   });
 
-  it('takes the path, name and component from the catalog', () => {
+  it('takes the path and component from the catalog', () => {
     for (const tool of catalogTools) {
       const route = TOOL_ROUTES.find((candidate) => candidate.toolId === tool.id);
       if (!route) throw new Error(`no route generated for ${tool.id}`);
       expect(route.path).toBe(`tools/${tool.id}`);
       expect(route.path).toBe(toolRoutePath(tool.id));
-      expect(route.name).toBe(tool.name);
       expect(route.Component).toBe(TOOL_COMPONENTS[tool.id]);
     }
   });
@@ -124,7 +123,6 @@ describe('generated tool routes', () => {
     );
     const route: ToolRouteDefinition = {
       toolId: 'merge-pdf',
-      name: 'Merge PDF',
       path: toolRoutePath('merge-pdf'),
       Component: Boom,
     };

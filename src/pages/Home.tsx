@@ -4,6 +4,7 @@ import { getToolAvailability, isToolAvailable, type ReleaseState } from '../conf
 import { cn } from '../lib/utils';
 import { useToast } from '../contexts/ToastContext';
 import { useToolsStore } from '../store/toolsStore';
+import { useI18n } from '../i18n/useI18n';
 import HomeBento from './home/HomeBento';
 
 const EDITOR_INTEGRATED_TOOLS = [
@@ -20,6 +21,7 @@ const EDITOR_INTEGRATED_TOOLS = [
 export default function Home() {
   const skin = useToolsStore((s) => s.skin);
   const { showToast } = useToast();
+  const { categoryName, tool: toolCopy } = useI18n();
 
   // Bento skin has its own topbar / hero / privacy block inside the
   // main column (the sidebar is rendered by Layout.tsx). Render it whole.
@@ -41,9 +43,9 @@ export default function Home() {
 
       <div className="flex flex-col gap-12">
         {TOOL_CATEGORIES.map((category) => (
-          <section key={category.name} className="flex flex-col gap-6">
+          <section key={category.id} className="flex flex-col gap-6">
             <h2 className="text-sm font-bold tracking-wider text-[var(--text-3)] uppercase">
-              {category.name}
+              {categoryName(category.id)}
             </h2>
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
               {category.tools.map((tool, toolIndex) => {
@@ -53,6 +55,7 @@ export default function Home() {
                 const isDimmed = unavailable || !tool.isMVP;
                 const isIntegrated = EDITOR_INTEGRATED_TOOLS.includes(tool.id);
                 const targetPath = isIntegrated ? `/editor?tool=${tool.id}` : `/tools/${tool.id}`;
+                const copy = toolCopy(tool.id);
 
                 return (
                   <div
@@ -85,10 +88,10 @@ export default function Home() {
                         </div>
                         <div>
                           <h3 className={cn("mb-2 font-semibold text-[var(--text)] group-hover:text-[var(--accent-text)] transition-colors", isDimmed && "opacity-60 grayscale")}>
-                            {tool.name}
+                            {copy.name}
                           </h3>
                           <p className={cn("text-sm text-[var(--text-3)] line-clamp-3", isDimmed && "opacity-60 grayscale")}>
-                            {tool.description}
+                            {copy.description}
                           </p>
                         </div>
                       </div>

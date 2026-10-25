@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import HomeBento from './HomeBento';
 import { TOOL_CATEGORIES } from '../../constants/tools';
 import { TOOL_RELEASE_REGISTRY } from '../../config/featureRegistry';
+import { useToolsStore } from '../../store/toolsStore';
 
 function renderBento() {
   return render(
@@ -37,6 +38,7 @@ const pristineTranslate = TOOL_RELEASE_REGISTRY['translate-pdf'];
 afterEach(() => {
   TOOL_RELEASE_REGISTRY['compress-pdf'] = pristineCompress;
   TOOL_RELEASE_REGISTRY['translate-pdf'] = pristineTranslate;
+  useToolsStore.setState({ locale: 'en' });
 });
 
 describe('HomeBento availability messaging', () => {
@@ -272,6 +274,16 @@ describe('HomeBento availability messaging', () => {
     // The containment and retention statements are the ones that must survive.
     expect(claimText).toMatch(/AI and camera tools are unavailable in the public beta/i);
     expect(claimText).toMatch(/local storage/i);
+  });
+
+  it('renders the catalog cards and category headings in the active locale', () => {
+    useToolsStore.setState({ locale: 'ar' });
+    renderBento();
+
+    expect(screen.getByText('دمج PDF')).toBeInTheDocument();
+    // Category heading and the Organize card share the same Arabic name.
+    expect(screen.getAllByText('تنظيم PDF').length).toBeGreaterThan(0);
+    expect(screen.queryByText('Merge PDF')).not.toBeInTheDocument();
   });
 
   it('presents the sample strip as examples, not as a record of the reader\'s work', () => {

@@ -39,7 +39,7 @@ describe('Home', () => {
     user = userEvent.setup();
     showToastMock.mockReset();
     window.history.pushState({}, '', '/');
-    useToolsStore.setState({ skin: 'glass' });
+    useToolsStore.setState({ skin: 'glass', locale: 'en' });
   });
 
   describe('Header', () => {
@@ -110,6 +110,16 @@ describe('Home', () => {
       toolNames.forEach(name => {
         expect(screen.getByText(name)).toBeInTheDocument();
       });
+    });
+
+    it('renders catalog names and categories in Arabic when that locale is active', () => {
+      useToolsStore.setState({ locale: 'ar' });
+      renderHome();
+
+      expect(screen.getByText('دمج PDF')).toBeInTheDocument();
+      // The category heading and the tool share the same Arabic name.
+      expect(screen.getAllByText('تنظيم PDF').length).toBeGreaterThan(0);
+      expect(screen.queryByText('Merge PDF')).not.toBeInTheDocument();
     });
 
     it('renders tool descriptions', () => {

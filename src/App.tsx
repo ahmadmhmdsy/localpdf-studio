@@ -13,6 +13,7 @@ import { EditorProvider } from './contexts/EditorContext';
 import { useToolsStore } from './store/toolsStore';
 import { directionFor } from './i18n';
 import { ToastProvider } from './contexts/ToastContext';
+import { useI18n } from './i18n/useI18n';
 import ToastContainer from './components/ui/ToastContainer';
 import LoadingSpinner from './components/ui/LoadingSpinner';
 import ErrorBoundary from './components/ErrorBoundary';
@@ -31,11 +32,14 @@ const Limitations = lazy(() => import('./pages/Limitations'));
 
 /**
  * Wraps one generated tool route in the shared error boundary and availability
- * gate. `name` and `toolId` come from the route definition (catalog + registry),
- * so this component has no per-tool knowledge.
+ * gate. The tool id comes from the route definition (catalog + registry) and the
+ * display name from the locale-bound catalog copy, so this component has no
+ * per-tool knowledge.
  */
 export function ToolRoute({ route }: { route: ToolRouteDefinition }) {
-  const { Component, name, toolId } = route;
+  const { Component, toolId } = route;
+  const { toolName } = useI18n();
+  const name = toolName(toolId);
   return (
     <ToolErrorBoundary toolName={name}>
       <ToolAvailabilityGate toolId={toolId} toolName={name}>

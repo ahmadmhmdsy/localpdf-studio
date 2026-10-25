@@ -9,6 +9,7 @@ import {
   type ToolId,
 } from '../../config/featureRegistry';
 import { useToolsStore } from '../../store/toolsStore';
+import { useI18n } from '../../i18n/useI18n';
 import { cn } from '../../lib/utils';
 
 const ALL_TOOLS = TOOL_CATEGORIES.flatMap((category) => category.tools);
@@ -27,6 +28,7 @@ export default function HomeBento() {
   const [query, setQuery] = useState('');
   const darkMode = useToolsStore((s) => s.darkMode);
   const toggleDarkMode = useToolsStore((s) => s.toggleDarkMode);
+  const { tool: toolCopy, categoryName } = useI18n();
 
   // Derived from the release registry so availability changes keep Home truthful.
   const availabilitySummary = useMemo(() => {
@@ -60,7 +62,8 @@ export default function HomeBento() {
     };
   }, []);
 
-  // Filter tools across all categories by name + description (case-insensitive).
+  // Filter tools across all categories by name + description (case-insensitive),
+  // using the active locale's copy so search works in every language.
   const filteredCategories = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return TOOL_CATEGORIES;
@@ -68,12 +71,13 @@ export default function HomeBento() {
       .map((c) => ({
         ...c,
         tools: c.tools.filter((t) => {
-          const hay = `${t.name} ${t.description}`.toLowerCase();
+          const copy = toolCopy(t.id);
+          const hay = `${copy.name} ${copy.description}`.toLowerCase();
           return hay.includes(q);
         }),
       }))
       .filter((c) => c.tools.length > 0);
-  }, [query]);
+  }, [query, toolCopy]);
 
   return (
     <>
@@ -201,7 +205,7 @@ export default function HomeBento() {
         </div>
       ) : (
         filteredCategories.map((category) => (
-          <section key={category.name} aria-label={category.name}>
+          <section key={category.id} aria-label={categoryName(category.id)}>
             <div className="bento-sec">
               <h2>
                 <span
@@ -222,7 +226,7 @@ export default function HomeBento() {
                       : 'var(--accent)',
                   }}
                 />
-                {category.name}
+                {categoryName(category.id)}
               </h2>
               <span className="meta">{category.tools.length} tools</span>
             </div>
@@ -263,9 +267,11 @@ function BentoToolCard({ tool }: { tool: Tool }) {
   const unavailable = !isToolAvailable(tool.id);
   const targetPath = tool.isMVP ? `/tools/${tool.id}` : '#';
   const stateLabel = getReleaseStateLabel(availability.releaseState);
+  const { tool: toolCopy } = useI18n();
+  const copy = toolCopy(tool.id);
   const accessibleLabel = stateLabel
-    ? `${tool.name} — ${tool.description} — ${stateLabel}`
-    : `${tool.name} — ${tool.description}`;
+    ? `${copy.name} — ${copy.description} — ${stateLabel}`
+    : `${copy.name} — ${copy.description}`;
 
   if (unavailable) {
     // Unavailable tools must not activate a workflow from Home.
@@ -277,8 +283,8 @@ function BentoToolCard({ tool }: { tool: Tool }) {
         aria-disabled="true"
       >
         <CardIcon icon={Icon} dimmed />
-        <div className="name" style={{ opacity: 0.55 }}>{tool.name}</div>
-        <div className="desc" style={{ opacity: 0.55 }}>{tool.description}</div>
+        <div className="name" style={{ opacity: 0.55 }}>{copy.name}</div>
+        <div className="desc" style={{ opacity: 0.55 }}>{copy.description}</div>
         <StatusBadge releaseState={availability.releaseState} />
       </div>
     );
@@ -292,8 +298,8 @@ function BentoToolCard({ tool }: { tool: Tool }) {
       aria-disabled={!tool.isMVP ? true : undefined}
     >
       <CardIcon icon={Icon} />
-      <div className="name">{tool.name}</div>
-      <div className="desc">{tool.description}</div>
+      <div className="name">{copy.name}</div>
+      <div className="desc">{copy.description}</div>
       <StatusBadge releaseState={availability.releaseState} />
     </Link>
   );
@@ -331,8 +337,9 @@ function QuickChip({
 }) {
   const availability = getToolAvailability(toolId);
   const unavailable = !isToolAvailable(toolId);
-  const entry = ALL_TOOLS.find((tool) => tool.id === toolId);
-  const shortName = entry ? entry.name.replace(/\s+PDF$/i, '') : toolId;
+  const { tool: toolCopy } = useI18n();
+  // Strip the trailing "PDF" so the chip reads "Merge — combine files".
+  const shortName = toolCopy(toolId).name.replace(/\s+PDF$/i, '');
 
   if (unavailable) {
     return (
