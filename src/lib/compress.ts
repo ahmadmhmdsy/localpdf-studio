@@ -8,7 +8,9 @@ import {
   PDFRawStream,
   PDFRef,
 } from 'pdf-lib';
+import { MAX_COMPRESS_FILE_SIZE_BYTES, MAX_COMPRESS_FILE_SIZE_MB } from '../constants/limits';
 
+/** Only changes how many objects are written per tick while saving; kept for API compatibility. */
 export type CompressionLevel = 'low' | 'medium' | 'high';
 
 export interface CompressionResult {
@@ -16,7 +18,50 @@ export interface CompressionResult {
   notes: string[];
   imagesRecompressed: number;
   imagesSkipped: number;
+  /** True when the rewritten file was not smaller, so the input bytes were returned instead. */
+  keptOriginal: boolean;
 }
+
+export class CompressionCancelledError extends Error {
+  constructor() {
+    super('Compression was cancelled.');
+    this.name = 'CompressionCancelledError';
+  }
+}
+
+export class CompressionLimitError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = 'CompressionLimitError';
+  }
+}
+
+function throwIfCancelled(signal?: AbortSignal): void {
+  if (signal?.aborted) throw new CompressionCancelledError();
+}
+
+type SkipReason =
+  | 'cmyk'
+  | 'indexed'
+  | 'colorSpace'
+  | 'bitDepth'
+  | 'mask'
+  | 'decodeParams'
+  | 'filter'
+  | 'decodeFailed'
+  | 'notSmaller';
+
+const SKIP_LABELS: Record<SkipReason, string> = {
+  cmyk: 'CMYK',
+  indexed: 'indexed colour',
+  colorSpace: 'other colour space',
+  bitDepth: 'not 8 bits per channel',
+  mask: 'transparency or image mask',
+  decodeParams: 'decode array or predictor',
+  filter: 'unsupported encoding',
+  decodeFailed: 'could not be decoded',
+  notSmaller: 'would not get smaller',
+};
 
 export type SourceImage =
   | { kind: 'jpeg'; bytes: Uint8Array; width: number; height: number }
@@ -53,15 +98,25 @@ export interface CompressionOptions {
   /** Lossy and irreversible, so it is off unless the user opts in. */
   images?: ImageCompression;
   codec?: ImageCodec;
+  /** Checked between images and before saving. */
+  signal?: AbortSignal;
 }
 
 export async function compressPdf(
   file: File,
   level: CompressionLevel,
-  { images = 'off', codec = browserImageCodec }: CompressionOptions = {},
+  { images = 'off', codec = browserImageCodec, signal }: CompressionOptions = {},
 ): Promise<CompressionResult> {
-  const arrayBuffer = await file.arrayBuffer();
-  const pdf = await PDFDocument.load(arrayBuffer);
+  if (file.size > MAX_COMPRESS_FILE_SIZE_BYTES) {
+    throw new CompressionLimitError(
+      `This file is ${(file.size / 1024 / 1024).toFixed(1)} MB. Compression is limited to ${MAX_COMPRESS_FILE_SIZE_MB} MB per file.`,
+    );
+  }
+  throwIfCancelled(signal);
+  const original = new Uint8Array(await file.arrayBuffer());
+  throwIfCancelled(signal);
+  const pdf = await PDFDocument.load(original);
+  throwIfCancelled(signal);
   const reencodeImages = images !== 'off';
   const { dpi, quality } = IMAGE_SETTINGS[reencodeImages ? images : 'balanced'];
 
@@ -82,13 +137,34 @@ export async function compressPdf(
 
   let imagesRecompressed = 0;
   let imagesSkipped = 0;
+  const skipped = new Map<SkipReason, number>();
+  const skip = (reason: SkipReason) => {
+    imagesSkipped++;
+    skipped.set(reason, (skipped.get(reason) ?? 0) + 1);
+  };
 
-  for (const [ref, object] of reencodeImages ? pdf.context.enumerateIndirectObjects() : []) {
+  const objects = reencodeImages ? pdf.context.enumerateIndirectObjects() : [];
+  // Soft masks are grayscale images too, but must stay grayscale and unchanged in size.
+  const maskRefs = new Set<PDFRef>();
+  for (const [, object] of objects) {
     if (!(object instanceof PDFRawStream) || !isImageXObject(object.dict)) continue;
+    for (const key of ['SMask', 'Mask']) {
+      const value = object.dict.get(PDFName.of(key));
+      if (value instanceof PDFRef) maskRefs.add(value);
+    }
+  }
+
+  for (const [ref, object] of objects) {
+    throwIfCancelled(signal);
+    if (!(object instanceof PDFRawStream) || !isImageXObject(object.dict)) continue;
+    if (maskRefs.has(ref)) {
+      skip('mask');
+      continue;
+    }
 
     const source = await toSourceImage(object);
-    if (!source) {
-      imagesSkipped++;
+    if (typeof source === 'string') {
+      skip(source);
       continue;
     }
 
@@ -98,9 +174,14 @@ export async function compressPdf(
     } catch {
       encoded = null;
     }
+    throwIfCancelled(signal);
 
-    if (!encoded || encoded.bytes.length >= object.contents.length * MIN_SAVING_RATIO) {
-      imagesSkipped++;
+    if (!encoded) {
+      skip('decodeFailed');
+      continue;
+    }
+    if (encoded.bytes.length >= object.contents.length * MIN_SAVING_RATIO) {
+      skip('notSmaller');
       continue;
     }
 
@@ -108,26 +189,41 @@ export async function compressPdf(
     imagesRecompressed++;
   }
 
+  const imageHint =
+    'Images were not changed. Turn on image re-compression for larger savings on scanned or photo-heavy PDFs.';
   const notes = [
     reencodeImages
       ? `Images: ${imagesRecompressed} re-encoded as JPEG (up to ${dpi} DPI, quality ${Math.round(quality * 100)}%), ` +
         `${imagesSkipped} left unchanged.`
-      : 'Images were not changed. Turn on image re-compression for larger savings on scanned or photo-heavy PDFs.',
+      : imageHint,
   ];
   if (imagesSkipped > 0) {
-    notes.push(
-      'Images are left unchanged when re-encoding would not make them smaller, or when their format ' +
-        '(CMYK, indexed colour, 16-bit, masks, predictors) is not supported.',
-    );
+    const reasons = [...skipped].map(([reason, count]) => `${count} ${SKIP_LABELS[reason]}`).join(', ');
+    notes.push(`Left unchanged: ${reasons}.`);
   }
   notes.push('Document metadata (title, author, subject, keywords, producer, creator) was removed.');
 
+  throwIfCancelled(signal);
   const bytes = await pdf.save({
     useObjectStreams: true,
     addDefaultPage: false,
     objectsPerTick: level === 'high' ? 50 : level === 'medium' ? 100 : 200,
   });
-  return { bytes, notes, imagesRecompressed, imagesSkipped };
+  throwIfCancelled(signal);
+
+  if (bytes.length >= original.length) {
+    return {
+      bytes: original,
+      notes: [
+        'The compressed version was not smaller than the original, so the original file was returned unchanged.',
+        ...(reencodeImages ? [] : [imageHint]),
+      ],
+      imagesRecompressed: 0,
+      imagesSkipped: imagesSkipped + imagesRecompressed,
+      keptOriginal: true,
+    };
+  }
+  return { bytes, notes, imagesRecompressed, imagesSkipped, keptOriginal: false };
 }
 
 function isImageXObject(dict: PDFDict): boolean {
@@ -146,33 +242,36 @@ function singleFilter(dict: PDFDict): string | undefined | null {
   return null;
 }
 
-function colorComponents(dict: PDFDict, context: PDFDocument['context']): 1 | 3 | null {
+function colorComponents(dict: PDFDict, context: PDFDocument['context']): 1 | 3 | SkipReason {
   const colorSpace = dict.get(PDFName.of('ColorSpace'));
   const resolved = colorSpace instanceof PDFRef ? context.lookup(colorSpace) : colorSpace;
   if (resolved === PDFName.of('DeviceRGB')) return 3;
   if (resolved === PDFName.of('DeviceGray')) return 1;
+  if (resolved === PDFName.of('DeviceCMYK')) return 'cmyk';
+  if (resolved instanceof PDFArray && resolved.get(0) === PDFName.of('Indexed')) return 'indexed';
   if (resolved instanceof PDFArray && resolved.get(0) === PDFName.of('ICCBased')) {
     const profile = context.lookup(resolved.get(1));
     const n = profile instanceof PDFRawStream ? profile.dict.get(PDFName.of('N')) : undefined;
     if (n instanceof PDFNumber && (n.asNumber() === 1 || n.asNumber() === 3)) {
       return n.asNumber() as 1 | 3;
     }
+    if (n instanceof PDFNumber && n.asNumber() === 4) return 'cmyk';
   }
-  return null;
+  return 'colorSpace';
 }
 
-async function toSourceImage(stream: PDFRawStream): Promise<SourceImage | null> {
+async function toSourceImage(stream: PDFRawStream): Promise<SourceImage | SkipReason> {
   const { dict } = stream;
   const width = dict.get(PDFName.of('Width'));
   const height = dict.get(PDFName.of('Height'));
   const bpc = dict.get(PDFName.of('BitsPerComponent'));
-  if (!(width instanceof PDFNumber) || !(height instanceof PDFNumber)) return null;
-  if (!(bpc instanceof PDFNumber) || bpc.asNumber() !== 8) return null;
-  if (dict.get(PDFName.of('ImageMask')) === PDFBool.True) return null;
-  if (dict.has(PDFName.of('Decode')) || dict.has(PDFName.of('DecodeParms'))) return null;
+  if (!(width instanceof PDFNumber) || !(height instanceof PDFNumber)) return 'filter';
+  if (dict.get(PDFName.of('ImageMask')) === PDFBool.True) return 'mask';
+  if (!(bpc instanceof PDFNumber) || bpc.asNumber() !== 8) return 'bitDepth';
+  if (dict.has(PDFName.of('Decode')) || dict.has(PDFName.of('DecodeParms'))) return 'decodeParams';
 
   const components = colorComponents(dict, stream.dict.context);
-  if (components === null) return null;
+  if (typeof components === 'string') return components;
 
   const w = width.asNumber();
   const h = height.asNumber();
@@ -183,10 +282,10 @@ async function toSourceImage(stream: PDFRawStream): Promise<SourceImage | null> 
   }
   if (filter === 'FlateDecode') {
     const pixels = await inflate(stream.contents);
-    if (!pixels || pixels.length < w * h * components) return null;
+    if (!pixels || pixels.length < w * h * components) return 'filter';
     return { kind: 'raw', pixels, width: w, height: h, components };
   }
-  return null;
+  return 'filter';
 }
 
 async function inflate(data: Uint8Array): Promise<Uint8Array | null> {

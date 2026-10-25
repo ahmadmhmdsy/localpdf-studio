@@ -1,6 +1,14 @@
 import { describe, it, expect, vi } from 'vitest';
 import { PDFDocument, PDFName, PDFRawStream, PDFRef } from 'pdf-lib';
-import { compressPdf, type ImageCodec } from './compress';
+import {
+  CompressionCancelledError,
+  CompressionLimitError,
+  compressPdf,
+  type ImageCodec,
+  type ImageCompression,
+} from './compress';
+import { MAX_COMPRESS_FILE_SIZE_BYTES } from '../constants/limits';
+import { CORPUS, buildCorpusFile } from '../tests/fixtures/compressionCorpus';
 
 type ImageSpec = { filter: 'DCTDecode' | 'FlateDecode'; colorSpace?: string; size?: number; extra?: Record<string, unknown> };
 
@@ -119,5 +127,155 @@ describe('compressPdf', () => {
     expect(doc.getTitle() ?? '').toBe('');
     expect(result.notes.some((n) => /metadata/i.test(n))).toBe(true);
     expect(result.notes.some((n) => /0 re-encoded/.test(n))).toBe(true);
+  });
+});
+
+async function readPdf(bytes: Uint8Array): Promise<{ pageCount: number; text: string[] }> {
+  const pdfjs = await import('pdfjs-dist/legacy/build/pdf.mjs');
+  // pdf.js may transfer the buffer, so give it a copy.
+  const task = pdfjs.getDocument({ data: bytes.slice(), verbosity: 0 });
+  const doc = await task.promise;
+  const text: string[] = [];
+  for (let n = 1; n <= doc.numPages; n++) {
+    const { items } = await (await doc.getPage(n)).getTextContent();
+    text.push((items as { str: string }[]).map((i) => i.str).join(''));
+  }
+  const pageCount = doc.numPages;
+  await task.destroy();
+  return { pageCount, text };
+}
+
+const PRESETS: ImageCompression[] = ['off', 'light', 'balanced', 'strong'];
+
+describe.each(PRESETS)('compressPdf on the generated corpus, preset %s', (preset) => {
+  it.each(CORPUS)('%s: never grows, keeps pages and text', async (name) => {
+    const { file, pageText } = await buildCorpusFile(name);
+    const original = new Uint8Array(await file.arrayBuffer());
+    const result = await compressPdf(file, 'medium', { images: preset, codec: smallJpegCodec() });
+
+    expect(result.bytes.length).toBeLessThanOrEqual(original.length);
+    if (result.keptOriginal) {
+      expect(result.bytes).toEqual(original);
+      expect(result.notes[0]).toMatch(/original file was returned unchanged/);
+    }
+    const { pageCount, text } = await readPdf(result.bytes);
+    expect(pageCount).toBe(pageText.length);
+    expect(text).toEqual(pageText);
+  });
+
+  it('shrinks the JPEG-heavy scan', async () => {
+    const { file } = await buildCorpusFile('jpegScan');
+    const result = await compressPdf(file, 'medium', { images: preset, codec: smallJpegCodec() });
+
+    expect(result.bytes.length).toBeLessThan(file.size);
+    expect(result.imagesRecompressed).toBe(preset === 'off' ? 0 : 3);
+    if (preset !== 'off') expect(result.bytes.length).toBeLessThan(file.size / 10);
+  });
+});
+
+describe('compressPdf skip notes', () => {
+  it.each([
+    ['cmykJpeg', /1 CMYK/],
+    ['indexedPng', /1 indexed colour/],
+  ] as const)('%s is listed as left unchanged', async (name, pattern) => {
+    const codec = smallJpegCodec();
+    const { file } = await buildCorpusFile(name);
+    const result = await compressPdf(file, 'medium', { images: 'balanced', codec });
+
+    expect(codec.recompress).not.toHaveBeenCalled();
+    expect(result.notes.join(' ')).toMatch(pattern);
+  });
+
+  it('re-encodes an image with alpha and keeps its soft mask', async () => {
+    const { file, imageRefs } = await buildCorpusFile('pngWithAlpha');
+    const result = await compressPdf(file, 'medium', { images: 'balanced', codec: smallJpegCodec() });
+
+    expect(result.imagesRecompressed).toBe(1);
+    const stream = await imageStream(result.bytes, imageRefs[0]);
+    expect(stream.dict.get(PDFName.of('Filter'))).toBe(PDFName.of('DCTDecode'));
+    const maskRef = stream.dict.get(PDFName.of('SMask'));
+    expect(maskRef).toBeInstanceOf(PDFRef);
+    // The mask itself must stay a grayscale Flate image.
+    const mask = await imageStream(result.bytes, maskRef as PDFRef);
+    expect(mask.dict.get(PDFName.of('ColorSpace'))).toBe(PDFName.of('DeviceGray'));
+    expect(mask.dict.get(PDFName.of('Filter'))).toBe(PDFName.of('FlateDecode'));
+    expect(result.notes.join(' ')).toMatch(/1 transparency or image mask/);
+  });
+
+  it('lists codec failures and too-large results by reason', async () => {
+    const bigger: ImageCodec = { recompress: async () => ({ bytes: new Uint8Array(40_000), width: 64, height: 64 }) };
+    const { file } = await buildCorpusFile('jpegScan');
+    const result = await compressPdf(file, 'medium', { images: 'strong', codec: bigger });
+
+    expect(result.notes.join(' ')).toMatch(/3 would not get smaller/);
+  });
+});
+
+describe('compressPdf never returns a larger file', () => {
+  it('returns the original bytes when the rewrite is not smaller', async () => {
+    const { file } = await buildCorpusFile('alreadyOptimized');
+    const original = new Uint8Array(await file.arrayBuffer());
+    const result = await compressPdf(file, 'medium');
+
+    expect(result.keptOriginal).toBe(true);
+    expect(result.bytes).toEqual(original);
+    expect(result.imagesRecompressed).toBe(0);
+    expect(result.notes[0]).toMatch(/original file was returned unchanged/);
+  });
+
+  it('keeps the original when compressing its own output again', async () => {
+    const { file } = await buildCorpusFile('jpegScan');
+    const once = await compressPdf(file, 'medium', { images: 'balanced', codec: smallJpegCodec() });
+    const again = await compressPdf(new File([once.bytes as BlobPart], 'once.pdf'), 'medium', {
+      images: 'balanced',
+      codec: smallJpegCodec(),
+    });
+
+    expect(again.keptOriginal).toBe(true);
+    expect(again.bytes).toEqual(once.bytes);
+  });
+
+  it('reports keptOriginal false when the file got smaller', async () => {
+    const { file } = await buildCorpusFile('jpegScan');
+    const result = await compressPdf(file, 'medium', { images: 'balanced', codec: smallJpegCodec() });
+    expect(result.keptOriginal).toBe(false);
+  });
+});
+
+describe('compressPdf cancellation and limits', () => {
+  it('refuses a file over the size limit before reading it', async () => {
+    const file = new File([new Uint8Array(1)], 'huge.pdf', { type: 'application/pdf' });
+    Object.defineProperty(file, 'size', { value: MAX_COMPRESS_FILE_SIZE_BYTES + 1 });
+    const read = vi.spyOn(file, 'arrayBuffer');
+
+    await expect(compressPdf(file, 'medium')).rejects.toBeInstanceOf(CompressionLimitError);
+    await expect(compressPdf(file, 'medium')).rejects.toThrow(/limited to 100 MB/);
+    expect(read).not.toHaveBeenCalled();
+  });
+
+  it('throws a cancel error for an already-aborted signal', async () => {
+    const { file } = await buildCorpusFile('textOnly');
+    const controller = new AbortController();
+    controller.abort();
+
+    await expect(compressPdf(file, 'medium', { signal: controller.signal })).rejects.toBeInstanceOf(
+      CompressionCancelledError,
+    );
+  });
+
+  it('stops between images when aborted during re-encoding', async () => {
+    const controller = new AbortController();
+    const codec: ImageCodec = {
+      recompress: vi.fn(async () => {
+        controller.abort();
+        return { bytes: new Uint8Array(10), width: 64, height: 64 };
+      }),
+    };
+    const { file } = await buildCorpusFile('jpegScan');
+
+    await expect(
+      compressPdf(file, 'medium', { images: 'balanced', codec, signal: controller.signal }),
+    ).rejects.toBeInstanceOf(CompressionCancelledError);
+    expect(codec.recompress).toHaveBeenCalledTimes(1);
   });
 });
