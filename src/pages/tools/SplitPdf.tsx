@@ -4,21 +4,70 @@ import ToolLayout from '../../components/tools/ToolLayout';
 import FileUploadZone from '../../components/tools/FileUploadZone';
 import ProcessingState from '../../components/tools/ProcessingState';
 import DownloadState from '../../components/tools/DownloadState';
-import { extractPages } from '../../lib/pdf';
+import { getSplitArchiveFileName, splitPdfToFiles, type SplitMode } from '../../lib/pdf';
+import { buildZipFile } from '../../lib/zip';
 import { logError } from '../../lib/logger';
 import { useToast } from '../../contexts/ToastContext';
 import { useManagedObjectUrl } from '../../hooks/useObjectUrl';
 
 type Step = 'upload' | 'configure' | 'processing' | 'download';
 
+/** One radio option per way a document can be divided. */
+interface SplitModeOption {
+  id: SplitMode;
+  name: string;
+  description: string;
+}
+
+const SPLIT_MODE_OPTIONS: SplitModeOption[] = [
+  {
+    id: 'ranges',
+    name: 'By page range',
+    description: 'One PDF per comma-separated range, e.g. 1-3, 4, 5-8.',
+  },
+  {
+    id: 'every-n',
+    name: 'Every N pages',
+    description: 'Equal chunks of N pages, for example 1-2, 3-4, 5.',
+  },
+  {
+    id: 'each-page',
+    name: 'One file per page',
+    description: 'Every page becomes its own PDF.',
+  },
+];
+
+/** Chunk size pre-filled for the "Every N pages" mode. */
+const DEFAULT_PAGES_PER_FILE = 10;
+
+const BYTES_PER_MB = 1024 * 1024;
+
+interface SplitResult {
+  url: string;
+  size: string;
+  fileName: string;
+  fileCount: number;
+  isArchive: boolean;
+}
+
+function formatMegabytes(bytes: number): string {
+  return `${(bytes / BYTES_PER_MB).toFixed(2)} MB`;
+}
+
 export default function SplitPdf() {
   const [step, setStep] = useState<Step>('upload');
   const [file, setFile] = useState<File | null>(null);
+  const [mode, setMode] = useState<SplitMode>('ranges');
   const [ranges, setRanges] = useState<string>('');
-  const [resultUrl, setResultUrl] = useState<string | null>(null);
-  const [resultSize, setResultSize] = useState<string>('');
+  const [pagesPerFile, setPagesPerFile] = useState<string>(String(DEFAULT_PAGES_PER_FILE));
+  const [result, setResult] = useState<SplitResult | null>(null);
   const { showToast } = useToast();
   const { create: createObjectUrl, revoke: revokeObjectUrl } = useManagedObjectUrl();
+
+  const chunkSize = Number(pagesPerFile);
+  const chunkSizeIsValid = Number.isInteger(chunkSize) && chunkSize >= 1;
+  const canSubmit =
+    mode === 'each-page' || (mode === 'ranges' ? ranges.trim().length > 0 : chunkSizeIsValid);
 
   const handleFilesSelected = (newFiles: File[]) => {
     if (newFiles.length > 0) {
@@ -28,20 +77,49 @@ export default function SplitPdf() {
   };
 
   const handleSplit = async () => {
-    if (!file || !ranges.trim()) {
-      showToast({ message: 'Please select a file and enter page ranges.', type: 'warning' });
+    if (!file) {
+      showToast({ message: 'Please select a PDF file first.', type: 'warning' });
+      return;
+    }
+    if (mode === 'ranges' && !ranges.trim()) {
+      showToast({ message: 'Please enter the page ranges to split.', type: 'warning' });
+      return;
+    }
+    if (mode === 'every-n' && !chunkSizeIsValid) {
+      showToast({ message: 'Pages per file must be a whole number of at least 1.', type: 'warning' });
       return;
     }
 
     setStep('processing');
     try {
-      const extractedPdfBytes = await extractPages(file, ranges);
-      
-      const blob = new Blob([extractedPdfBytes], { type: 'application/pdf' });
+      const files = await splitPdfToFiles(
+        file,
+        mode,
+        mode === 'ranges'
+          ? { rangeString: ranges }
+          : mode === 'every-n'
+            ? { pagesPerFile: chunkSize }
+            : {},
+      );
+
+      if (files.length === 0) {
+        throw new Error('The split produced no files. Please check your page ranges and try again.');
+      }
+
+      const isArchive = files.length > 1;
+      const blob = isArchive
+        ? await buildZipFile(files.map(({ fileName, data }) => ({ name: fileName, data })))
+        : new Blob([files[0].data], { type: 'application/pdf' });
+      const fileName = isArchive ? getSplitArchiveFileName(file.name) : files[0].fileName;
+
       const url = createObjectUrl(blob);
-      
-      setResultUrl(url);
-      setResultSize((blob.size / 1024 / 1024).toFixed(2) + ' MB');
+      setResult({
+        url,
+        size: formatMegabytes(blob.size),
+        fileName,
+        fileCount: files.length,
+        isArchive,
+      });
       setStep('download');
     } catch (error) {
       const normalizedError = error instanceof Error ? error : new Error(String(error));
@@ -58,22 +136,23 @@ export default function SplitPdf() {
   const startOver = () => {
     setFile(null);
     setRanges('');
-    if (resultUrl) {
+    setPagesPerFile(String(DEFAULT_PAGES_PER_FILE));
+    if (result) {
       revokeObjectUrl();
-      setResultUrl(null);
+      setResult(null);
     }
     setStep('upload');
   };
 
   return (
-    <ToolLayout 
-      title="Split PDF" 
-      description="Extract specific pages or ranges from your PDF into a new document."
+    <ToolLayout
+      title="Split PDF"
+      description="Split a PDF into separate files by page range, every N pages, or one page per file."
     >
       {step === 'upload' && (
-        <FileUploadZone 
-          
-          ariaLabel="Select PDF file" onFilesSelected={handleFilesSelected} 
+        <FileUploadZone
+
+          ariaLabel="Select PDF file" onFilesSelected={handleFilesSelected}
           title="Select PDF file"
           subtitle="or drop PDF here"
           maxFiles={1}
@@ -93,7 +172,7 @@ export default function SplitPdf() {
                   <span className="text-sm text-[var(--text-3)]">{(file.size / 1024 / 1024).toFixed(2)} MB</span>
                 </div>
               </div>
-              <button 
+              <button
                 onClick={startOver}
                 className="p-2 text-[var(--text-3)] hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
                 aria-label="Remove file"
@@ -102,28 +181,94 @@ export default function SplitPdf() {
               </button>
             </div>
 
-            <div className="space-y-4">
-              <label htmlFor="ranges" className="block text-sm font-medium text-[var(--text-2)]">
-                Pages to extract
-              </label>
-              <input
-                type="text"
-                id="ranges"
-                value={ranges}
-                onChange={(e) => setRanges(e.target.value)}
-                placeholder="e.g., 1-5, 8, 11-13"
-                className="w-full px-4 py-3 rounded-xl border border-[var(--border)] focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all"
-              />
-              <p className="text-sm text-[var(--text-3)]">
-                Enter page numbers and/or page ranges separated by commas.
+            <fieldset>
+              <legend className="block text-sm font-medium text-[var(--text-2)] mb-3">
+                How should the PDF be split?
+              </legend>
+              <div className="space-y-3">
+                {SPLIT_MODE_OPTIONS.map((option) => (
+                  <label
+                    key={option.id}
+                    className={`flex items-start gap-4 p-4 rounded-xl border-2 cursor-pointer transition-all ${
+                      mode === option.id
+                        ? 'border-red-500 bg-red-50'
+                        : 'border-[var(--border)] hover:border-red-300'
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="split-mode"
+                      value={option.id}
+                      checked={mode === option.id}
+                      onChange={() => setMode(option.id)}
+                      className="sr-only"
+                    />
+                    <span
+                      className={`mt-1 w-4 h-4 rounded-full border-2 flex-shrink-0 ${
+                        mode === option.id ? 'border-red-500 bg-red-500' : 'border-[var(--border)]'
+                      }`}
+                      aria-hidden="true"
+                    />
+                    <span className="flex flex-col">
+                      <span className="font-semibold text-[var(--text)]">{option.name}</span>
+                      <span className="text-sm text-[var(--text-3)]">{option.description}</span>
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+
+            {mode === 'ranges' && (
+              <div className="space-y-4 mt-6">
+                <label htmlFor="ranges" className="block text-sm font-medium text-[var(--text-2)]">
+                  Page ranges
+                </label>
+                <input
+                  type="text"
+                  id="ranges"
+                  value={ranges}
+                  onChange={(e) => setRanges(e.target.value)}
+                  placeholder="e.g., 1-3, 4, 5-8"
+                  className="w-full px-4 py-3 rounded-xl border border-[var(--border)] focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all"
+                />
+                <p className="text-sm text-[var(--text-3)]">
+                  Enter page numbers and/or page ranges separated by commas. Each range becomes its own PDF file.
+                </p>
+              </div>
+            )}
+
+            {mode === 'every-n' && (
+              <div className="space-y-4 mt-6">
+                <label htmlFor="pages-per-file" className="block text-sm font-medium text-[var(--text-2)]">
+                  Pages per file
+                </label>
+                <input
+                  type="number"
+                  id="pages-per-file"
+                  min={1}
+                  step={1}
+                  inputMode="numeric"
+                  value={pagesPerFile}
+                  onChange={(e) => setPagesPerFile(e.target.value)}
+                  className="w-full px-4 py-3 rounded-xl border border-[var(--border)] focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all"
+                />
+                <p className="text-sm text-[var(--text-3)]">
+                  Every N pages becomes its own PDF file. The last file keeps any remaining pages.
+                </p>
+              </div>
+            )}
+
+            {mode === 'each-page' && (
+              <p className="text-sm text-[var(--text-3)] mt-6">
+                Every page becomes its own PDF. Documents with more than one page are bundled into a ZIP archive.
               </p>
-            </div>
+            )}
           </div>
 
           <div className="flex justify-center">
-            <button 
+            <button
               onClick={handleSplit}
-              disabled={!ranges.trim()}
+              disabled={!canSubmit}
               className="bg-red-600 hover:bg-red-700 disabled:bg-[var(--surface-2)] disabled:cursor-not-allowed text-white font-semibold py-4 px-12 rounded-xl text-xl transition-colors shadow-lg"
             >
               Split PDF
@@ -133,19 +278,23 @@ export default function SplitPdf() {
       )}
 
       {step === 'processing' && (
-        <ProcessingState 
-          title="Splitting PDF..." 
-          description="Please wait while we extract the requested pages. This is happening locally in your browser."
+        <ProcessingState
+          title="Splitting PDF..."
+          description="Please wait while we create the split files. This is happening locally in your browser."
         />
       )}
 
-      {step === 'download' && resultUrl && (
-        <DownloadState 
+      {step === 'download' && result && (
+        <DownloadState
           title="PDF split successfully!"
-          description="Your extracted pages have been saved into a new PDF file."
-          fileName={`split_${file?.name || 'document.pdf'}`}
-          fileUrl={resultUrl}
-          fileSize={resultSize}
+          description={
+            result.isArchive
+              ? `Your PDF was split into ${result.fileCount} files, packaged as a ZIP archive.`
+              : 'Your extracted pages have been saved into a new PDF file.'
+          }
+          fileName={result.fileName}
+          fileUrl={result.url}
+          fileSize={result.size}
           onStartOver={startOver}
         />
       )}

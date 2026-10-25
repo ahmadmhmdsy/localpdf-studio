@@ -13,7 +13,42 @@
 | Tool | State | What is done | What blocks release |
 |---|---|---|---|
 | compress-pdf | disabled | Real image recompression (`src/lib/compress.ts`) with presets: light 200 DPI / q0.8, balanced 150 / q0.65, strong 96 / q0.5. CMYK, indexed and 16-bit images and soft masks are left unchanged and listed in the notes. WS2: a generated fixture corpus (`src/tests/fixtures/compressionCorpus.ts`) with per-preset tests; a never-larger fallback that returns the original bytes and says so; cancellation via `AbortSignal` with a Cancel button; a 100 MB limit; one "Compression level" choice (Lossless / Light / Balanced / Strong) in place of the three packing buttons. Fixed: soft masks (SMask) were re-encoded as RGB JPEG, which broke transparency. | Independent verification on real files in a production build; the release flip needs user approval. |
-| ocr-pdf | limited | Self-hosted worker and core emitted by the `ocrAssets()` Vite plugin; invisible text layer positioned per word (rotation-aware); pages with text skipped; a missing-language-data error; English and Arabic data (tessdata_fast 4.1.0) self-hosted; a glyphless Unicode text layer (Arabic written in visual order, verified by a pdf.js round trip); cancellation via `AbortSignal` with a Cancel button that terminates the worker; 200-page and 50 MB limits (`src/constants/limits.ts`) shown in the configure step; an optional page-range input (the page cap applies to the selected pages, so a long PDF can be done in parts). Unit-tested. | No e2e run; only English and Arabic data; independent verification. |
+| ocr-pdf | limited | Self-hosted worker and core emitted by the `ocrAssets()` Vite plugin; invisible text layer positioned per word (rotation-aware); pages with text skipped; a missing-language-data error; English and Arabic data (tessdata_fast 4.1.0) self-hosted; a glyphless Unicode text layer (Arabic written in visual order, verified by a pdf.js round trip); cancellation via `AbortSignal` with a Cancel button that terminates the worker; 200-page and 50 MB limits (`src/constants/limits.ts`) shown in the configure step; an optional page-range input (the page cap applies to the selected pages, so a long PDF can be done in parts). Unit-tested. | e2e added (A1.3, IN REVIEW); only English and Arabic data; independent verification on real scans (A1.4, A1.5) still pending. |
+
+---
+
+## Status after the second slice (2026-10-25, [PR #6](https://github.com/ahmadmhmdsy/localpdf-studio/pull/6))
+
+| Item | What changed | Evidence |
+|---|---|---|
+| A1.3 | `e2e/ocr.spec.ts` runs OCR on a generated raster scan in a production preview build, proves every request stayed on the app origin (including the self-hosted worker, wasm core and language data), and proves the output text is extractable. The smoke test now asserts the OCR engine is lazy on mount. | PASS: the spec passes on its own and inside `npm run test:e2e`; Lead rerun recorded in the final gate |
+| A7.1 | Split PDF outputs a ZIP of separate PDFs: by page ranges, every N pages, or one file per page; a single part downloads as a plain PDF. New `src/lib/zip.ts` builds the archive with a lazy `jszip` import. | Unit tests in `src/lib/zip.test.ts` and `src/lib/pdf.test.ts`; 18 UI tests in `SplitPdf.test.tsx` |
+| A7.2 | Remove Pages copies the kept pages into a new `PDFDocument`, so the removed page objects are gone instead of merely detached. Public signature and error messages unchanged. | `removePages`/order tests in `src/lib/pdf.test.ts` |
+| A7.5 | Add Page Numbers now offers all 9 positions the copy promised; the position list is a single exported constant shared by the library and the 3x3 picker, with the middle row at the vertical center. | Coordinate-level tests (content-stream `Tm` values for all 9 positions) in `src/lib/pdf.test.ts`; 9-button UI test |
+| A7.7 | `pdf-to-pdfa` is named "PDF to PDF/A-style" everywhere (catalog, registry, inventory, READMEs) and its copy says the output is not validated as conformant. | Registry consistency script, catalog tests, inventory mirror |
+| A7.9 | Repair PDF no longer returns a placeholder as a repair. A file it cannot parse reports a clear failure and offers no download. | 7 `repair.test.ts` + 9 `RepairPdf.test.tsx` tests, including a regression that no document is created on the failure path |
+| A7.10 | 14 catalog descriptions and the 7 page intros that duplicated them were rewritten in the product's own voice; the copy no longer copies iLovePDF phrasing. | Catalog tests + page tests updated |
+| #15 | Tool routes are generated from the catalog and registry instead of being listed by hand in `App.tsx`; the only per-tool code is a typed lazy-component map. | `src/App.test.tsx` (catalog/registry parity both ways, one route per tool, alias redirects, gate/NotFound/error boundary) |
+
+Still open on this branch's path: A1.4 (real-scan OCR check: 10-page English, Arabic, cancel within a page, 500-page refusal), A1.5 (CSP/data-flow audit), A2.2 (real scans in Firefox and a mobile browser with compression locally enabled) and the A2.3 flip. A1.4 and A2.2 need real scans from the owner; the flip needs the owner's approval.
+
+---
+
+## How the app was accessed for verification (2026-10-25)
+
+Two different access paths exist, and only one of them is automated in this repository.
+
+| Path | Driver | Status |
+|---|---|---|
+| Browser build (`dist/` via `npm run preview`) | Playwright chromium, `npm run test:e2e` | Automated in CI. Used for every e2e spec, including the new OCR spec. |
+| Tauri desktop shell | none in the repo | CI runs `cargo fmt --check` and `cargo check` only. `tauri-driver`, `msedgedriver` and a WebDriver client are not dependencies. |
+
+A one-off manual check of both paths was run on Windows 10.0.26200 (WebView2 runtime 155.0.4283.62):
+
+- **Browser driver — PASS.** A Playwright script drove the production preview (`vite preview`, 1280x820 and 390x844 viewports) through five steps and saved screenshots: home renders (h1, 27 tool cards), a disabled tool shows the "unavailable" gate with no file input (compress-pdf, still `disabled`), Split PDF with "one file per page" on a generated 5-page PDF produced `split_five-pages.zip` with 5 valid one-page PDFs (5,000 bytes), Remove Pages removing page 2 produced a 4-page PDF with a real download, and the mobile home page had no horizontal overflow (scrollWidth = clientWidth = 390). Zero off-origin requests, zero page errors, zero failed requests; the only console output was the two known `<meta>` CSP notices (`frame-ancestors` and `X-Frame-Options` are ignored in a meta tag) repeated per navigation.
+- **Tauri driver — PASS after building the tooling.** `tauri-driver` 2.1.0 (installed with `cargo install`) plus `msedgedriver` 155.0.4283.62 (matching the installed WebView2 runtime) drove a `cargo build` debug binary of `src-tauri` (2m52s). WebDriver created a session, the WebView loaded `http://127.0.0.1:1420` with the real home page (h1, 27 tool links), an in-page click navigated to `/tools/split-pdf` (h1 "Split PDF", file input present), and a full Remove Pages workflow — file upload through the real `<input type=\"file\">`, page range "2", the action button, then `Pages removed successfully!` and a `Download removed_five-pages.pdf` button — completed inside the desktop window. The session was deleted and no processes were left behind.
+- **Finding (backlog #18, fixed here):** the desktop dev path was broken before this check. `tauri.conf.json` asks for `http://127.0.0.1:1420` and the Vite config honours `TAURI_DEV=1`, but `npm run dev` (used as `beforeDevCommand`) passed `--port=3000 --host=0.0.0.0`, and command-line flags override the config, so the shell loaded an unreachable 1420 while Vite listened on 3000. `npm run dev:tauri-frontend` now runs plain `vite` and lets the config decide (127.0.0.1:1420 under `tauri dev`, 3000 for the web). Verified by starting that script with `TAURI_DEV=1` and repeating the Tauri driver check against it.
+- **Gap (backlog #20):** none of this is repeatable in CI. A desktop spec needs a driver in the pipeline and the owner's approval for that tooling.
 
 ---
 
@@ -26,7 +61,7 @@
 2. **Cancellation — done.** Add an `AbortSignal` to `OcrOptions`. Check it between pages and between render/recognize; `worker.terminate()` on abort. Add a "Cancel" button in the processing step that returns to configure. Test that abort mid-run terminates the worker and destroys the loading task.
 3. **Limits — done.** The page-range input reuses `parsePageRanges` from `src/lib/pdf.ts`; invalid ranges are shown next to the input. Reject files over a page cap (start at 200 pages) and a size cap before loading. Show the limit in the configure step. Add a page-range input (reuse the page-range parser from split/extract if it exists; otherwise add one in `src/lib/utils.ts` with tests).
 4. **Non-Latin scripts — done without a new dependency.** `src/lib/glyphlessFont.ts` builds a glyphless Type0/Identity-H font with a ToUnicode CMap (as Tesseract's own PDF renderer does), so any BMP script can be stored; right-to-left words are written in visual order (`toVisualOrder` in `src/lib/ocr.ts`).
-5. **e2e.** In `e2e/smoke.spec.ts`, keep the "disabled routes load no tesseract worker" assertion until the flip. At flip time, replace it with a test that runs OCR on a fixture scan and asserts that only same-origin requests were made and that the output's text is extractable.
+5. **e2e — done (A1.3).** `e2e/ocr.spec.ts` generates an image-only one-page PDF in the test, runs OCR against `npm run preview`, asserts that every http(s) request was same-origin (including the worker's own `importScripts` and language-data fetches), and extracts the expected words from the downloaded PDF with pdf.js. `e2e/smoke.spec.ts` now only asserts that the OCR engine stays lazy when the route mounts.
 6. **Release flip (one commit, with user approval):** registry `releaseState`, the CSP `worker-src`/`connect-src` check, e2e allowed hosts, `docs/privacy/data-flow.md`, and `docs/release/production-inventory.md`.
 
 **Acceptance:** A scanned 10-page English PDF becomes searchable in a production build with network egress limited to the app origin; cancel works within one page; a 500-page file is refused with a clear message.

@@ -66,7 +66,7 @@ export default function RemovePages() {
   return (
     <ToolLayout 
       title="Remove Pages" 
-      description="Remove pages from a PDF document in a flash."
+      description="Delete the pages you select and save a new PDF with the rest."
     >
       {step === 'upload' && (
         <FileUploadZone 

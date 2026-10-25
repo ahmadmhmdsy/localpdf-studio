@@ -10,6 +10,7 @@
   "packageManager": "npm@11.16.0",
   "scripts": {
     "dev": "vite --port=3000 --host=0.0.0.0",
+    "dev:tauri-frontend": "vite",
     "build": "vite build",
     "preview": "vite preview",
     "clean": "npx rimraf dist",

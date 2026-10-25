@@ -4,6 +4,8 @@ import ToolLayout from '../../components/tools/ToolLayout';
 import FileUploadZone from '../../components/tools/FileUploadZone';
 import ProcessingState from '../../components/tools/ProcessingState';
 import { repairPdf, RepairResult } from '../../lib/repair';
+import { logError } from '../../lib/logger';
+import { useToast } from '../../contexts/ToastContext';
 import { saveAs } from 'file-saver';
 
 type Step = 'upload' | 'processing' | 'done' | 'error';
@@ -13,6 +15,13 @@ export default function RepairPdf() {
   const [file, setFile] = useState<File | null>(null);
   const [result, setResult] = useState<RepairResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const { showToast } = useToast();
+
+  const failWith = (message: string) => {
+    setError(message);
+    showToast({ message, type: 'error', duration: 5000 });
+    setStep('error');
+  };
 
   const handleFilesSelected = (files: File[]) => {
     if (files.length === 1) {
@@ -24,20 +33,22 @@ export default function RepairPdf() {
   const handleRepair = async (selectedFile: File) => {
     setStep('processing');
     setError(null);
+    setResult(null);
 
     try {
       const repairResult = await repairPdf(selectedFile);
-      setResult(repairResult);
-      
-      if (repairResult.success || repairResult.data) {
+
+      // A repair either produces a real document or reports the failure; there
+      // is no placeholder file to download (roadmap A7.9).
+      if (repairResult.success && repairResult.data) {
+        setResult(repairResult);
         setStep('done');
       } else {
-        setError(repairResult.message);
-        setStep('error');
+        failWith(repairResult.message || 'This PDF could not be repaired.');
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to repair PDF');
-      setStep('error');
+      logError('Error repairing PDF:', err);
+      failWith(err instanceof Error ? err.message : 'Failed to repair PDF');
     }
   };
 
@@ -59,7 +70,7 @@ export default function RepairPdf() {
   return (
     <ToolLayout
       title="Repair PDF"
-      description="Attempt to fix corrupted or damaged PDF files."
+      description="Attempt to repair a damaged PDF by re-parsing and re-saving it. A file that cannot be repaired reports a clear failure instead of producing a placeholder."
     >
       {step === 'upload' && (
         <FileUploadZone
@@ -79,25 +90,15 @@ export default function RepairPdf() {
         />
       )}
 
-      {step === 'done' && result && (
+      {step === 'done' && result?.data && (
         <div className="flex flex-col items-center gap-6 py-8">
-          <div className={`w-20 h-20 rounded-full flex items-center justify-center ${
-            result.success ? 'bg-green-100' : 'bg-yellow-100'
-          }`}>
-            {result.success ? (
-              <CheckCircle className="w-10 h-10 text-green-600" />
-            ) : (
-              <AlertCircle className="w-10 h-10 text-yellow-600" />
-            )}
+          <div className="w-20 h-20 rounded-full flex items-center justify-center bg-green-100">
+            <CheckCircle className="w-10 h-10 text-green-600" />
           </div>
 
           <div className="text-center max-w-md">
-            <h3 className="text-xl font-semibold text-[var(--text)]">
-              {result.success ? 'Repair Successful!' : 'Partial Repair'}
-            </h3>
-            <p className={`mt-2 ${result.success ? 'text-[var(--text-3)]' : 'text-yellow-600'}`}>
-              {result.message}
-            </p>
+            <h3 className="text-xl font-semibold text-[var(--text)]">Repair Successful!</h3>
+            <p className="mt-2 text-[var(--text-3)]">{result.message}</p>
           </div>
 
           {result.issuesFixed.length > 0 && (
@@ -114,15 +115,13 @@ export default function RepairPdf() {
             </div>
           )}
 
-          {result.data && (
-            <button
-              onClick={handleDownload}
-              className="flex items-center gap-2 px-8 py-4 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors"
-            >
-              <Download className="w-5 h-5" />
-              Download Repaired PDF
-            </button>
-          )}
+          <button
+            onClick={handleDownload}
+            className="flex items-center gap-2 px-8 py-4 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors"
+          >
+            <Download className="w-5 h-5" />
+            Download Repaired PDF
+          </button>
 
           <button
             onClick={reset}
@@ -134,7 +133,7 @@ export default function RepairPdf() {
       )}
 
       {step === 'error' && (
-        <div className="flex flex-col items-center gap-6 py-12">
+        <div className="flex flex-col items-center gap-6 py-12" role="alert">
           <div className="w-20 h-20 bg-red-100 rounded-full flex items-center justify-center">
             <AlertCircle className="w-10 h-10 text-red-600" />
           </div>
@@ -142,7 +141,8 @@ export default function RepairPdf() {
             <h3 className="text-xl font-semibold text-[var(--text)]">Repair Failed</h3>
             <p className="text-red-500 mt-2">{error}</p>
             <p className="text-[var(--text-3)] mt-4 text-sm">
-              The PDF may be too corrupted for client-side repair. Consider using a server-based PDF repair service for severely damaged files.
+              For severely damaged files, a server-side PDF repair service may be able to recover
+              more content.
             </p>
           </div>
           <button

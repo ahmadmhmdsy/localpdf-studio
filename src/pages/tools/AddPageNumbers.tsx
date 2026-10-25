@@ -4,18 +4,22 @@ import ToolLayout from '../../components/tools/ToolLayout';
 import FileUploadZone from '../../components/tools/FileUploadZone';
 import ProcessingState from '../../components/tools/ProcessingState';
 import DownloadState from '../../components/tools/DownloadState';
-import { addPageNumbers } from '../../lib/pdf';
+import {
+  addPageNumbers,
+  DEFAULT_PAGE_NUMBER_POSITION,
+  PAGE_NUMBER_POSITIONS,
+  type PageNumberPosition,
+} from '../../lib/pdf';
 import { logError } from '../../lib/logger';
 import { useToast } from '../../contexts/ToastContext';
 import { useManagedObjectUrl } from '../../hooks/useObjectUrl';
 
 type Step = 'upload' | 'configure' | 'processing' | 'download';
-type Position = 'top-left' | 'top-center' | 'top-right' | 'bottom-left' | 'bottom-center' | 'bottom-right';
 
 export default function AddPageNumbers() {
   const [step, setStep] = useState<Step>('upload');
   const [file, setFile] = useState<File | null>(null);
-  const [position, setPosition] = useState<Position>('bottom-center');
+  const [position, setPosition] = useState<PageNumberPosition>(DEFAULT_PAGE_NUMBER_POSITION);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [resultSize, setResultSize] = useState<string>('');
   const { showToast } = useToast();
@@ -54,7 +58,7 @@ export default function AddPageNumbers() {
 
   const startOver = () => {
     setFile(null);
-    setPosition('bottom-center');
+    setPosition(DEFAULT_PAGE_NUMBER_POSITION);
     revokeObjectUrl();
     setResultUrl(null);
     setStep('upload');
@@ -63,7 +67,7 @@ export default function AddPageNumbers() {
   return (
     <ToolLayout 
       title="Add Page Numbers" 
-      description="Add page numbers into PDFs with ease. Choose your typography, position and dimensions."
+      description="Add page numbers to every page of your PDF. Choose from 9 positions (corners, edges, center)."
     >
       {step === 'upload' && (
         <FileUploadZone 
@@ -102,7 +106,7 @@ export default function AddPageNumbers() {
                 Position
               </label>
               <div className="grid grid-cols-3 gap-4 max-w-md">
-                {(['top-left', 'top-center', 'top-right', 'bottom-left', 'bottom-center', 'bottom-right'] as Position[]).map((pos) => (
+                {PAGE_NUMBER_POSITIONS.map((pos) => (
                   <button
                     key={pos}
                     onClick={() => setPosition(pos)}

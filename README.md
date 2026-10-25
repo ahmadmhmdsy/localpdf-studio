@@ -67,7 +67,7 @@ The source of truth is [`src/config/featureRegistry.ts`](src/config/featureRegis
 | State | Tools |
 |---|---|
 | ✅ **Stable** | Merge PDF · PDF to JPG · Rotate PDF · Crop PDF · Compare PDF |
-| 🟡 **Limited**: works, with documented limits | OCR PDF *(English, Arabic)* · Split PDF · Remove Pages · Extract Pages · Organize PDF · Repair PDF · JPG to PDF · HTML to PDF · Word to PDF · Excel to PDF · PowerPoint to PDF · PDF to PDF/A *(best-effort, not conformant)* · PDF to Word · PDF to Excel · Add Page Numbers · Add Watermark · Edit PDF *(adds overlays)* · Sign PDF *(visual signature, not certificate-backed)* |
+| 🟡 **Limited**: works, with documented limits | OCR PDF *(English, Arabic)* · Split PDF · Remove Pages · Extract Pages · Organize PDF · Repair PDF · JPG to PDF · HTML to PDF · Word to PDF · Excel to PDF · PowerPoint to PDF · PDF to PDF/A-style *(metadata only, not validated as conformant)* · PDF to Word · PDF to Excel · Add Page Numbers · Add Watermark · Edit PDF *(adds overlays)* · Sign PDF *(visual signature, not certificate-backed)* |
 | ⛔ **Disabled**: work in progress | Compress PDF · Scan to PDF · PDF to PowerPoint · Protect PDF · Unlock PDF · Redact (Blackout) PDF · AI Summarizer · Translate PDF |
 
 The Phase A plan for turning the disabled tools on is in [`docs/superpowers/plans/2026-10-24-phase-a-tools.md`](docs/superpowers/plans/2026-10-24-phase-a-tools.md).

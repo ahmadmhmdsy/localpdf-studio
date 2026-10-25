@@ -59,7 +59,7 @@ export default function ExcelToPdf() {
   return (
     <ToolLayout
       title="EXCEL to PDF"
-      description="Convert Excel spreadsheets to PDF format with tables preserved."
+      description="Convert XLSX spreadsheets to PDF with basic table layout."
     >
       {step === 'upload' && (
         <FileUploadZone

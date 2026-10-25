@@ -116,7 +116,7 @@ export default function CropPdf() {
   return (
     <ToolLayout 
       title="Crop PDF" 
-      description="Crop PDF online to a selected area, adjust margin size swiftly. The crop area will be applied to all pages."
+      description="Crop all pages of a PDF to the same selected area."
     >
       {step === 'upload' && (
         <FileUploadZone 

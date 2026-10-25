@@ -4,51 +4,69 @@ import userEvent from '@testing-library/user-event';
 import SplitPdf from './SplitPdf';
 import { createDeferred, renderWithProviders } from '../../tests/utils';
 import { generateDummyPdf } from '../../tests/fixtures/pdfGenerator';
+import type { SplitFile } from '../../lib/pdf';
 
-const { extractPagesMock } = vi.hoisted(() => ({
-  extractPagesMock: vi.fn(),
+const { splitPdfToFilesMock, buildZipFileMock } = vi.hoisted(() => ({
+  splitPdfToFilesMock: vi.fn(),
+  buildZipFileMock: vi.fn(),
 }));
 
-vi.mock('../../lib/pdf', () => ({
-  extractPages: extractPagesMock,
+vi.mock('../../lib/pdf', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('../../lib/pdf')>();
+  return { ...actual, splitPdfToFiles: splitPdfToFilesMock };
+});
+
+vi.mock('../../lib/zip', () => ({
+  buildZipFile: buildZipFileMock,
 }));
+
+const SINGLE_FILE: SplitFile[] = [
+  { fileName: 'split_test_1-3.pdf', data: new Uint8Array([1, 2, 3]) },
+];
+
+const MULTIPLE_FILES: SplitFile[] = [
+  { fileName: 'split_test_1.pdf', data: new Uint8Array([1]) },
+  { fileName: 'split_test_2.pdf', data: new Uint8Array([2]) },
+  { fileName: 'split_test_3.pdf', data: new Uint8Array([3]) },
+];
 
 describe('SplitPdf', () => {
   let user: ReturnType<typeof userEvent.setup>;
 
   beforeEach(() => {
     user = userEvent.setup();
-    extractPagesMock.mockReset();
-    extractPagesMock.mockImplementation(async (_file: File, ranges: string) => {
-      if (!ranges.trim()) {
-        throw new Error('No page ranges specified');
-      }
-      if (ranges === 'invalid-range') {
-        throw new Error('Invalid page range');
-      }
-      return new Uint8Array([1, 2, 3, 4, 5]);
-    });
+    splitPdfToFilesMock.mockReset();
+    buildZipFileMock.mockReset();
     vi.clearAllMocks();
+    splitPdfToFilesMock.mockResolvedValue(SINGLE_FILE);
+    buildZipFileMock.mockResolvedValue(new Blob(['zip-bytes'], { type: 'application/zip' }));
   });
+
+  async function uploadPdf(pageCount = 5, fileName = 'test.pdf'): Promise<File> {
+    const pdfFile = await generateDummyPdf(pageCount, fileName);
+    const input = screen.getByLabelText(/select PDF file/i);
+    await user.upload(input, pdfFile);
+    await screen.findByRole('radio', { name: /by page range/i });
+    return pdfFile;
+  }
 
   describe('Initial State', () => {
     it('renders upload zone on initial load', () => {
       renderWithProviders(<SplitPdf />);
-      
+
       expect(screen.getByText('Select PDF file')).toBeInTheDocument();
       expect(screen.getByText(/drop PDF here/i)).toBeInTheDocument();
     });
 
-    it('displays tool title and description', () => {
+    it('displays the tool title', () => {
       renderWithProviders(<SplitPdf />);
-      
+
       expect(screen.getByRole('heading', { name: 'Split PDF' })).toBeInTheDocument();
-      expect(screen.getByText(/extract specific pages/i)).toBeInTheDocument();
     });
 
     it('only accepts single file upload', () => {
       renderWithProviders(<SplitPdf />);
-      
+
       const input = screen.getByLabelText(/select PDF file/i);
       expect(input).toHaveAttribute('type', 'file');
     });
@@ -57,211 +75,169 @@ describe('SplitPdf', () => {
   describe('File Upload', () => {
     it('transitions to configure step after file selection', async () => {
       renderWithProviders(<SplitPdf />);
-      
-      const pdfFile = await generateDummyPdf(5, 'test-document.pdf');
-      const input = screen.getByLabelText(/select PDF file/i);
-      
-      await user.upload(input, pdfFile);
-      
-      await waitFor(() => {
-        expect(screen.getByText('Pages to extract')).toBeInTheDocument();
-      });
+
+      await uploadPdf();
+
+      expect(screen.getByText(/how should the PDF be split/i)).toBeInTheDocument();
     });
 
     it('displays uploaded file details in configure step', async () => {
       renderWithProviders(<SplitPdf />);
-      
-      const pdfFile = await generateDummyPdf(5, 'my-document.pdf');
-      const input = screen.getByLabelText(/select PDF file/i);
-      
-      await user.upload(input, pdfFile);
-      
-      await waitFor(() => {
-        expect(screen.getByText('my-document.pdf')).toBeInTheDocument();
-        expect(screen.getByText(/MB/)).toBeInTheDocument();
-      });
+
+      await uploadPdf(5, 'my-document.pdf');
+
+      expect(screen.getByText('my-document.pdf')).toBeInTheDocument();
+      expect(screen.getByText(/MB/)).toBeInTheDocument();
     });
   });
 
-  describe('Page Range Configuration', () => {
-    it('shows page range input field', async () => {
+  describe('Split mode selection', () => {
+    it('offers the three split modes and defaults to page ranges', async () => {
       renderWithProviders(<SplitPdf />);
-      
-      const pdfFile = await generateDummyPdf(5, 'test.pdf');
-      const input = screen.getByLabelText(/select PDF file/i);
-      
-      await user.upload(input, pdfFile);
-      
-      await waitFor(() => {
-        expect(screen.getByLabelText(/pages to extract/i)).toBeInTheDocument();
-      });
+
+      await uploadPdf();
+
+      expect(screen.getByRole('radio', { name: /by page range/i })).toBeChecked();
+      expect(screen.getByRole('radio', { name: /every n pages/i })).not.toBeChecked();
+      expect(screen.getByRole('radio', { name: /one file per page/i })).not.toBeChecked();
+      expect(screen.getByLabelText(/page ranges/i)).toBeInTheDocument();
     });
 
-    it('accepts valid page range input', async () => {
+    it('shows the pages-per-file input for the "Every N pages" mode', async () => {
       renderWithProviders(<SplitPdf />);
-      
-      const pdfFile = await generateDummyPdf(5, 'test.pdf');
-      const input = screen.getByLabelText(/select PDF file/i);
-      
-      await user.upload(input, pdfFile);
-      
-      await waitFor(() => {
-        expect(screen.getByLabelText(/pages to extract/i)).toBeInTheDocument();
-      });
-      
-      const rangeInput = screen.getByPlaceholderText(/e\.g\., 1-5, 8, 11-13/i);
-      await user.type(rangeInput, '1-3');
-      
-      expect(rangeInput).toHaveValue('1-3');
+
+      await uploadPdf();
+      await user.click(screen.getByRole('radio', { name: /every n pages/i }));
+
+      const pagesInput = screen.getByLabelText(/pages per file/i);
+      expect(pagesInput).toHaveValue(10);
+      expect(screen.queryByLabelText(/page ranges/i)).not.toBeInTheDocument();
     });
 
-    it('disables split button without page ranges', async () => {
+    it('enables the split button for "One file per page" without extra input', async () => {
       renderWithProviders(<SplitPdf />);
-      
-      const pdfFile = await generateDummyPdf(5, 'test.pdf');
-      const input = screen.getByLabelText(/select PDF file/i);
-      
-      await user.upload(input, pdfFile);
-      
-      await waitFor(() => {
-        const splitButton = screen.getByRole('button', { name: /split PDF/i });
-        expect(splitButton).toBeDisabled();
-      });
-    });
 
-    it('enables split button with valid page ranges', async () => {
-      renderWithProviders(<SplitPdf />);
-      
-      const pdfFile = await generateDummyPdf(5, 'test.pdf');
-      const input = screen.getByLabelText(/select PDF file/i);
-      
-      await user.upload(input, pdfFile);
-      
-      await waitFor(() => {
-        expect(screen.getByLabelText(/pages to extract/i)).toBeInTheDocument();
-      });
-      
-      const rangeInput = screen.getByPlaceholderText(/e\.g\., 1-5, 8, 11-13/i);
-      await user.type(rangeInput, '1-3,5');
-      
-      const splitButton = screen.getByRole('button', { name: /split PDF/i });
-      expect(splitButton).not.toBeDisabled();
-    });
+      await uploadPdf();
+      await user.click(screen.getByRole('radio', { name: /one file per page/i }));
 
-    it('shows helper text for page range format', async () => {
-      renderWithProviders(<SplitPdf />);
-      
-      const pdfFile = await generateDummyPdf(5, 'test.pdf');
-      const input = screen.getByLabelText(/select PDF file/i);
-      
-      await user.upload(input, pdfFile);
-      
-      await waitFor(() => {
-        expect(screen.getByText(/enter page numbers and\/or page ranges/i)).toBeInTheDocument();
-      });
+      expect(screen.queryByLabelText(/page ranges/i)).not.toBeInTheDocument();
+      expect(screen.queryByLabelText(/pages per file/i)).not.toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /split PDF/i })).toBeEnabled();
     });
   });
 
-  describe('Split Operation', () => {
-    it('shows processing and completes when the split resolves', async () => {
+  describe('Page range configuration', () => {
+    it('disables the split button without page ranges', async () => {
       renderWithProviders(<SplitPdf />);
 
-      const pdfFile = await generateDummyPdf(5, 'test.pdf');
-      const input = screen.getByLabelText(/select PDF file/i);
-      const split = createDeferred<Uint8Array>();
-      extractPagesMock.mockReturnValueOnce(split.promise);
+      await uploadPdf();
 
-      await user.upload(input, pdfFile);
+      expect(screen.getByRole('button', { name: /split PDF/i })).toBeDisabled();
+    });
 
-      const rangeInput = await screen.findByLabelText(/pages to extract/i);
-      await user.type(rangeInput, '1-3');
+    it('enables the split button with valid page ranges', async () => {
+      renderWithProviders(<SplitPdf />);
 
-      const splitButton = screen.getByRole('button', { name: /split PDF/i });
-      await user.click(splitButton);
+      await uploadPdf();
+      await user.type(screen.getByPlaceholderText(/e\.g\., 1-3, 4, 5-8/i), '1-3,5');
+
+      expect(screen.getByRole('button', { name: /split PDF/i })).toBeEnabled();
+    });
+
+    it('shows helper text for the page range format', async () => {
+      renderWithProviders(<SplitPdf />);
+
+      await uploadPdf();
+
+      expect(screen.getByText(/each range becomes its own PDF file/i)).toBeInTheDocument();
+    });
+  });
+
+  describe('Split operation', () => {
+    it('shows processing and downloads a single PDF when one range is produced', async () => {
+      renderWithProviders(<SplitPdf />);
+
+      const pdfFile = await uploadPdf();
+      const split = createDeferred<SplitFile[]>();
+      splitPdfToFilesMock.mockReturnValueOnce(split.promise);
+
+      await user.type(screen.getByPlaceholderText(/e\.g\., 1-3, 4, 5-8/i), '1-3');
+      await user.click(screen.getByRole('button', { name: /split PDF/i }));
 
       expect(await screen.findByText(/splitting PDF/i)).toBeInTheDocument();
-      expect(extractPagesMock).toHaveBeenCalledWith(pdfFile, '1-3');
+      expect(splitPdfToFilesMock).toHaveBeenCalledWith(pdfFile, 'ranges', { rangeString: '1-3' });
 
       await act(async () => {
-        split.resolve(new Uint8Array([1, 2, 3, 4, 5]));
+        split.resolve(SINGLE_FILE);
         await split.promise;
       });
 
       expect(
-        await screen.findByRole('link', { name: /download split_test\.pdf/i })
+        await screen.findByRole('link', { name: /download split_test_1-3\.pdf/i })
       ).toHaveAttribute('href', 'mock-url');
+      expect(buildZipFileMock).not.toHaveBeenCalled();
     });
 
-    it('shows download state after successful split', async () => {
+    it('passes the pages-per-file value in the "Every N pages" mode', async () => {
       renderWithProviders(<SplitPdf />);
-      
-      const pdfFile = await generateDummyPdf(5, 'test.pdf');
-      const input = screen.getByLabelText(/select PDF file/i);
-      
-      await user.upload(input, pdfFile);
-      
+
+      const pdfFile = await uploadPdf();
+      await user.click(screen.getByRole('radio', { name: /every n pages/i }));
+
+      const pagesInput = screen.getByLabelText(/pages per file/i);
+      await user.clear(pagesInput);
+      await user.type(pagesInput, '2');
+      await user.click(screen.getByRole('button', { name: /split PDF/i }));
+
       await waitFor(() => {
-        expect(screen.getByLabelText(/pages to extract/i)).toBeInTheDocument();
+        expect(splitPdfToFilesMock).toHaveBeenCalledWith(pdfFile, 'every-n', { pagesPerFile: 2 });
       });
-      
-      const rangeInput = screen.getByPlaceholderText(/e\.g\., 1-5, 8, 11-13/i);
-      await user.type(rangeInput, '1-2');
-      
-      const splitButton = screen.getByRole('button', { name: /split PDF/i });
-      await user.click(splitButton);
-      
-      await waitFor(() => {
-        expect(screen.getByText(/PDF split successfully/i)).toBeInTheDocument();
-      }, { timeout: 3000 });
+    });
+
+    it('downloads a ZIP archive when several files are produced', async () => {
+      renderWithProviders(<SplitPdf />);
+
+      const pdfFile = await uploadPdf(3, 'test.pdf');
+      splitPdfToFilesMock.mockResolvedValueOnce(MULTIPLE_FILES);
+
+      await user.click(screen.getByRole('radio', { name: /one file per page/i }));
+      await user.click(screen.getByRole('button', { name: /split PDF/i }));
+
+      expect(splitPdfToFilesMock).toHaveBeenCalledWith(pdfFile, 'each-page', {});
+
+      expect(
+        await screen.findByRole('link', { name: /download split_test\.zip/i })
+      ).toHaveAttribute('href', 'mock-url');
+      expect(buildZipFileMock).toHaveBeenCalledWith(
+        MULTIPLE_FILES.map(({ fileName, data }) => ({ name: fileName, data }))
+      );
+      expect(screen.getByText(/packaged as a ZIP archive/i)).toBeInTheDocument();
+    });
+
+    it('disables the split button for an invalid pages-per-file value', async () => {
+      renderWithProviders(<SplitPdf />);
+
+      await uploadPdf();
+      await user.click(screen.getByRole('radio', { name: /every n pages/i }));
+
+      const pagesInput = screen.getByLabelText(/pages per file/i);
+      await user.clear(pagesInput);
+
+      expect(screen.getByRole('button', { name: /split PDF/i })).toBeDisabled();
     });
   });
 
   describe('Download State', () => {
-    it('displays download button after split', async () => {
+    it('allows starting over from the download state', async () => {
       renderWithProviders(<SplitPdf />);
-      
-      const pdfFile = await generateDummyPdf(5, 'test.pdf');
-      const input = screen.getByLabelText(/select PDF file/i);
-      
-      await user.upload(input, pdfFile);
-      
-      await waitFor(() => {
-        expect(screen.getByLabelText(/pages to extract/i)).toBeInTheDocument();
-      });
-      
-      const rangeInput = screen.getByPlaceholderText(/e\.g\., 1-5, 8, 11-13/i);
-      await user.type(rangeInput, '1');
-      
-      await user.click(screen.getByRole('button', { name: /split PDF/i }));
-      
-      await waitFor(() => {
-        expect(screen.getByRole('link', { name: /download/i })).toBeInTheDocument();
-      }, { timeout: 3000 });
-    });
 
-    it('allows starting over from download state', async () => {
-      renderWithProviders(<SplitPdf />);
-      
-      const pdfFile = await generateDummyPdf(5, 'test.pdf');
-      const input = screen.getByLabelText(/select PDF file/i);
-      
-      await user.upload(input, pdfFile);
-      
-      await waitFor(() => {
-        expect(screen.getByLabelText(/pages to extract/i)).toBeInTheDocument();
-      });
-      
-      const rangeInput = screen.getByPlaceholderText(/e\.g\., 1-5, 8, 11-13/i);
-      await user.type(rangeInput, '1');
-      
+      await uploadPdf();
+      await user.type(screen.getByPlaceholderText(/e\.g\., 1-3, 4, 5-8/i), '1');
       await user.click(screen.getByRole('button', { name: /split PDF/i }));
-      
-      await waitFor(() => {
-        expect(screen.getByRole('button', { name: /start over/i })).toBeInTheDocument();
-      }, { timeout: 3000 });
-      
-      await user.click(screen.getByRole('button', { name: /start over/i }));
-      
+
+      const startOver = await screen.findByRole('button', { name: /start over/i });
+      await user.click(startOver);
+
       await waitFor(() => {
         expect(screen.getByText('Select PDF file')).toBeInTheDocument();
       });
@@ -269,66 +245,29 @@ describe('SplitPdf', () => {
   });
 
   describe('Error Handling', () => {
-    it('handles invalid page ranges gracefully', async () => {
-      const { extractPages } = await import('../../lib/pdf');
-      vi.mocked(extractPages).mockRejectedValueOnce(new Error('Invalid page range'));
-      
+    it('shows the error message and returns to the configure step', async () => {
       renderWithProviders(<SplitPdf />);
-      
-      const pdfFile = await generateDummyPdf(5, 'test.pdf');
-      const input = screen.getByLabelText(/select PDF file/i);
-      
-      await user.upload(input, pdfFile);
-      
-      await waitFor(() => {
-        expect(screen.getByLabelText(/pages to extract/i)).toBeInTheDocument();
-      });
-      
-      const rangeInput = screen.getByPlaceholderText(/e\.g\., 1-5, 8, 11-13/i);
-      await user.type(rangeInput, 'invalid-range');
-      
-      await user.click(screen.getByRole('button', { name: /split PDF/i }));
-      
-      await waitFor(() => {
-        expect(screen.getByText(/invalid page range/i)).toBeInTheDocument();
-      }, { timeout: 3000 });
-    });
 
-    it('shows toast for empty page ranges submission', async () => {
-      renderWithProviders(<SplitPdf />);
-      
-      const pdfFile = await generateDummyPdf(5, 'test.pdf');
-      const input = screen.getByLabelText(/select PDF file/i);
-      
-      await user.upload(input, pdfFile);
-      
-      await waitFor(() => {
-        const splitButton = screen.getByRole('button', { name: /split PDF/i });
-        expect(splitButton).toBeDisabled();
-      });
+      await uploadPdf();
+      splitPdfToFilesMock.mockRejectedValueOnce(new Error('Invalid page range'));
+
+      await user.type(screen.getByPlaceholderText(/e\.g\., 1-3, 4, 5-8/i), 'invalid-range');
+      await user.click(screen.getByRole('button', { name: /split PDF/i }));
+
+      expect(await screen.findByText(/invalid page range/i)).toBeInTheDocument();
+      expect(await screen.findByRole('radio', { name: /by page range/i })).toBeInTheDocument();
     });
   });
 
   describe('Start Over Functionality', () => {
-    it('clears file and ranges when starting over', async () => {
+    it('clears the file when removing it in the configure step', async () => {
       renderWithProviders(<SplitPdf />);
-      
-      const pdfFile = await generateDummyPdf(5, 'test.pdf');
-      const input = screen.getByLabelText(/select PDF file/i);
-      
-      await user.upload(input, pdfFile);
-      
-      await waitFor(() => {
-        expect(screen.getByLabelText(/pages to extract/i)).toBeInTheDocument();
-      });
-      
-      const rangeInput = screen.getByPlaceholderText(/e\.g\., 1-5, 8, 11-13/i);
-      await user.type(rangeInput, '1-2');
-      
-      // Remove button should be available
-      const removeButton = screen.getByRole('button', { name: /remove/i });
-      await user.click(removeButton);
-      
+
+      await uploadPdf();
+      await user.type(screen.getByPlaceholderText(/e\.g\., 1-3, 4, 5-8/i), '1-2');
+
+      await user.click(screen.getByRole('button', { name: /remove file/i }));
+
       await waitFor(() => {
         expect(screen.getByText('Select PDF file')).toBeInTheDocument();
       });

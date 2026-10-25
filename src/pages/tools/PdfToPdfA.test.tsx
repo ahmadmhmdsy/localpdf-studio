@@ -38,7 +38,7 @@ describe('PdfToPdfA', () => {
     await user.upload(input, pdfFile);
     
     await waitFor(() => {
-      expect(screen.getByText(/PDF\/A Compliance Level/i)).toBeInTheDocument();
+      expect(screen.getByText(/Select the PDF\/A level to target/i)).toBeInTheDocument();
     });
   });
 });

@@ -34,7 +34,7 @@ describe('WordToPdf', () => {
       renderWithProviders(<WordToPdf />);
       
       expect(screen.getByRole('heading', { name: /WORD to PDF/i })).toBeInTheDocument();
-      expect(screen.getByText(/convert Word documents to PDF/i)).toBeInTheDocument();
+      expect(screen.getByText(/convert DOCX documents to PDF/i)).toBeInTheDocument();
     });
   });
 

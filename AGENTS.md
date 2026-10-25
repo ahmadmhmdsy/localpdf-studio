@@ -42,7 +42,7 @@ npx tsx scripts/validate-feature-registry.ts  # registry consistency check
 
 ## Architecture
 
-- **Entry:** `src/main.tsx` → `src/App.tsx`. The 31 tool routes under `/tools/:tool-name` are currently listed by hand there, with `lazy()` imports (code-split). This is known debt against the no-hardcoding rule (CLAUDE.md §6a, roadmap backlog #15): the target is routes generated from the catalog and registry. Until then, a new tool needs its route added here too.
+- **Entry:** `src/main.tsx` → `src/App.tsx` (`AppRoutes`). Tool routes under `/tools/<tool-id>` are generated from the catalog (`src/constants/tools.ts`) and the registry, so path, name and availability all come from data (backlog #15, done). The only per-tool code is the lazy component map in `src/config/toolRoutes.ts`, typed as `Record<ToolId, LazyExoticComponent<…>>`, so a tool without a page fails typecheck. Adding a tool = catalog entry + registry entry + page component + map entry.
 - **Tool catalog and release gate:** UI metadata is in `src/constants/tools.ts`; release state, privacy class and limitation text are in `src/config/featureRegistry.ts`, mirrored in `docs/release/production-inventory.md`. `ToolRoute` wraps each tool in `ToolErrorBoundary` and `ToolAvailabilityGate`, which blocks processing for non-released tools. Never change a `releaseState` without the owner's explicit OK.
 - **Backward-compat aliases:** `/tools/redact-pdf` → `/tools/blackout-pdf`, `/tools/unlock-pdf` → `/tools/decrypt-pdf` (both use `<Navigate>` redirect).
 - **Editor page:** `src/pages/Editor.tsx` at route `/editor`. Press `?` for keyboard shortcuts.

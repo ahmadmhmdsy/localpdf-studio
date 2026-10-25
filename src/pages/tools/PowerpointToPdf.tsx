@@ -59,7 +59,7 @@ export default function PowerpointToPdf() {
   return (
     <ToolLayout
       title="POWERPOINT to PDF"
-      description="Convert PowerPoint presentations to PDF format."
+      description="Convert PPTX slides to PDF with approximate layout."
     >
       {step === 'upload' && (
         <FileUploadZone

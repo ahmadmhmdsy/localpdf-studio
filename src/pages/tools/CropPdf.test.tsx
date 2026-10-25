@@ -62,7 +62,7 @@ describe('CropPdf', () => {
     await user.upload(input, pdfFile);
     
     await waitFor(() => {
-      expect(screen.getByText(/margin/i) || screen.getByText(/selection/i)).toBeInTheDocument();
+      expect(screen.getByText(/draw a rectangle to crop all pages/i)).toBeInTheDocument();
     });
   });
 });
