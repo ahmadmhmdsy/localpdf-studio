@@ -5,6 +5,7 @@ import { cn } from '../lib/utils';
 import { useToast } from '../contexts/ToastContext';
 import { useToolsStore } from '../store/toolsStore';
 import { useI18n } from '../i18n/useI18n';
+import { releaseStateBadgeKey } from '../i18n/releaseState';
 import HomeBento from './home/HomeBento';
 
 const EDITOR_INTEGRATED_TOOLS = [
@@ -21,7 +22,7 @@ const EDITOR_INTEGRATED_TOOLS = [
 export default function Home() {
   const skin = useToolsStore((s) => s.skin);
   const { showToast } = useToast();
-  const { categoryName, tool: toolCopy } = useI18n();
+  const { t, categoryName, tool: toolCopy } = useI18n();
 
   // Bento skin has its own topbar / hero / privacy block inside the
   // main column (the sidebar is rendered by Layout.tsx). Render it whole.
@@ -33,11 +34,11 @@ export default function Home() {
     <div className="container mx-auto px-4 pt-24 pb-12">
       <div className="mb-16 text-center">
         <h1 className="mb-4 font-bold tracking-tight text-[var(--text)]" style={{ fontSize: 'clamp(36px, 5vw, 56px)', fontWeight: 800 }}>
-          <span className="bg-gradient-to-r from-[var(--accent)] via-[var(--accent-2)] to-[var(--accent-4)] bg-clip-text text-transparent">Every tool you need</span>{' '}
-          <span>to work with PDFs in one place</span>
+          <span className="bg-gradient-to-r from-[var(--accent)] via-[var(--accent-2)] to-[var(--accent-4)] bg-clip-text text-transparent">{t('home.hero.titleLead')}</span>{' '}
+          <span>{t('home.hero.titleRest')}</span>
         </h1>
         <p className="mx-auto max-w-2xl text-lg text-[var(--text-2)]">
-          Every tool you need to use PDFs, at your fingertips. Most tools process in your browser; AI and camera tools are unavailable in the public beta and send nothing to an external service; OCR runs on your device.
+          {t('home.hero.subtitle')}
         </p>
       </div>
 
@@ -74,7 +75,7 @@ export default function Home() {
                         if (unavailable || !tool.isMVP) {
                           e.preventDefault();
                           showToast({
-                            message: unavailable ? "This tool is unavailable while known defects are being remedied." : "This feature is not available in the local MVP version yet.",
+                            message: unavailable ? t('home.toast.unavailable') : t('home.toast.mvp'),
                             type: 'warning',
                             duration: 3000,
                           });
@@ -108,17 +109,12 @@ export default function Home() {
 }
 
 
-function getReleaseStateLabel(releaseState: ReleaseState): string | null {
-  if (releaseState === 'disabled') return 'Unavailable';
-  if (releaseState === 'limited') return 'Limited';
-  if (releaseState === 'experimental') return 'Experimental';
-  return null;
-}
-
 // Release-status badge rendered so users can see how far each tool can be trusted.
 function StatusBadge({ releaseState }: { releaseState: ReleaseState }) {
-  const label = getReleaseStateLabel(releaseState);
-  if (!label) return null;
+  const { t } = useI18n();
+  const key = releaseStateBadgeKey(releaseState);
+  if (!key) return null;
+  const label = t(key);
 
   const isUnavailable = releaseState === 'disabled';
   return (

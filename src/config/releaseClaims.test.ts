@@ -224,9 +224,16 @@ const sidebarSource = readSource('src/components/layout/Sidebar.tsx');
  */
 const enCatalogSource = readSource('src/i18n/locales/en.ts');
 
+/**
+ * B1.2b moved the home-page copy into the English catalog, so claim scans read the
+ * component source and the catalog together instead of silently dropping the
+ * sentences that actually ship.
+ */
+const homeCopySource = `${homeSource}\n${homeBentoSource}\n${enCatalogSource}`;
+
 const containmentSurfaces: Record<string, string> = {
-  Home: homeSource,
-  HomeBento: homeBentoSource,
+  Home: homeCopySource,
+  HomeBento: homeCopySource,
   Footer: `${footerSource}\n${enCatalogSource}`,
   Sidebar: sidebarSource,
   'Tauri shortDescription': tauriConfig.bundle.shortDescription,
@@ -274,8 +281,11 @@ describe('release-facing containment claims', () => {
   });
 
   it('states the containment boundary instead of a blanket local promise', () => {
-    expect(homeSource).toMatch(/unavailable in the public beta/i);
     expect(enCatalogSource).toMatch(/unavailable in the public beta/i);
+    // The home screens must render the catalog copy, not their own sentence.
+    expect(homeSource).toMatch(/home\.hero\.subtitle/);
+    expect(homeBentoSource).toMatch(/home\.bento\.hero\.summary/);
+    expect(homeBentoSource).toMatch(/home\.bento\.privacy\.body/);
     expect(tauriConfig.bundle.longDescription).toMatch(/unavailable in this release/i);
   });
 
@@ -334,11 +344,11 @@ describe('release-facing data-handling claims', () => {
   });
 
   it('never presents the static example strip as a user history', () => {
-    expect(homeBentoSource).not.toMatch(/recently used/i);
+    expect(homeCopySource).not.toMatch(/recently used/i);
   });
 
   it('does not ship a "privacy guarantee" label for a documented behaviour', () => {
-    expect(homeBentoSource).not.toMatch(/privacy guarantee/i);
+    expect(homeCopySource).not.toMatch(/privacy guarantee/i);
   });
 });
 

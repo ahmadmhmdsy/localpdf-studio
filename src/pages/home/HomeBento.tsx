@@ -10,6 +10,7 @@ import {
 } from '../../config/featureRegistry';
 import { useToolsStore } from '../../store/toolsStore';
 import { useI18n } from '../../i18n/useI18n';
+import { releaseStateBadgeKey, releaseStateSummaryKey } from '../../i18n/releaseState';
 import { cn } from '../../lib/utils';
 
 const ALL_TOOLS = TOOL_CATEGORIES.flatMap((category) => category.tools);
@@ -28,26 +29,23 @@ export default function HomeBento() {
   const [query, setQuery] = useState('');
   const darkMode = useToolsStore((s) => s.darkMode);
   const toggleDarkMode = useToolsStore((s) => s.toggleDarkMode);
-  const { tool: toolCopy, categoryName } = useI18n();
+  const { t, tool: toolCopy, categoryName } = useI18n();
 
   // Derived from the release registry so availability changes keep Home truthful.
   const availabilitySummary = useMemo(() => {
     const availableStates = ALL_TOOLS.map((tool) => getToolAvailability(tool.id)).filter(
       (availability) => availability.releaseState !== 'disabled'
     );
-    const stateSummary = (['stable', 'limited', 'experimental'] as const)
+    // Counts only. Wording ("6 stable") is rendered from the locale catalogs so the
+    // summary translates with the rest of the page.
+    const states = (['stable', 'limited', 'experimental'] as const)
       .map((state) => ({
         state,
         count: availableStates.filter((availability) => availability.releaseState === state).length,
       }))
-      .filter(({ count }) => count > 0)
-      .map(({ state, count }) => `${count} ${state}`)
-      .join(' · ');
+      .filter(({ count }) => count > 0);
 
-    return {
-      count: availableStates.length,
-      stateSummary: stateSummary || 'No tools currently available',
-    };
+    return { count: availableStates.length, states };
   }, []);
 
   // How many *available* tools can move data off the device. Every network and camera
@@ -87,8 +85,8 @@ export default function HomeBento() {
           <Search aria-hidden="true" />
           <input
             type="search"
-            placeholder={`Search ${availabilitySummary.count} tools — e.g. merge, watermark, sign…`}
-            aria-label="Search tools"
+            placeholder={t('home.bento.search.placeholder', { count: availabilitySummary.count })}
+            aria-label={t('home.bento.search.label')}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           />
@@ -97,17 +95,17 @@ export default function HomeBento() {
           <button
             type="button"
             className="bento-icon-btn"
-            aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+            aria-label={darkMode ? t('shell.theme.toLight') : t('shell.theme.toDark')}
             onClick={toggleDarkMode}
-            title="Toggle theme"
+            title={t('home.bento.theme.toggle')}
           >
             {darkMode ? '☀' : '☾'}
           </button>
           <button
             type="button"
             className="bento-icon-btn"
-            aria-label="Settings"
-            title="Settings"
+            aria-label={t('home.bento.settings')}
+            title={t('home.bento.settings')}
           >
             <Settings size={16} aria-hidden="true" />
           </button>
@@ -115,24 +113,27 @@ export default function HomeBento() {
       </div>
 
       {/* Featured bento tiles */}
-      <section className="bento-featured" aria-label="Featured">
+      <section className="bento-featured" aria-label={t('home.bento.featured')}>
         <article className="bento-tile bento-tile--hero">
           <span className="bento-privacy-badge">
-            <span className="dot" /> Local-first
+            <span className="dot" /> {t('home.bento.localFirst')}
           </span>
           <h1>
-            A complete <span>PDF workspace</span> that runs on your device.
+            {t('home.bento.hero.titleLead')} <span>{t('home.bento.hero.titleEmphasis')}</span>{' '}
+            {t('home.bento.hero.titleRest')}
           </h1>
           <p style={{ color: 'var(--text-2)', fontSize: '1rem', maxWidth: '30em', marginBottom: '1.5rem' }}>
-            {availabilitySummary.count} tools across {TOOL_CATEGORIES.length} categories. Open a file, do the work, close it. Most
-            tools run locally; AI and camera tools are unavailable in the public beta; OCR runs on your device.
+            {t('home.bento.hero.summary', {
+              count: availabilitySummary.count,
+              categories: TOOL_CATEGORIES.length,
+            })}
           </p>
           <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
             <Link to="/tools/merge-pdf" className="btn btn--pri">
-              Start merging →
+              {t('home.bento.hero.startMerging')}
             </Link>
             <Link to="/editor" className="btn btn--ghost">
-              Open editor
+              {t('home.bento.hero.openEditor')}
             </Link>
           </div>
         </article>
@@ -142,10 +143,19 @@ export default function HomeBento() {
             {availabilitySummary.count}
           </div>
           <div style={{ color: 'var(--text-3)', fontSize: '0.78rem', fontFamily: 'ui-monospace, "JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: '0.5rem' }}>
-            Tools available
+            {t('home.bento.toolsAvailable')}
           </div>
           <div style={{ fontFamily: 'ui-monospace, "JetBrains Mono", monospace', fontSize: '0.7rem', color: 'var(--ok)', marginTop: '0.4rem' }}>
-            {availabilitySummary.stateSummary}
+            {availabilitySummary.states.length === 0
+              ? t('home.bento.noToolsAvailable')
+              : availabilitySummary.states
+                  .map(({ state, count }) =>
+                    t('home.bento.state.item', {
+                      count,
+                      state: t(releaseStateSummaryKey(state)),
+                    }),
+                  )
+                  .join(' · ')}
           </div>
         </article>
 
@@ -154,38 +164,50 @@ export default function HomeBento() {
             {egressSummary.available}
           </div>
           <div style={{ color: 'var(--text-3)', fontSize: '0.78rem', fontFamily: 'ui-monospace, "JetBrains Mono", monospace', textTransform: 'uppercase', letterSpacing: '0.08em', marginTop: '0.5rem' }}>
-            Tools that can send data out
+            {t('home.bento.egress.label')}
           </div>
           <div style={{ fontFamily: 'ui-monospace, "JetBrains Mono", monospace', fontSize: '0.7rem', color: 'var(--ok)', marginTop: '0.4rem' }}>
             {egressSummary.available === 0
-              ? 'None available in this build'
-              : `${egressSummary.available} of ${egressSummary.networked} enabled`}
+              ? t('home.bento.egress.none')
+              : t('home.bento.egress.enabled', {
+                  available: egressSummary.available,
+                  total: egressSummary.networked,
+                })}
           </div>
         </article>
 
         <article className="bento-tile" style={{ padding: '1.25rem' }}>
           <span className="bento-privacy-badge">
-            <span className="dot" /> No account
+            <span className="dot" /> {t('home.bento.noAccount.badge')}
           </span>
-          <h3 style={{ fontSize: '1rem', fontWeight: 600, margin: '0.75rem 0 0.25rem' }}>No account required</h3>
+          <h3 style={{ fontSize: '1rem', fontWeight: 600, margin: '0.75rem 0 0.25rem' }}>{t('home.bento.noAccount.title')}</h3>
           <p style={{ color: 'var(--text-2)', fontSize: '0.85rem' }}>
-            No sign-up. No email. Open a tool and start working.
+            {t('home.bento.noAccount.body')}
           </p>
         </article>
       </section>
 
       {/* Quick picks: a static example list, not a record of anything the reader did. */}
-      <div className="bento-recent" id="quick-picks" aria-label="Example tools to try">
-        <span className="label">Quick picks</span>
+      <div className="bento-recent" id="quick-picks" aria-label={t('home.bento.quickPicks.examples')}>
+        <span className="label">{t('home.bento.quickPicks.label')}</span>
         <div className="items">
           <Link to="/tools/merge-pdf" className="bento-chip">
-            <span className="ic-s" /> Merge — combine files
+            <span className="ic-s" /> {t('home.bento.chip.merge')}
           </Link>
-          <QuickChip toolId="compress-pdf" swatch="var(--accent-2)" context="shrink a file" />
+          <QuickChip
+            toolId="compress-pdf"
+            swatch="var(--accent-2)"
+            context={t('home.bento.chip.compress')}
+          />
           <Link to="/tools/sign-pdf" className="bento-chip">
-            <span className="ic-s" style={{ background: 'var(--accent-4)' }} /> Sign — add a signature
+            <span className="ic-s" style={{ background: 'var(--accent-4)' }} />{' '}
+            {t('home.bento.chip.sign')}
           </Link>
-          <QuickChip toolId="translate-pdf" swatch="var(--accent-3)" context="translate text" />
+          <QuickChip
+            toolId="translate-pdf"
+            swatch="var(--accent-3)"
+            context={t('home.bento.chip.translate')}
+          />
         </div>
       </div>
 
@@ -199,9 +221,9 @@ export default function HomeBento() {
           }}
         >
           <h3 style={{ fontSize: '1.1rem', fontWeight: 600, color: 'var(--text)', marginBottom: '0.25rem' }}>
-            No tools match "{query}"
+            {t('home.bento.empty.title', { query })}
           </h3>
-          <p style={{ fontSize: '0.88rem' }}>Try a different keyword, or clear the search.</p>
+          <p style={{ fontSize: '0.88rem' }}>{t('home.bento.empty.body')}</p>
         </div>
       ) : (
         filteredCategories.map((category) => (
@@ -228,7 +250,9 @@ export default function HomeBento() {
                 />
                 {categoryName(category.id)}
               </h2>
-              <span className="meta">{category.tools.length} tools</span>
+              <span className="meta">
+                {t('home.bento.category.count', { count: category.tools.length })}
+              </span>
             </div>
             <div className="bento-grid">
               {category.tools.map((tool) => (
@@ -240,25 +264,14 @@ export default function HomeBento() {
       )}
 
       {/* Privacy deep block */}
-      <aside className="bento-privacy-deep" id="privacy" aria-label="Data handling">
+      <aside className="bento-privacy-deep" id="privacy" aria-label={t('home.bento.privacy.label')}>
         <div>
-          <h3>Where your work is stored.</h3>
-          <p>
-            LocalPDF Studio processes most tools locally. AI and camera tools are currently unavailable in the public beta, and OCR runs on your device; no file is sent to an external service from those routes. The
-            editor keeps your working document and edit history in this app's local storage on this device, until you clear it: use the Close File control in the editor to
-            drop the stored file, or clear this app's stored data (site data in the browser, app data on the desktop).
-          </p>
+          <h3>{t('home.bento.privacy.title')}</h3>
+          <p>{t('home.bento.privacy.body')}</p>
         </div>
       </aside>
     </>
   );
-}
-
-function getReleaseStateLabel(releaseState: ReleaseState): string | null {
-  if (releaseState === 'disabled') return 'Unavailable';
-  if (releaseState === 'limited') return 'Limited';
-  if (releaseState === 'experimental') return 'Experimental';
-  return null;
 }
 
 function BentoToolCard({ tool }: { tool: Tool }) {
@@ -266,9 +279,10 @@ function BentoToolCard({ tool }: { tool: Tool }) {
   const availability = getToolAvailability(tool.id);
   const unavailable = !isToolAvailable(tool.id);
   const targetPath = tool.isMVP ? `/tools/${tool.id}` : '#';
-  const stateLabel = getReleaseStateLabel(availability.releaseState);
-  const { tool: toolCopy } = useI18n();
+  const { t, tool: toolCopy } = useI18n();
   const copy = toolCopy(tool.id);
+  const badgeKey = releaseStateBadgeKey(availability.releaseState);
+  const stateLabel = badgeKey ? t(badgeKey) : null;
   const accessibleLabel = stateLabel
     ? `${copy.name} — ${copy.description} — ${stateLabel}`
     : `${copy.name} — ${copy.description}`;
@@ -337,7 +351,7 @@ function QuickChip({
 }) {
   const availability = getToolAvailability(toolId);
   const unavailable = !isToolAvailable(toolId);
-  const { tool: toolCopy } = useI18n();
+  const { t, tool: toolCopy } = useI18n();
   // Strip the trailing "PDF" so the chip reads "Merge — combine files".
   const shortName = toolCopy(toolId).name.replace(/\s+PDF$/i, '');
 
@@ -348,15 +362,22 @@ function QuickChip({
         aria-disabled="true"
         style={{ color: 'var(--text-2)', textDecoration: 'line-through' }}
       >
-        <span className="ic-s" style={{ background: swatch }} /> {shortName} — unavailable
+        <span className="ic-s" style={{ background: swatch }} />{' '}
+        {t('home.bento.chip.unavailable', { name: shortName })}
       </span>
     );
   }
 
-  const stateSuffix = availability.releaseState === 'stable' ? '' : ` (${availability.releaseState})`;
+  const stateSuffix =
+    availability.releaseState === 'stable' || availability.releaseState === 'disabled'
+      ? ''
+      : t('home.bento.chip.stateSuffix', {
+          state: t(releaseStateSummaryKey(availability.releaseState)),
+        });
   return (
     <Link to={`/tools/${toolId}`} className="bento-chip">
-      <span className="ic-s" style={{ background: swatch }} /> {shortName} — {context}
+      <span className="ic-s" style={{ background: swatch }} />{' '}
+      {t('home.bento.chip.composed', { name: shortName, context })}
       {stateSuffix}
     </Link>
   );
@@ -364,8 +385,10 @@ function QuickChip({
 
 // Release-status badge so both Home skins disclose how far each tool can be trusted.
 function StatusBadge({ releaseState }: { releaseState: ReleaseState }) {
-  const label = getReleaseStateLabel(releaseState);
-  if (!label) return null;
+  const { t } = useI18n();
+  const key = releaseStateBadgeKey(releaseState);
+  if (!key) return null;
+  const label = t(key);
 
   const isUnavailable = releaseState === 'disabled';
   return (
