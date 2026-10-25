@@ -51,9 +51,10 @@ This is the single place to see what is done, what is in review and what is next
 | Item | Status | Where |
 |---|---|---|
 | Phase 0 / G1 production readiness, OCR (English and Arabic), README rewrite | DONE | PR #1, merged |
-| Compression WS2: corpus, cancel, 100 MB limit, never-larger fallback, preset UI | IN REVIEW | [PR #2](https://github.com/ahmadmhmdsy/localpdf-studio/pull/2), `phase-a/compression-ws2` |
-| README showcase: GIF, screenshots, Arabic README, fix for stale "OCR unavailable" copy | IN REVIEW | [PR #3](https://github.com/ahmadmhmdsy/localpdf-studio/pull/3), `docs/readme-showcase` |
-| This roadmap and the no-hardcoding rule | IN REVIEW | `docs/master-roadmap` |
+| Compression WS2: corpus, cancel, 100 MB limit, never-larger fallback, preset UI | DONE | PR #2, merged |
+| README showcase: GIF, screenshots, Arabic README, fix for stale "OCR unavailable" copy | DONE | PR #3, merged |
+| This roadmap and the no-hardcoding rule | DONE | PR #4, merged |
+| OCR e2e (A1.3), shallow-tool fixes (A7.1, A7.2, A7.5, A7.7, A7.9, A7.10), generated tool routes (backlog #15) | IN REVIEW | `phase-a/next-items` (PR pending) |
 
 **Tool release states on `main`, from `src/config/featureRegistry.ts`:**
 - `ocr-pdf` is `limited`.
@@ -72,7 +73,7 @@ Goal: every catalog tool delivers what its name promises, locally, or stays `dis
 |---|---|---|---|
 | A1.1 | Self-hosted worker and core, English and Arabic `tessdata_fast`, invisible text layer, glyphless Unicode font, RTL visual order | DONE | Unit tests; pdf.js round trip |
 | A1.2 | Cancellation, 200-page and 50 MB limits, page-range input | DONE | Unit tests |
-| A1.3 | e2e: run OCR on a fixture scan; assert only same-origin requests and extractable output text | READY | The test passes in CI. It replaces the "no tesseract worker on disabled routes" assertion for this route. |
+| A1.3 | e2e: run OCR on a fixture scan; assert only same-origin requests and extractable output text | IN REVIEW | `e2e/ocr.spec.ts` generates a one-page raster scan, runs OCR, asserts every request is same-origin (including the self-hosted worker/core/lang fetches) and that the downloaded PDF's text contains the words. The smoke test now only asserts that the OCR engine stays lazy on mount. |
 | A1.4 | Real-file check in a production build: a 10-page English scan, an Arabic scan, cancel within one page, a 500-page file refused | READY | A PASS/FAIL table recorded in the Phase A plan |
 | A1.5 | Release checklist audit: CSP `worker-src`/`connect-src`, e2e allowed hosts, data-flow.md, production-inventory.md | READY, after A1.3 and A1.4 | All items ticked in one commit |
 | A1.6 | More languages (French, German, Spanish, Turkish, Urdu, Persian), one at a time with license and SHA-256 recorded | PLANNED | Owner chooses the order |
@@ -82,7 +83,7 @@ Goal: every catalog tool delivers what its name promises, locally, or stays `dis
 | ID | Task | Status | Acceptance |
 |---|---|---|---|
 | A2.1 | WS2 library and UI work | IN REVIEW (PR #2) | Unit tests; a real-file browser check on generated PDFs: all PASS (see §6.2) |
-| A2.2 | Before the flip, check the **production UI path**: a local build with `compress-pdf` turned on, real scans (not generated noise), and Firefox plus one mobile browser | READY, after PR #2 merges | A PASS/FAIL table; memory stays usable on a 100 MB file |
+| A2.2 | Before the flip, check the **production UI path**: a local build with `compress-pdf` turned on, real scans (not generated noise), and Firefox plus one mobile browser | BLOCKED: owner-supplied real scans | A PASS/FAIL table; memory stays usable on a 100 MB file. The code work (PR #2) is merged; this check needs real scans from the owner and a local-only flip. |
 | A2.3 | Release flip to `limited` | BLOCKED: owner approval | One commit: registry, data-flow, inventory |
 | A2.4 | Handle the image kinds that are currently skipped (CMYK, indexed, 16-bit, soft masks) or keep listing them in the notes | PLANNED | Corpus tests for each kind |
 | A2.5 | A before/after size preview before downloading | PLANNED | UI test |
@@ -129,16 +130,16 @@ Goal: every catalog tool delivers what its name promises, locally, or stays `dis
 
 | ID | Tool | Fix | Status |
 |---|---|---|---|
-| A7.1 | split-pdf | Output a ZIP of separate files (by range, every N pages, or one file per page) | READY |
-| A7.2 | remove-pages | Copy the kept pages into a new document, so the deleted objects are gone | READY |
+| A7.1 | split-pdf | Output a ZIP of separate files (by range, every N pages, or one file per page) | IN REVIEW |
+| A7.2 | remove-pages | Copy the kept pages into a new document, so the deleted objects are gone | IN REVIEW |
 | A7.3 | html-to-pdf | Paginate by content height; add an orientation option | READY |
 | A7.4 | jpg-to-pdf | Pixels → points at the image DPI; fit options; fix the MIME-loss skip | READY |
-| A7.5 | add-page-numbers | The UI has 6 positions while the copy promises 9. Add the 3 middle positions, or change the copy. | READY |
+| A7.5 | add-page-numbers | The UI has 6 positions while the copy promises 9. Add the 3 middle positions, or change the copy. | IN REVIEW |
 | A7.6 | add-watermark | Image watermark, font size, opacity, rotation, page range; fix the overstated copy | READY |
-| A7.7 | pdf-to-pdfa | Rename to "PDF/A-style" until a validator (veraPDF, desktop) confirms conformance | READY |
+| A7.7 | pdf-to-pdfa | Rename to "PDF/A-style" until a validator (veraPDF, desktop) confirms conformance | IN REVIEW |
 | A7.8 | sign-pdf | Keep the "visual signature" wording; certificate signing is a later project | ONGOING |
-| A7.9 | repair-pdf | Never return a placeholder PDF as "repaired"; report the failure instead (a real repair comes with A3.6) | READY |
-| A7.10 | Catalog copy | Rewrite descriptions that copy iLovePDF wording ("the easiest PDF merger available", and others in `src/constants/tools.ts`) | READY |
+| A7.9 | repair-pdf | Never return a placeholder PDF as "repaired"; report the failure instead (a real repair comes with A3.6) | IN REVIEW |
+| A7.10 | Catalog copy | Rewrite descriptions that copy iLovePDF wording ("the easiest PDF merger available", and others in `src/constants/tools.ts`) | IN REVIEW |
 
 **Phase A exit criteria:**
 - Every catalog tool is `stable`, `limited` with honest limitations, or `disabled` with truthful copy.
@@ -207,17 +208,18 @@ Each new tool is added through the feature registry and the catalog, with its li
 | 3 | The "UNAVAILABLE" badge is misplaced in the glass skin | UI | B8 |
 | 4 | Editor dark mode renders the PDF page inverted | UI | B8 |
 | 5 | The whole UI is English only, and copy is spread across components | i18n | B1 |
-| 6 | Catalog descriptions copy iLovePDF wording | Copy | A7.10 |
-| 7 | add-page-numbers: the copy promises 9 positions, the UI has 6 | Copy | A7.5 |
+| 6 | Catalog descriptions copy iLovePDF wording | Copy | A7.10: DONE, descriptions and the 7 duplicated page intros rewritten |
+| 7 | add-page-numbers: the copy promises 9 positions, the UI has 6 | Copy | A7.5: the 3 middle positions are implemented (IN REVIEW) |
 | 8 | The compression production UI path is untested; CMYK, indexed, 16-bit and grayscale images are covered only by unit tests; no real scans; no memory test; no Firefox, Safari or mobile | QA | A2.2 |
-| 9 | OCR has no e2e test, and its release checklist is incomplete | QA | A1.3, A1.5 |
+| 9 | OCR has no e2e test, and its release checklist is incomplete | QA | A1.3: DONE in this PR (`e2e/ocr.spec.ts`). A1.5 still needs the CSP/data-flow audit and real-scan evidence |
 | 10 | `npm run lint` reports 136 warnings that predate this work; reduce them without behavior changes | Code health | Ongoing, a small PR each time |
 | 11 | pdf-to-pptx has no theme part and no package-validation test | Office | A6.1 |
 | 12 | The `dev` script binds `0.0.0.0`, which exposes the dev server to the local network; consider `localhost` by default with an opt-in flag | Security | Ongoing |
 | 13 | The local branches `master`, `feat/tauri-desktop` and `task-28/finish-remaining-work`, and the task28 worktree, are fully merged into `main` (0 commits ahead) | Repo hygiene | Owner may delete them |
 | 14 | `docs/competitive-analysis.md` still described OCR as disabled and said "no code has changed" | Docs | Fixed in this PR |
-| 15 | The 31 tool routes in `src/App.tsx` are listed by hand instead of generated from the catalog and registry, so a new tool must be added in several places | Code health | Before A7 adds tools; a small PR |
-| 16 | `AGENTS.md`, `CONTRIBUTING.md` and the PR template disagreed with the code and CI; there were no shared Claude settings, subagents, commands or `docs/environment.md` | Docs, tooling | Fixed in this PR |
+| 15 | The 31 tool routes in `src/App.tsx` are listed by hand instead of generated from the catalog and registry, so a new tool must be added in several places | Code health | Fixed in this PR: routes are generated from the catalog and registry; `src/config/toolRoutes.ts` holds only the typed lazy-component map |
+| 16 | `AGENTS.md`, `CONTRIBUTING.md` and the PR template disagreed with the code and CI; there were no shared Claude settings, subagents, commands or `docs/environment.md` | Docs, tooling | Fixed in the roadmap PR |
+| 17 | Tool pages keep their own intro copy in `ToolLayout`, which duplicates the catalog and drifts from it (A7.10 had to edit 7 pages twice) | Code health | Move the header copy to the catalog/registry read, or to locale files, as part of B1 |
 
 ## 6.2 Real-file compression check (2026-10-25, generated PDFs, production build)
 
@@ -270,7 +272,7 @@ The rule allows: protocol constants that are fixed by a specification (for examp
 
 ## 9. Suggested order
 
-1. Merge PR #2 and PR #3. Then A1.3–A1.5 (OCR checks) and A2.2 (compression UI check), then the compression flip.
+1. ~~Merge PR #2 and PR #3.~~ Done. A1.3 is done (IN REVIEW); A1.4 and A2.2 need real scans from the owner; A1.5 follows them; then the compression flip (owner approval).
 2. Start B1 (i18n and RTL), so later work doesn't add more hardcoded strings. In parallel, do A7 (shallow tools) and A7.10 (copy).
 3. Decide on qpdf → A3. Decide on the redaction engine → A4.
 4. A5.1, A6.1, and B8 (skin fixes).
@@ -280,7 +282,7 @@ The rule allows: protocol constants that are fixed by a specification (for examp
 
 Items found during the Phase A work that are easy to lose track of. Each one points to the milestone or decision that owns it.
 
-1. **Three PRs are open.** #2 (compression WS2), #3 (README) and #4 (this roadmap). Most next steps in §9 need #2 merged first.
+1. **PRs #2, #3 and #4 are merged.** The next slice is the branch `phase-a/next-items` (A1.3, A7.1, A7.2, A7.5, A7.7, A7.9, A7.10, backlog #15).
 2. **Compression is not switched on.** It passed on generated files in the production build (§6.2). The real UI has not been checked with real scans, in Firefox, or on mobile (A2.2). The flip to `limited` needs the owner's OK.
 3. **OCR has no end-to-end test.** Its release checklist is incomplete (A1.3–A1.5).
 4. **Decisions are waiting on the owner** (§8): qpdf, the redaction engine (PDFium vs AGPL MuPDF), the camera policy, the owner-password-only unlock policy, and the AI route.
@@ -295,7 +297,7 @@ Items found during the Phase A work that are easy to lose track of. Each one poi
 9. **The dev server binds `0.0.0.0`.** It is reachable from other devices on the LAN. Bind to `localhost` by default and make LAN access opt-in through config.
 10. **136 lint warnings predate this work.** They are warnings, not errors, so CI passes. Pay them down in small PRs; don't mix them into feature PRs.
 11. **The agent and contributor docs disagreed with the code and with each other** (fixed in this PR, backlog #16):
-    - The tool routes are listed by hand in `src/App.tsx`, against the registry-driven rule in CLAUDE.md §6a. `AGENTS.md` now records this as debt (backlog #15). The code is not changed yet.
+    - The tool routes were listed by hand in `src/App.tsx`, against the registry-driven rule in CLAUDE.md §6a. They are now generated from the catalog and registry (backlog #15); `AGENTS.md` describes the new entry point.
     - `CONTRIBUTING.md` said to add a Gemini API key to `.env`, but the web build accepts none.
     - `CONTRIBUTING.md` pointed to `TASK.md` and `PLANNING.md` instead of this roadmap.
     - The PR template listed only typecheck, lint, test and build. It now also has `check:bundle`, e2e, the roadmap ID, the release gate and the no-hardcoding check.
