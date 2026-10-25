@@ -7,6 +7,7 @@ import DownloadState from '../../components/tools/DownloadState';
 import { removePages } from '../../lib/pdf';
 import { logError } from '../../lib/logger';
 import { useToast } from '../../contexts/ToastContext';
+import { useI18n } from '../../i18n/useI18n';
 
 type Step = 'upload' | 'configure' | 'processing' | 'download';
 
@@ -17,6 +18,7 @@ export default function RemovePages() {
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [resultSize, setResultSize] = useState<string>('');
   const { showToast } = useToast();
+  const { t, toolName, toolDescription } = useI18n();
 
   const handleFilesSelected = (newFiles: File[]) => {
     if (newFiles.length > 0) {
@@ -27,7 +29,7 @@ export default function RemovePages() {
 
   const handleProcess = async () => {
     if (!file || !ranges.trim()) {
-      showToast({ message: 'Please select a file and enter page ranges to remove.', type: 'warning' });
+      showToast({ message: t('tool.remove.warning'), type: 'warning' });
       return;
     }
 
@@ -45,7 +47,7 @@ export default function RemovePages() {
       const normalizedError = error instanceof Error ? error : new Error(String(error));
       logError('Error removing pages:', normalizedError);
       showToast({
-        message: normalizedError.message || 'An error occurred while removing pages. Please check your page ranges and try again.',
+        message: normalizedError.message || t('tool.remove.error'),
         type: 'error',
         duration: 5000,
       });
@@ -65,15 +67,15 @@ export default function RemovePages() {
 
   return (
     <ToolLayout 
-      title="Remove Pages" 
-      description="Delete the pages you select and save a new PDF with the rest."
+      title={toolName('remove-pages')} 
+      description={toolDescription('remove-pages')}
     >
       {step === 'upload' && (
         <FileUploadZone 
           
-          ariaLabel="Select PDF file" onFilesSelected={handleFilesSelected} 
-          title="Select PDF file"
-          subtitle="or drop PDF here"
+          ariaLabel={t('tool.common.selectPdfFile')} onFilesSelected={handleFilesSelected} 
+          title={t('tool.common.selectPdfFile')}
+          subtitle={t('tool.common.dropPdf')}
           maxFiles={1}
         />
       )}
@@ -94,7 +96,7 @@ export default function RemovePages() {
               <button 
                 onClick={startOver}
                 className="p-2 text-[var(--text-3)] hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                aria-label="Remove file"
+                aria-label={t('tool.common.removeFile')}
               >
                 <X size={24} />
               </button>
@@ -102,18 +104,18 @@ export default function RemovePages() {
 
             <div className="space-y-4">
               <label htmlFor="ranges" className="block text-sm font-medium text-[var(--text-2)]">
-                Pages to remove
+                {t('tool.remove.pagesLabel')}
               </label>
               <input
                 type="text"
                 id="ranges"
                 value={ranges}
                 onChange={(e) => setRanges(e.target.value)}
-                placeholder="e.g., 1-5, 8, 11-13"
+                placeholder={t('tool.remove.placeholder')}
                 className="w-full px-4 py-3 rounded-xl border border-[var(--border)] focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all"
               />
               <p className="text-sm text-[var(--text-3)]">
-                Enter page numbers and/or page ranges separated by commas. These pages will be deleted.
+                {t('tool.remove.help')}
               </p>
             </div>
           </div>
@@ -124,7 +126,7 @@ export default function RemovePages() {
               disabled={!ranges.trim()}
               className="bg-red-600 hover:bg-red-700 disabled:bg-[var(--surface-2)] disabled:cursor-not-allowed text-white font-semibold py-4 px-12 rounded-xl text-xl transition-colors shadow-lg"
             >
-              Remove Pages
+              {t('tool.remove.submit')}
             </button>
           </div>
         </div>
@@ -132,15 +134,15 @@ export default function RemovePages() {
 
       {step === 'processing' && (
         <ProcessingState 
-          title="Removing pages..." 
-          description="Please wait while we remove the requested pages. This is happening locally in your browser."
+          title={t('tool.remove.processingTitle')} 
+          description={t('tool.remove.processingDescription')}
         />
       )}
 
       {step === 'download' && resultUrl && (
         <DownloadState 
-          title="Pages removed successfully!"
-          description="Your new PDF document is ready."
+          title={t('tool.remove.successTitle')}
+          description={t('tool.remove.successDescription')}
           fileName={`removed_${file?.name || 'document.pdf'}`}
           fileUrl={resultUrl}
           fileSize={resultSize}

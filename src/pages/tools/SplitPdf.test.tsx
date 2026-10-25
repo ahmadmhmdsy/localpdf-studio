@@ -1,10 +1,11 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { act, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import SplitPdf from './SplitPdf';
 import { createDeferred, renderWithProviders } from '../../tests/utils';
 import { generateDummyPdf } from '../../tests/fixtures/pdfGenerator';
 import type { SplitFile } from '../../lib/pdf';
+import { useToolsStore } from '../../store/toolsStore';
 
 const { splitPdfToFilesMock, buildZipFileMock } = vi.hoisted(() => ({
   splitPdfToFilesMock: vi.fn(),
@@ -40,6 +41,26 @@ describe('SplitPdf', () => {
     vi.clearAllMocks();
     splitPdfToFilesMock.mockResolvedValue(SINGLE_FILE);
     buildZipFileMock.mockResolvedValue(new Blob(['zip-bytes'], { type: 'application/zip' }));
+  });
+
+  afterEach(() => {
+    useToolsStore.setState({ locale: 'en' });
+  });
+
+  it('renders the split options in Arabic when that locale is active', async () => {
+    useToolsStore.setState({ locale: 'ar' });
+    renderWithProviders(<SplitPdf />);
+
+    expect(screen.getByRole('heading', { name: 'تقسيم PDF' })).toBeInTheDocument();
+    expect(screen.getByText(/أفلِت ملف PDF هنا/)).toBeInTheDocument();
+
+    const pdfFile = await generateDummyPdf(5, 'test.pdf');
+    await user.upload(screen.getByLabelText('اختر ملف PDF'), pdfFile);
+
+    expect(await screen.findByText('كيف تريد تقسيم ملف PDF؟')).toBeInTheDocument();
+    expect(screen.getByText('حسب نطاق الصفحات')).toBeInTheDocument();
+    expect(screen.getByText('ملف لكل صفحة')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'تقسيم PDF' })).toBeInTheDocument();
   });
 
   async function uploadPdf(pageCount = 5, fileName = 'test.pdf'): Promise<File> {

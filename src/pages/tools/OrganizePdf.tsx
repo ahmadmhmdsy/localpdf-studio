@@ -10,6 +10,7 @@ import { reorderPdfPages } from '../../lib/pdf';
 import { logError } from '../../lib/logger';
 import { cn } from '../../lib/utils';
 import { useToast } from '../../contexts/ToastContext';
+import { useI18n } from '../../i18n/useI18n';
 
 type Step = 'upload' | 'loading_thumbnails' | 'configure' | 'processing' | 'download';
 
@@ -26,6 +27,7 @@ export default function OrganizePdf() {
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [resultSize, setResultSize] = useState<string>('');
   const { showToast } = useToast();
+  const { t, toolName, toolDescription } = useI18n();
 
   const handleFilesSelected = async (newFiles: File[]) => {
     if (newFiles.length > 0) {
@@ -45,7 +47,7 @@ export default function OrganizePdf() {
       } catch (error) {
         logError("Error loading thumbnails:", error);
         showToast({
-          message: "Failed to load PDF pages. Please try another file.",
+          message: t('tool.organize.thumbnailsFailed'),
           type: 'error',
           duration: 5000,
         });
@@ -72,7 +74,7 @@ export default function OrganizePdf() {
 
   const handleProcess = async () => {
     if (!file || pages.length === 0) {
-      showToast({ message: 'Please select a file and ensure there is at least one page.', type: 'warning' });
+      showToast({ message: t('tool.organize.warning'), type: 'warning' });
       return;
     }
 
@@ -90,7 +92,7 @@ export default function OrganizePdf() {
     } catch (error) {
       logError('Error organizing PDF:', error);
       showToast({
-        message: 'An error occurred. Please try again.',
+        message: t('tool.organize.error'),
         type: 'error',
         duration: 5000,
       });
@@ -110,23 +112,23 @@ export default function OrganizePdf() {
 
   return (
     <ToolLayout 
-      title="Organize PDF" 
-      description="Sort, add and delete PDF pages. Drag and drop the page thumbnails and sort them however you like."
+      title={toolName('organize-pdf')} 
+      description={toolDescription('organize-pdf')}
     >
       {step === 'upload' && (
         <FileUploadZone 
           
-          ariaLabel="Select PDF files" onFilesSelected={handleFilesSelected} 
-          title="Select PDF file"
-          subtitle="or drop PDF here"
+          ariaLabel={t('tool.common.selectPdfFile')} onFilesSelected={handleFilesSelected} 
+          title={t('tool.common.selectPdfFile')}
+          subtitle={t('tool.common.dropPdf')}
           maxFiles={1}
         />
       )}
 
       {step === 'loading_thumbnails' && (
         <ProcessingState 
-          title="Loading pages..." 
-          description="Please wait while we extract the pages from your PDF."
+          title={t('tool.organize.loadingTitle')} 
+          description={t('tool.organize.loadingDescription')}
         />
       )}
 
@@ -140,13 +142,13 @@ export default function OrganizePdf() {
                 </div>
                 <div className="flex flex-col">
                   <span className="font-semibold text-[var(--text)]">{file.name}</span>
-                  <span className="text-xs text-[var(--text-3)]">{pages.length} pages</span>
+                  <span className="text-xs text-[var(--text-3)]">{t('tool.organize.pagesCount', { count: pages.length })}</span>
                 </div>
               </div>
               <button 
                 onClick={startOver}
                 className="p-2 text-[var(--text-3)] hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                title="Remove file"
+                title={t('tool.common.removeFile')}
               >
                 <X size={20} />
               </button>
@@ -174,7 +176,7 @@ export default function OrganizePdf() {
                             <button 
                               onClick={() => removePage(index)}
                               className="absolute -top-2 -right-2 p-1 bg-[var(--surface)] text-[var(--text-3)] hover:text-red-500 border border-[var(--border)] rounded-full shadow-sm z-10 transition-colors"
-                              aria-label="Remove page"
+                              aria-label={t('tool.organize.removePage')}
                             >
                               <X size={14} />
                             </button>
@@ -182,9 +184,9 @@ export default function OrganizePdf() {
                               {...provided.dragHandleProps} 
                               className="w-full h-36 flex items-center justify-center overflow-hidden rounded bg-[var(--surface-2)] mb-2 cursor-grab active:cursor-grabbing"
                             >
-                              <img src={page.thumbnailUrl} alt={`Page ${page.originalIndex + 1}`} className="max-w-full max-h-full object-contain pointer-events-none" />
+                              <img src={page.thumbnailUrl} alt={t('tool.organize.pageAlt', { number: page.originalIndex + 1 })} className="max-w-full max-h-full object-contain pointer-events-none" />
                             </div>
-                            <span className="text-xs font-medium text-[var(--text-3)]">Page {page.originalIndex + 1}</span>
+                            <span className="text-xs font-medium text-[var(--text-3)]">{t('tool.organize.pageLabel', { number: page.originalIndex + 1 })}</span>
                           </div>
                         )}
                       </Draggable>
@@ -197,7 +199,7 @@ export default function OrganizePdf() {
             
             {pages.length === 0 && (
               <div className="text-center py-12 text-[var(--text-3)]">
-                All pages removed. Please start over.
+                {t('tool.organize.allRemoved')}
               </div>
             )}
           </div>
@@ -208,7 +210,7 @@ export default function OrganizePdf() {
               disabled={pages.length === 0}
               className="bg-red-600 hover:bg-red-700 disabled:bg-[var(--surface-2)] disabled:cursor-not-allowed text-white font-semibold py-4 px-12 rounded-xl text-xl transition-colors shadow-lg"
             >
-              Organize PDF
+              {t('tool.organize.submit')}
             </button>
           </div>
         </div>
@@ -216,15 +218,15 @@ export default function OrganizePdf() {
 
       {step === 'processing' && (
         <ProcessingState 
-          title="Organizing PDF..." 
-          description="Please wait while we reorder your document pages. This is happening locally in your browser."
+          title={t('tool.organize.processingTitle')} 
+          description={t('tool.organize.processingDescription')}
         />
       )}
 
       {step === 'download' && resultUrl && (
         <DownloadState 
-          title="PDF organized successfully!"
-          description="Your document pages have been reordered."
+          title={t('tool.organize.successTitle')}
+          description={t('tool.organize.successDescription')}
           fileName={`organized_${file?.name || 'document.pdf'}`}
           fileUrl={resultUrl}
           fileSize={resultSize}

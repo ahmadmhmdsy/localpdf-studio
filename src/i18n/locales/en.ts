@@ -123,6 +123,111 @@ export const en = {
   'home.bento.privacy.title': 'Where your work is stored.',
   'home.bento.privacy.body':
     "LocalPDF Studio processes most tools locally. AI and camera tools are currently unavailable in the public beta, and OCR runs on your device; no file is sent to an external service from those routes. The editor keeps your working document and edit history in this app's local storage on this device, until you clear it: use the Close File control in the editor to drop the stored file, or clear this app's stored data (site data in the browser, app data on the desktop).",
+  // Shared tool-page copy (B1.3)
+  'tool.common.selectPdfFile': 'Select PDF file',
+  'tool.common.selectPdfFiles': 'Select PDF files',
+  'tool.common.dropPdf': 'or drop PDF here',
+  'tool.common.dropPdfs': 'or drop PDFs here',
+  'tool.common.removeFile': 'Remove file',
+  'tool.common.back': 'Back',
+  'tool.common.step.upload': 'Upload',
+  'tool.common.step.configure': 'Configure',
+  'tool.common.step.download': 'Download',
+
+  // Merge PDF
+  'tool.merge.dragReorder': 'Drag and drop to reorder files',
+  'tool.merge.addMore': 'Add more files',
+  'tool.merge.moveUp': 'Move file up',
+  'tool.merge.moveDown': 'Move file down',
+  'tool.merge.removeNamed': 'Remove {name}',
+  'tool.merge.submit': 'Merge PDFs',
+  'tool.merge.needTwo': 'Please select at least 2 PDF files to merge.',
+  'tool.merge.error': 'An error occurred while merging the PDFs. Please try again.',
+  'tool.merge.processingTitle': 'Merging PDFs...',
+  'tool.merge.processingDescription':
+    'Please wait while we combine your documents. This is happening locally in your browser.',
+  'tool.merge.successTitle': 'PDFs merged successfully!',
+  'tool.merge.successDescription': 'Your documents have been combined into a single PDF file.',
+
+  // Split PDF
+  'tool.split.question': 'How should the PDF be split?',
+  'tool.split.mode.ranges.name': 'By page range',
+  'tool.split.mode.ranges.description': 'One PDF per comma-separated range, e.g. 1-3, 4, 5-8.',
+  'tool.split.mode.everyN.name': 'Every N pages',
+  'tool.split.mode.everyN.description': 'Equal chunks of N pages, for example 1-2, 3-4, 5.',
+  'tool.split.mode.eachPage.name': 'One file per page',
+  'tool.split.mode.eachPage.description': 'Every page becomes its own PDF.',
+  'tool.split.rangesLabel': 'Page ranges',
+  'tool.split.rangesPlaceholder': 'e.g., 1-3, 4, 5-8',
+  'tool.split.rangesHelp':
+    'Enter page numbers and/or page ranges separated by commas. Each range becomes its own PDF file.',
+  'tool.split.pagesPerFileLabel': 'Pages per file',
+  'tool.split.pagesPerFileHelp':
+    'Every N pages becomes its own PDF file. The last file keeps any remaining pages.',
+  'tool.split.eachPageHelp':
+    'Every page becomes its own PDF. Documents with more than one page are bundled into a ZIP archive.',
+  'tool.split.submit': 'Split PDF',
+  'tool.split.needFile': 'Please select a PDF file first.',
+  'tool.split.needRanges': 'Please enter the page ranges to split.',
+  'tool.split.needChunk': 'Pages per file must be a whole number of at least 1.',
+  'tool.split.noFiles': 'The split produced no files. Please check your page ranges and try again.',
+  'tool.split.error':
+    'An error occurred while splitting the PDF. Please check your page ranges and try again.',
+  'tool.split.processingTitle': 'Splitting PDF...',
+  'tool.split.processingDescription':
+    'Please wait while we create the split files. This is happening locally in your browser.',
+  'tool.split.successTitle': 'PDF split successfully!',
+  'tool.split.successArchive': 'Your PDF was split into {count} files, packaged as a ZIP archive.',
+  'tool.split.successSingle': 'Your extracted pages have been saved into a new PDF file.',
+
+  // Remove pages
+  'tool.remove.pagesLabel': 'Pages to remove',
+  'tool.remove.placeholder': 'e.g., 1-5, 8, 11-13',
+  'tool.remove.help':
+    'Enter page numbers and/or page ranges separated by commas. These pages will be deleted.',
+  'tool.remove.submit': 'Remove Pages',
+  'tool.remove.warning': 'Please select a file and enter page ranges to remove.',
+  'tool.remove.error':
+    'An error occurred while removing pages. Please check your page ranges and try again.',
+  'tool.remove.processingTitle': 'Removing pages...',
+  'tool.remove.processingDescription':
+    'Please wait while we remove the requested pages. This is happening locally in your browser.',
+  'tool.remove.successTitle': 'Pages removed successfully!',
+  'tool.remove.successDescription': 'Your new PDF document is ready.',
+
+  // Extract pages
+  'tool.extract.pagesLabel': 'Pages to extract',
+  'tool.extract.placeholder': 'e.g., 1-5, 8, 11-13',
+  'tool.extract.help':
+    'Enter page numbers and/or page ranges separated by commas. Only these pages will be kept.',
+  'tool.extract.submit': 'Extract Pages',
+  'tool.extract.warning': 'Please select a file and enter page ranges to extract.',
+  'tool.extract.error':
+    'An error occurred while extracting pages. Please check your page ranges and try again.',
+  'tool.extract.processingTitle': 'Extracting pages...',
+  'tool.extract.processingDescription':
+    'Please wait while we extract the requested pages. This is happening locally in your browser.',
+  'tool.extract.successTitle': 'Pages extracted successfully!',
+  'tool.extract.successDescription': 'Your new PDF document is ready.',
+
+  // Organize PDF
+  'tool.organize.pagesCount': '{count} pages',
+  'tool.organize.removePage': 'Remove page',
+  'tool.organize.pageAlt': 'Page {number}',
+  'tool.organize.pageLabel': 'Page {number}',
+  'tool.organize.submit': 'Organize PDF',
+  'tool.organize.allRemoved': 'All pages removed. Please start over.',
+  'tool.organize.loadingTitle': 'Loading pages...',
+  'tool.organize.loadingDescription': 'Please wait while we extract the pages from your PDF.',
+  'tool.organize.thumbnailsFailed': 'Failed to load PDF pages. Please try another file.',
+  'tool.organize.warning': 'Please select a file and ensure there is at least one page.',
+  'tool.organize.error': 'An error occurred. Please try again.',
+  'tool.organize.processingTitle': 'Organizing PDF...',
+  'tool.organize.processingDescription':
+    'Please wait while we reorder your document pages. This is happening locally in your browser.',
+  'tool.organize.successTitle': 'PDF organized successfully!',
+  'tool.organize.successDescription': 'Your document pages have been reordered.',
+
 } as const;
 
 export type MessageKey = keyof typeof en;

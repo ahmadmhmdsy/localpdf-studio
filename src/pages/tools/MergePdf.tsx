@@ -13,10 +13,16 @@ import { cn } from '../../lib/utils';
 import { useToast } from '../../contexts/ToastContext';
 import { PDF_ACCEPT } from '../../types/dropzone';
 import { useManagedObjectUrl } from '../../hooks/useObjectUrl';
+import { useI18n } from '../../i18n/useI18n';
+import type { MessageKey } from '../../i18n';
 
 type Step = 'upload' | 'configure' | 'processing' | 'download';
 
-const STEPS = ['Upload', 'Configure', 'Download'];
+const STEP_KEYS: MessageKey[] = [
+  'tool.common.step.upload',
+  'tool.common.step.configure',
+  'tool.common.step.download',
+];
 
 export default function MergePdf() {
   const [step, setStep] = useState<Step>('upload');
@@ -25,6 +31,7 @@ export default function MergePdf() {
   const [resultSize, setResultSize] = useState<string>('');
   const { showToast } = useToast();
   const { create: createObjectUrl, revoke: revokeObjectUrl } = useManagedObjectUrl();
+  const { t, toolName, toolDescription } = useI18n();
 
   const handleFilesSelected = (newFiles: File[]) => {
     setFiles((prev) => [...prev, ...newFiles]);
@@ -60,7 +67,7 @@ export default function MergePdf() {
 
   const handleMerge = async () => {
     if (files.length < 2) {
-      showToast({ message: 'Please select at least 2 PDF files to merge.', type: 'warning' });
+      showToast({ message: t('tool.merge.needTwo'), type: 'warning' });
       return;
     }
 
@@ -77,7 +84,7 @@ export default function MergePdf() {
     } catch (error) {
       logError('Error merging PDFs:', error);
       showToast({
-        message: 'An error occurred while merging the PDFs. Please try again.',
+        message: t('tool.merge.error'),
         type: 'error',
         duration: 5000,
       });
@@ -112,16 +119,16 @@ export default function MergePdf() {
 
   return (
     <ToolLayout
-      title="Merge PDF"
-      description="Combine PDFs in the order you choose into a single document."
+      title={toolName('merge-pdf')}
+      description={toolDescription('merge-pdf')}
     >
-      <StepTrack steps={STEPS} currentStep={getStepIndex()} />
+      <StepTrack steps={STEP_KEYS.map((key) => t(key))} currentStep={getStepIndex()} />
 
       {step === 'upload' && (
         <FileUploadZone
-          ariaLabel="Select PDF files" onFilesSelected={handleFilesSelected}
-          title="Select PDF files"
-          subtitle="or drop PDFs here"
+          ariaLabel={t('tool.common.selectPdfFiles')} onFilesSelected={handleFilesSelected}
+          title={t('tool.common.selectPdfFiles')}
+          subtitle={t('tool.common.dropPdfs')}
         />
       )}
 
@@ -129,7 +136,7 @@ export default function MergePdf() {
         <div className="w-full max-w-4xl">
           <div className="bg-[var(--surface)] rounded-[var(--radius-xl)] border border-[var(--border)] shadow-inner shadow-[var(--border)]/40 p-6 mb-8">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-[var(--text)]">Drag and drop to reorder files</h3>
+              <h3 className="text-lg font-semibold text-[var(--text)]">{t('tool.merge.dragReorder')}</h3>
               <div
                 {...getRootProps()}
                 className={cn(
@@ -139,7 +146,7 @@ export default function MergePdf() {
               >
                 <input {...getInputProps()} />
                 <Plus size={18} />
-                <span className="text-sm font-medium">Add more files</span>
+                <span className="text-sm font-medium">{t('tool.merge.addMore')}</span>
               </div>
             </div>
 
@@ -165,7 +172,7 @@ export default function MergePdf() {
                             )}
                           >
                             <div className="flex items-center gap-4 overflow-hidden">
-                              <div {...provided.dragHandleProps} aria-label="Drag to reorder" className="text-[var(--text-3)] hover:text-[var(--accent-text)] cursor-grab active:cursor-grabbing transition-colors">
+                              <div {...provided.dragHandleProps} aria-label={t('tool.merge.dragReorder')} className="text-[var(--text-3)] hover:text-[var(--accent-text)] cursor-grab active:cursor-grabbing transition-colors">
                                 <GripVertical size={20} />
                               </div>
                               <div className="w-10 h-10 rounded-full bg-[var(--accent)]/10 flex items-center justify-center flex-shrink-0">
@@ -178,7 +185,7 @@ export default function MergePdf() {
                             </div>
                             <div className="flex items-center gap-2">
                               <button
-                                aria-label="Move file up"
+                                aria-label={t('tool.merge.moveUp')}
                                 onClick={() => moveFile(index, index - 1)}
                                 disabled={index === 0}
                                 className="p-2 rounded hover:bg-[var(--surface-2)] disabled:opacity-50"
@@ -186,7 +193,7 @@ export default function MergePdf() {
                                 <ChevronUp size={16} />
                               </button>
                               <button
-                                aria-label="Move file down"
+                                aria-label={t('tool.merge.moveDown')}
                                 onClick={() => moveFile(index, index + 1)}
                                 disabled={index === files.length - 1}
                                 className="p-2 rounded hover:bg-[var(--surface-2)] disabled:opacity-50"
@@ -197,7 +204,7 @@ export default function MergePdf() {
                             <button
                               onClick={() => removeFile(index)}
                               className="p-2 text-[var(--text-3)] hover:text-[var(--accent-text)] hover:bg-[var(--accent-dim)] rounded-[var(--radius-sm)] transition-all duration-200 opacity-0 group-hover:opacity-100"
-                              aria-label={`Remove ${file.name}`}
+                              aria-label={t('tool.merge.removeNamed', { name: file.name })}
                             >
                               <X size={20} />
                             </button>
@@ -219,14 +226,14 @@ export default function MergePdf() {
               className="flex items-center gap-2 px-6 py-3 rounded-[var(--radius-md)] text-[var(--text-2)] hover:text-[var(--text)] hover:bg-[var(--surface)] border border-[var(--border)] transition-colors"
             >
               <ArrowLeft size={18} />
-              Back
+              {t('tool.common.back')}
             </button>
             <button
               onClick={handleMerge}
               disabled={files.length < 2}
               className="bg-[var(--accent-solid)] hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed text-white font-semibold py-4 px-10 rounded-[var(--radius-xl)] text-lg transition-all shadow-lg shadow-[var(--accent)]/25"
             >
-              Merge PDFs
+              {t('tool.merge.submit')}
             </button>
           </div>
         </div>
@@ -234,15 +241,15 @@ export default function MergePdf() {
 
       {step === 'processing' && (
         <ProcessingState 
-          title="Merging PDFs..." 
-          description="Please wait while we combine your documents. This is happening locally in your browser."
+          title={t('tool.merge.processingTitle')} 
+          description={t('tool.merge.processingDescription')}
         />
       )}
 
       {step === 'download' && resultUrl && (
         <DownloadState 
-          title="PDFs merged successfully!"
-          description="Your documents have been combined into a single PDF file."
+          title={t('tool.merge.successTitle')}
+          description={t('tool.merge.successDescription')}
           fileName="merged_document.pdf"
           fileUrl={resultUrl}
           fileSize={resultSize}
