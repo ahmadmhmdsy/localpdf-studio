@@ -3,6 +3,7 @@ import { Check, ChevronDown, Palette } from 'lucide-react';
 import { useSkin } from '../../theme';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
 import { cn } from '../../lib/utils';
+import { useI18n } from '../../i18n/useI18n';
 
 /**
  * Compact dropdown that lets the user switch the active skin (visual layout).
@@ -20,6 +21,7 @@ import { cn } from '../../lib/utils';
  */
 export default function SkinPicker() {
   const { id, definition, all, setSkin } = useSkin();
+  const { t } = useI18n();
   const [open, setOpen] = useState(false);
   const rootRef = useRef<HTMLDivElement | null>(null);
   const menuRef = useFocusTrap<HTMLDivElement>(open);
@@ -72,7 +74,7 @@ export default function SkinPicker() {
         type="button"
         aria-haspopup="menu"
         aria-expanded={open}
-        aria-label={`Change skin (current: ${definition.label})`}
+        aria-label={t('shell.skin.change', { label: definition.label })}
         onClick={() => setOpen((v) => !v)}
         className="flex items-center gap-1.5 h-9 px-3 rounded-lg transition-colors"
         style={{
@@ -102,7 +104,7 @@ export default function SkinPicker() {
           ref={menuRef}
           className="menu"
           role="menu"
-          aria-label="Choose a skin"
+          aria-label={t('shell.skin.choose')}
           data-testid="skin-picker-menu"
         >
           {all.map((skin) => {

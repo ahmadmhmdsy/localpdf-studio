@@ -1,28 +1,47 @@
 import { Link } from 'react-router-dom';
-import { FileText, Menu, Moon, Settings, Sun, X } from 'lucide-react';
+import { FileText, Languages, Menu, Moon, Settings, Sun, X } from 'lucide-react';
 import { useState } from 'react';
 import { useToolsStore } from '../../store';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
 import ApiKeySettings from '../settings/ApiKeySettings';
 import SkinPicker from './SkinPicker';
 import { isTauri } from '../../lib/native';
+import { useI18n } from '../../i18n/useI18n';
+import { LOCALES, otherLocale, type MessageKey } from '../../i18n';
 
-const NAV_LINKS = [
-  { to: '/tools/merge-pdf', label: 'Merge PDF' },
-  { to: '/tools/split-pdf', label: 'Split PDF' },
-  { to: '/tools/pdf-to-jpg', label: 'PDF to JPG' },
-  { to: '/tools/jpg-to-pdf', label: 'JPG to PDF' },
-] as const;
+const NAV_LINKS: ReadonlyArray<{ to: string; key: MessageKey }> = [
+  { to: '/tools/merge-pdf', key: 'shell.nav.mergePdf' },
+  { to: '/tools/split-pdf', key: 'shell.nav.splitPdf' },
+  { to: '/tools/pdf-to-jpg', key: 'shell.nav.pdfToJpg' },
+  { to: '/tools/jpg-to-pdf', key: 'shell.nav.jpgToPdf' },
+];
 
 export default function Header() {
   const darkMode = useToolsStore((s) => s.darkMode);
   const toggleDarkMode = useToolsStore((s) => s.toggleDarkMode);
+  const { t, locale, setLocale } = useI18n();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const drawerRef = useFocusTrap<HTMLDivElement>(mobileOpen);
 
   const closeMobile = () => setMobileOpen(false);
   const showSettingsButton = isTauri();
+  const nextLocale = otherLocale(locale);
+
+  const languageButton = (
+    <button
+      type="button"
+      onClick={() => setLocale(nextLocale)}
+      className="flex h-9 items-center justify-center gap-1.5 rounded-lg px-2.5 transition-colors"
+      style={{ background: 'var(--surface-2)', color: 'var(--text-2)' }}
+      aria-label={t('shell.language.switch')}
+      lang={nextLocale}
+      dir={LOCALES[nextLocale].dir}
+    >
+      <Languages size={18} aria-hidden="true" />
+      <span className="text-xs font-semibold">{LOCALES[nextLocale].nativeName}</span>
+    </button>
+  );
 
   return (
     <>
@@ -33,7 +52,7 @@ export default function Header() {
               <FileText size={18} className="text-white" />
             </div>
             <span className="text-lg font-bold tracking-tight hidden sm:inline" style={{ color: 'var(--text)', fontFamily: 'sans-serif' }}>
-              LocalPDF Studio
+              {t('shell.brand')}
             </span>
           </Link>
           <Link
@@ -41,26 +60,27 @@ export default function Header() {
             className="hidden md:inline-block text-sm font-semibold px-3.5 py-1.5 rounded-md transition-colors"
             style={{ color: 'var(--accent-text)', background: 'var(--accent-dim)' }}
           >
-            Visual Editor
+            {t('shell.visualEditor')}
           </Link>
           <div className="hidden md:flex items-center gap-5">
             {NAV_LINKS.map((link) => (
               <Link key={link.to} to={link.to} className="text-sm font-medium transition-colors" style={{ color: 'var(--text-2)' }}>
-                {link.label}
+                {t(link.key)}
               </Link>
             ))}
             <Link to="/" className="text-sm font-medium transition-colors" style={{ color: 'var(--accent-text)' }}>
-              All PDF Tools
+              {t('shell.allTools')}
             </Link>
           </div>
           <button
             onClick={toggleDarkMode}
             className="flex h-9 w-9 items-center justify-center rounded-lg transition-colors"
             style={{ background: 'var(--surface-2)', color: 'var(--text-2)' }}
-            aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+            aria-label={t(darkMode ? 'shell.theme.toLight' : 'shell.theme.toDark')}
           >
             {darkMode ? <Sun size={18} /> : <Moon size={18} />}
           </button>
+          {languageButton}
           <SkinPicker />
           {showSettingsButton && (
             <button
@@ -68,7 +88,7 @@ export default function Header() {
               onClick={() => setSettingsOpen(true)}
               className="flex h-9 w-9 items-center justify-center rounded-lg transition-colors"
               style={{ background: 'var(--surface-2)', color: 'var(--text-2)' }}
-              aria-label="Open settings"
+              aria-label={t('shell.settings.open')}
             >
               <Settings size={18} />
             </button>
@@ -78,7 +98,7 @@ export default function Header() {
             onClick={() => setMobileOpen(true)}
             className="md:hidden flex h-9 w-9 items-center justify-center rounded-lg transition-colors"
             style={{ background: 'var(--surface-2)', color: 'var(--text-2)' }}
-            aria-label="Open menu"
+            aria-label={t('shell.menu.open')}
             aria-expanded={mobileOpen}
             aria-controls="mobile-nav"
           >
@@ -96,18 +116,18 @@ export default function Header() {
           style={{ background: 'var(--surface)', color: 'var(--text)' }}
           role="dialog"
           aria-modal="true"
-          aria-label="Site navigation"
+          aria-label={t('shell.nav.site')}
         >
           <div className="flex items-center justify-between px-6 py-4 border-b" style={{ borderColor: 'var(--border)' }}>
             <span className="text-base font-bold tracking-tight" style={{ fontFamily: 'sans-serif' }}>
-              LocalPDF Studio
+              {t('shell.brand')}
             </span>
             <button
               type="button"
               onClick={closeMobile}
               className="flex h-9 w-9 items-center justify-center rounded-lg transition-colors"
               style={{ background: 'var(--surface-2)', color: 'var(--text-2)' }}
-              aria-label="Close menu"
+              aria-label={t('shell.menu.close')}
             >
               <X size={18} />
             </button>
@@ -119,7 +139,7 @@ export default function Header() {
               className="text-base font-semibold px-4 py-3 rounded-lg"
               style={{ color: 'var(--accent-text)', background: 'var(--accent-dim)' }}
             >
-              Visual Editor
+              {t('shell.visualEditor')}
             </Link>
             {NAV_LINKS.map((link) => (
               <Link
@@ -129,7 +149,7 @@ export default function Header() {
                 className="text-base font-medium px-4 py-3 rounded-lg transition-colors hover:bg-[var(--surface-2)]"
                 style={{ color: 'var(--text-2)' }}
               >
-                {link.label}
+                {t(link.key)}
               </Link>
             ))}
             <Link
@@ -138,8 +158,9 @@ export default function Header() {
               className="text-base font-medium px-4 py-3 rounded-lg transition-colors hover:bg-[var(--surface-2)]"
               style={{ color: 'var(--accent-text)' }}
             >
-              All PDF Tools
+              {t('shell.allTools')}
             </Link>
+            <div className="pt-2">{languageButton}</div>
           </div>
         </div>
       )}

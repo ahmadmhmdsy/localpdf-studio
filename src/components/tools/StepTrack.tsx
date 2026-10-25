@@ -1,5 +1,6 @@
 import { Check } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { useI18n } from '../../i18n/useI18n';
 
 interface StepTrackProps {
   steps: string[];
@@ -7,6 +8,8 @@ interface StepTrackProps {
 }
 
 export default function StepTrack({ steps, currentStep }: StepTrackProps) {
+  const { t } = useI18n();
+
   return (
     <div 
       className="step-track"
@@ -18,7 +21,7 @@ export default function StepTrack({ steps, currentStep }: StepTrackProps) {
         animation: 'fade-up 600ms 50ms cubic-bezier(0.32,0.72,0,1) both',
       }}
       role="list"
-      aria-label="Progress steps"
+      aria-label={t('chrome.steps.aria')}
     >
       {steps.map((step, index) => {
         const isActive = index === currentStep;

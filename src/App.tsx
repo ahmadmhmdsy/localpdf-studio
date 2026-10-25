@@ -3,13 +3,15 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import { lazy, Suspense } from 'react';
+import { lazy, Suspense, useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/layout/Layout';
 import Home from './pages/Home';
 import NotFound from './pages/NotFound';
 import Editor from './pages/Editor';
 import { EditorProvider } from './contexts/EditorContext';
+import { useToolsStore } from './store/toolsStore';
+import { directionFor } from './i18n';
 import { ToastProvider } from './contexts/ToastContext';
 import ToastContainer from './components/ui/ToastContainer';
 import LoadingSpinner from './components/ui/LoadingSpinner';
@@ -73,9 +75,25 @@ export function AppRoutes() {
   );
 }
 
+/**
+ * Mirrors the active locale onto <html> so `dir="rtl"` and `lang="ar"` reach
+ * the browser, assistive technology and CSS in one place.
+ */
+function DocumentLanguage() {
+  const locale = useToolsStore((s) => s.locale);
+
+  useEffect(() => {
+    document.documentElement.lang = locale;
+    document.documentElement.dir = directionFor(locale);
+  }, [locale]);
+
+  return null;
+}
+
 export default function App() {
   return (
     <ToastProvider>
+      <DocumentLanguage />
       <EditorProvider>
         <ToastContainer />
         <OnboardingTour />
