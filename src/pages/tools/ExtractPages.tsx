@@ -7,6 +7,7 @@ import DownloadState from '../../components/tools/DownloadState';
 import { extractPages } from '../../lib/pdf';
 import { logError } from '../../lib/logger';
 import { useToast } from '../../contexts/ToastContext';
+import { useI18n } from '../../i18n/useI18n';
 
 type Step = 'upload' | 'configure' | 'processing' | 'download';
 
@@ -17,6 +18,7 @@ export default function ExtractPages() {
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [resultSize, setResultSize] = useState<string>('');
   const { showToast } = useToast();
+  const { t, toolName, toolDescription } = useI18n();
 
   const handleFilesSelected = (newFiles: File[]) => {
     if (newFiles.length > 0) {
@@ -27,7 +29,7 @@ export default function ExtractPages() {
 
   const handleProcess = async () => {
     if (!file || !ranges.trim()) {
-      showToast({ message: 'Please select a file and enter page ranges to extract.', type: 'warning' });
+      showToast({ message: t('tool.extract.warning'), type: 'warning' });
       return;
     }
 
@@ -45,7 +47,7 @@ export default function ExtractPages() {
       const normalizedError = error instanceof Error ? error : new Error(String(error));
       logError('Error extracting pages:', normalizedError);
       showToast({
-        message: normalizedError.message || 'An error occurred while extracting pages. Please check your page ranges and try again.',
+        message: normalizedError.message || t('tool.extract.error'),
         type: 'error',
         duration: 5000,
       });
@@ -65,15 +67,15 @@ export default function ExtractPages() {
 
   return (
     <ToolLayout 
-      title="Extract Pages" 
-      description="Get a new document containing only the desired pages."
+      title={toolName('extract-pages')} 
+      description={toolDescription('extract-pages')}
     >
       {step === 'upload' && (
         <FileUploadZone 
           
-          ariaLabel="Select PDF file" onFilesSelected={handleFilesSelected} 
-          title="Select PDF file"
-          subtitle="or drop PDF here"
+          ariaLabel={t('tool.common.selectPdfFile')} onFilesSelected={handleFilesSelected} 
+          title={t('tool.common.selectPdfFile')}
+          subtitle={t('tool.common.dropPdf')}
           maxFiles={1}
         />
       )}
@@ -94,7 +96,7 @@ export default function ExtractPages() {
               <button 
                 onClick={startOver}
                 className="p-2 text-[var(--text-3)] hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                aria-label="Remove file"
+                aria-label={t('tool.common.removeFile')}
               >
                 <X size={24} />
               </button>
@@ -102,18 +104,18 @@ export default function ExtractPages() {
 
             <div className="space-y-4">
               <label htmlFor="ranges" className="block text-sm font-medium text-[var(--text-2)]">
-                Pages to extract
+                {t('tool.extract.pagesLabel')}
               </label>
               <input
                 type="text"
                 id="ranges"
                 value={ranges}
                 onChange={(e) => setRanges(e.target.value)}
-                placeholder="e.g., 1-5, 8, 11-13"
+                placeholder={t('tool.extract.placeholder')}
                 className="w-full px-4 py-3 rounded-xl border border-[var(--border)] focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all"
               />
               <p className="text-sm text-[var(--text-3)]">
-                Enter page numbers and/or page ranges separated by commas. Only these pages will be kept.
+                {t('tool.extract.help')}
               </p>
             </div>
           </div>
@@ -124,7 +126,7 @@ export default function ExtractPages() {
               disabled={!ranges.trim()}
               className="bg-red-600 hover:bg-red-700 disabled:bg-[var(--surface-2)] disabled:cursor-not-allowed text-white font-semibold py-4 px-12 rounded-xl text-xl transition-colors shadow-lg"
             >
-              Extract Pages
+              {t('tool.extract.submit')}
             </button>
           </div>
         </div>
@@ -132,15 +134,15 @@ export default function ExtractPages() {
 
       {step === 'processing' && (
         <ProcessingState 
-          title="Extracting pages..." 
-          description="Please wait while we extract the requested pages. This is happening locally in your browser."
+          title={t('tool.extract.processingTitle')} 
+          description={t('tool.extract.processingDescription')}
         />
       )}
 
       {step === 'download' && resultUrl && (
         <DownloadState 
-          title="Pages extracted successfully!"
-          description="Your new PDF document is ready."
+          title={t('tool.extract.successTitle')}
+          description={t('tool.extract.successDescription')}
           fileName={`extracted_${file?.name || 'document.pdf'}`}
           fileUrl={resultUrl}
           fileSize={resultSize}

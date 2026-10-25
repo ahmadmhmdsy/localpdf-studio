@@ -36,7 +36,7 @@ export const toolCopyEn: Record<ToolId, ToolCopy> = {
   },
   'organize-pdf': {
     name: 'Organize PDF',
-    description: 'Sort, add and delete PDF pages.',
+    description: 'Sort, add and delete PDF pages. Drag and drop the page thumbnails and sort them however you like.',
   },
   'scan-to-pdf': {
     name: 'Scan to PDF',

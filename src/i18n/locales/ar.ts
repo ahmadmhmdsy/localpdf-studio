@@ -121,4 +121,104 @@ export const ar: Record<MessageKey, string> = {
   'home.bento.privacy.title': 'أين تُخزَّن أعمالك.',
   'home.bento.privacy.body':
     'تُعالج LocalPDF Studio معظم الأدوات محليًا. وأدوات الذكاء الاصطناعي والكاميرا غير متاحة حاليًا في النسخة التجريبية العامة، وتعمل أداة OCR على جهازك؛ ولا يُرسَل أي ملف إلى خدمة خارجية من تلك المسارات. يحتفظ المحرر بمستند عملك وسجل التعديلات في التخزين المحلي لهذا التطبيق على هذا الجهاز، حتى تمسحه: استخدم زر إغلاق الملف في المحرر لإسقاط الملف المخزَّن، أو امسح بيانات هذا التطبيق المخزَّنة (بيانات الموقع في المتصفح، وبيانات التطبيق في نسخة سطح المكتب).',
+  // Shared tool-page copy (B1.3)
+  'tool.common.selectPdfFile': 'اختر ملف PDF',
+  'tool.common.selectPdfFiles': 'اختر ملفات PDF',
+  'tool.common.dropPdf': 'أو أفلِت ملف PDF هنا',
+  'tool.common.dropPdfs': 'أو أفلِت ملفات PDF هنا',
+  'tool.common.removeFile': 'إزالة الملف',
+  'tool.common.back': 'رجوع',
+  'tool.common.step.upload': 'رفع',
+  'tool.common.step.configure': 'إعداد',
+  'tool.common.step.download': 'تنزيل',
+
+  // Merge PDF
+  'tool.merge.dragReorder': 'اسحب وأفلِت لإعادة ترتيب الملفات',
+  'tool.merge.addMore': 'إضافة ملفات أخرى',
+  'tool.merge.moveUp': 'نقل الملف لأعلى',
+  'tool.merge.moveDown': 'نقل الملف لأسفل',
+  'tool.merge.removeNamed': 'إزالة {name}',
+  'tool.merge.submit': 'دمج ملفات PDF',
+  'tool.merge.needTwo': 'اختر ملفَي PDF على الأقل للدمج.',
+  'tool.merge.error': 'حدث خطأ أثناء دمج ملفات PDF. حاول مرة أخرى.',
+  'tool.merge.processingTitle': 'جارٍ دمج ملفات PDF...',
+  'tool.merge.processingDescription':
+    'يُرجى الانتظار ريثما ندمج مستنداتك. يحدث ذلك محليًا في متصفحك.',
+  'tool.merge.successTitle': 'تم دمج ملفات PDF بنجاح!',
+  'tool.merge.successDescription': 'تم دمج مستنداتك في ملف PDF واحد.',
+
+  // Split PDF
+  'tool.split.question': 'كيف تريد تقسيم ملف PDF؟',
+  'tool.split.mode.ranges.name': 'حسب نطاق الصفحات',
+  'tool.split.mode.ranges.description': 'ملف PDF لكل نطاق مفصول بفواصل، مثل 1-3، 4، 5-8.',
+  'tool.split.mode.everyN.name': 'كل N صفحات',
+  'tool.split.mode.everyN.description': 'مقاطع متساوية من N صفحة، مثل 1-2، 3-4، 5.',
+  'tool.split.mode.eachPage.name': 'ملف لكل صفحة',
+  'tool.split.mode.eachPage.description': 'كل صفحة تصبح ملف PDF مستقلًا.',
+  'tool.split.rangesLabel': 'نطاقات الصفحات',
+  'tool.split.rangesPlaceholder': 'مثل 1-3، 4، 5-8',
+  'tool.split.rangesHelp':
+    'أدخل أرقام صفحات و/أو نطاقات مفصولة بفواصل. كل نطاق يصبح ملف PDF مستقلًا.',
+  'tool.split.pagesPerFileLabel': 'عدد الصفحات لكل ملف',
+  'tool.split.pagesPerFileHelp':
+    'كل N صفحات تصبح ملف PDF مستقلًا. يحتفظ الملف الأخير بأي صفحات متبقية.',
+  'tool.split.eachPageHelp':
+    'كل صفحة تصبح ملف PDF مستقلًا. المستندات التي تحتوي أكثر من صفحة تُحزَّم في أرشيف ZIP.',
+  'tool.split.submit': 'تقسيم PDF',
+  'tool.split.needFile': 'اختر ملف PDF أولًا.',
+  'tool.split.needRanges': 'أدخل نطاقات الصفحات المراد تقسيمها.',
+  'tool.split.needChunk': 'يجب أن يكون عدد الصفحات لكل ملف عددًا صحيحًا لا يقل عن 1.',
+  'tool.split.noFiles': 'لم يُنتج التقسيم أي ملفات. تحقق من نطاقات الصفحات وحاول مرة أخرى.',
+  'tool.split.error': 'حدث خطأ أثناء تقسيم ملف PDF. تحقق من نطاقات الصفحات وحاول مرة أخرى.',
+  'tool.split.processingTitle': 'جارٍ تقسيم PDF...',
+  'tool.split.processingDescription':
+    'يُرجى الانتظار ريثما ننشئ الملفات المقسمة. يحدث ذلك محليًا في متصفحك.',
+  'tool.split.successTitle': 'تم تقسيم PDF بنجاح!',
+  'tool.split.successArchive': 'تم تقسيم ملف PDF إلى {count} ملفًا وتُحزِّم في أرشيف ZIP.',
+  'tool.split.successSingle': 'تم حفظ الصفحات المستخرجة في ملف PDF جديد.',
+
+  // Remove pages
+  'tool.remove.pagesLabel': 'الصفحات المراد حذفها',
+  'tool.remove.placeholder': 'مثل 1-5، 8، 11-13',
+  'tool.remove.help': 'أدخل أرقام صفحات و/أو نطاقات مفصولة بفواصل. ستُحذف هذه الصفحات.',
+  'tool.remove.submit': 'حذف الصفحات',
+  'tool.remove.warning': 'اختر ملفًا وأدخل نطاقات الصفحات المراد حذفها.',
+  'tool.remove.error': 'حدث خطأ أثناء حذف الصفحات. تحقق من نطاقات الصفحات وحاول مرة أخرى.',
+  'tool.remove.processingTitle': 'جارٍ حذف الصفحات...',
+  'tool.remove.processingDescription':
+    'يُرجى الانتظار ريثما نحذف الصفحات المطلوبة. يحدث ذلك محليًا في متصفحك.',
+  'tool.remove.successTitle': 'تم حذف الصفحات بنجاح!',
+  'tool.remove.successDescription': 'مستند PDF الجديد جاهز.',
+
+  // Extract pages
+  'tool.extract.pagesLabel': 'الصفحات المراد استخراجها',
+  'tool.extract.placeholder': 'مثل 1-5، 8، 11-13',
+  'tool.extract.help': 'أدخل أرقام صفحات و/أو نطاقات مفصولة بفواصل. ستُحتفظ بهذه الصفحات فقط.',
+  'tool.extract.submit': 'استخراج الصفحات',
+  'tool.extract.warning': 'اختر ملفًا وأدخل نطاقات الصفحات المراد استخراجها.',
+  'tool.extract.error': 'حدث خطأ أثناء استخراج الصفحات. تحقق من نطاقات الصفحات وحاول مرة أخرى.',
+  'tool.extract.processingTitle': 'جارٍ استخراج الصفحات...',
+  'tool.extract.processingDescription':
+    'يُرجى الانتظار ريثما نستخرج الصفحات المطلوبة. يحدث ذلك محليًا في متصفحك.',
+  'tool.extract.successTitle': 'تم استخراج الصفحات بنجاح!',
+  'tool.extract.successDescription': 'مستند PDF الجديد جاهز.',
+
+  // Organize PDF
+  'tool.organize.pagesCount': '{count} صفحات',
+  'tool.organize.removePage': 'إزالة الصفحة',
+  'tool.organize.pageAlt': 'الصفحة {number}',
+  'tool.organize.pageLabel': 'الصفحة {number}',
+  'tool.organize.submit': 'تنظيم PDF',
+  'tool.organize.allRemoved': 'أُزيلت كل الصفحات. ابدأ من جديد.',
+  'tool.organize.loadingTitle': 'جارٍ تحميل الصفحات...',
+  'tool.organize.loadingDescription': 'يُرجى الانتظار ريثما نستخرج الصفحات من ملف PDF.',
+  'tool.organize.thumbnailsFailed': 'تعذّر تحميل صفحات PDF. جرّب ملفًا آخر.',
+  'tool.organize.warning': 'اختر ملفًا وتأكد من وجود صفحة واحدة على الأقل.',
+  'tool.organize.error': 'حدث خطأ. حاول مرة أخرى.',
+  'tool.organize.processingTitle': 'جارٍ تنظيم PDF...',
+  'tool.organize.processingDescription':
+    'يُرجى الانتظار ريثما نعيد ترتيب صفحات مستندك. يحدث ذلك محليًا في متصفحك.',
+  'tool.organize.successTitle': 'تم تنظيم PDF بنجاح!',
+  'tool.organize.successDescription': 'أُعيد ترتيب صفحات مستندك.',
+
 };

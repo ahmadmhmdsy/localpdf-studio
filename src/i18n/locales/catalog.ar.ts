@@ -30,7 +30,7 @@ export const toolCopyAr: Record<ToolId, { name: string; description: string }> =
   },
   'organize-pdf': {
     name: 'تنظيم PDF',
-    description: 'رتّب صفحات PDF وأضفها واحذفها.',
+    description: 'رتّب صفحات PDF وأضفها واحذفها. اسحب صور الصفحات وأفلِتها ورتّبها كما تشاء.',
   },
   'scan-to-pdf': {
     name: 'المسح إلى PDF',

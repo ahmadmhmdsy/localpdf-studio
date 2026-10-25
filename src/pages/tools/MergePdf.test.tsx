@@ -1,9 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { act, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import MergePdf from './MergePdf';
 import { createDeferred, renderWithProviders } from '../../tests/utils';
 import { generateDummyPdf } from '../../tests/fixtures/pdfGenerator';
+import { useToolsStore } from '../../store/toolsStore';
 
 // Mock file-saver
 vi.mock('file-saver', () => ({
@@ -29,6 +30,10 @@ describe('MergePdf', () => {
     vi.clearAllMocks();
   });
 
+  afterEach(() => {
+    useToolsStore.setState({ locale: 'en' });
+  });
+
   describe('Initial State', () => {
     it('renders upload zone on initial load', () => {
       renderWithProviders(<MergePdf />);
@@ -42,6 +47,20 @@ describe('MergePdf', () => {
       
       expect(screen.getByRole('heading', { name: 'Merge PDF' })).toBeInTheDocument();
       expect(screen.getByText(/combine PDFs in the order/i)).toBeInTheDocument();
+    });
+
+    it('renders the upload flow in Arabic when that locale is active', () => {
+      useToolsStore.setState({ locale: 'ar' });
+      renderWithProviders(<MergePdf />);
+
+      expect(screen.getByRole('heading', { name: 'دمج PDF' })).toBeInTheDocument();
+      expect(screen.getByText('اختر ملفات PDF')).toBeInTheDocument();
+      expect(screen.getByText(/أفلِت ملفات PDF/)).toBeInTheDocument();
+      // Step labels come from the catalog too.
+      expect(screen.getByText('رفع')).toBeInTheDocument();
+      expect(screen.getByText('إعداد')).toBeInTheDocument();
+      expect(screen.getByText('تنزيل')).toBeInTheDocument();
+      expect(screen.queryByText('Select PDF files')).not.toBeInTheDocument();
     });
 
     it('does not make an absolute local-only privacy claim', () => {
