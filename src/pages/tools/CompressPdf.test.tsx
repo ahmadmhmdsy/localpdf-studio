@@ -9,9 +9,12 @@ const { compressPdfMock } = vi.hoisted(() => ({
   compressPdfMock: vi.fn(),
 }));
 
-vi.mock('../../lib/compress', () => ({
+vi.mock('../../lib/compress', async (importOriginal) => ({
+  ...(await importOriginal<typeof import('../../lib/compress')>()),
   compressPdf: compressPdfMock,
 }));
+
+const { CompressionCancelledError, CompressionLimitError } = await import('../../lib/compress');
 
 describe('CompressPdf', () => {
   let user: ReturnType<typeof userEvent.setup>;
@@ -22,6 +25,7 @@ describe('CompressPdf', () => {
     compressPdfMock.mockResolvedValue({
       bytes: new Uint8Array([1, 2, 3]),
       notes: ['Test note: best-effort compression only.'],
+      keptOriginal: false,
     });
     vi.clearAllMocks();
   });
@@ -65,7 +69,7 @@ describe('CompressPdf', () => {
       
       await waitFor(() => {
         expect(screen.getByText('document.pdf')).toBeInTheDocument();
-        expect(screen.getByText(/MB/)).toBeInTheDocument();
+        expect(screen.getByText(/^\d+\.\d{2} MB$/)).toBeInTheDocument();
       });
     });
   });
@@ -120,6 +124,7 @@ describe('CompressPdf', () => {
       const compressionResult = {
         bytes: new Uint8Array([1, 2, 3]),
         notes: ['Test note: best-effort compression only.'],
+        keptOriginal: false,
       };
       const compression = createDeferred<typeof compressionResult>();
       compressPdfMock.mockReturnValueOnce(compression.promise);
@@ -130,7 +135,10 @@ describe('CompressPdf', () => {
       await user.click(compressButton);
 
       expect(await screen.findByText('Compressing PDF...')).toBeInTheDocument();
-      expect(compressPdfMock).toHaveBeenCalledWith(pdfFile, 'medium', { images: 'off' });
+      expect(compressPdfMock).toHaveBeenCalledWith(pdfFile, 'medium', {
+        images: 'off',
+        signal: expect.any(AbortSignal),
+      });
 
       await act(async () => {
         compression.resolve(compressionResult);
@@ -151,7 +159,10 @@ describe('CompressPdf', () => {
       await user.click(await screen.findByRole('radio', { name: /strong/i }));
       await user.click(screen.getByRole('button', { name: /compress PDF/i }));
 
-      expect(compressPdfMock).toHaveBeenCalledWith(pdfFile, 'medium', { images: 'strong' });
+      expect(compressPdfMock).toHaveBeenCalledWith(pdfFile, 'medium', {
+        images: 'strong',
+        signal: expect.any(AbortSignal),
+      });
     });
 
     it('shows compression results after processing', async () => {
@@ -242,6 +253,72 @@ describe('CompressPdf', () => {
       await waitFor(() => {
         expect(screen.getByText(/compressed from .* to/i)).toBeInTheDocument();
       }, { timeout: 3000 });
+    });
+  });
+
+  describe('Compression level choice', () => {
+    it('offers one level choice with Lossless selected by default', async () => {
+      renderWithProviders(<CompressPdf />);
+      await user.upload(screen.getByLabelText(/select PDF file/i), await generateDummyPdf(1, 'test.pdf'));
+
+      const group = await screen.findByRole('group', { name: /compression level/i });
+      expect(group).toBeInTheDocument();
+      expect(screen.getAllByRole('radio')).toHaveLength(4);
+      expect(screen.getByRole('radio', { name: /lossless/i })).toBeChecked();
+      expect(screen.getByText(/limit: 100 MB per file/i)).toBeInTheDocument();
+    });
+  });
+
+  describe('Cancellation and limits', () => {
+    it('cancels a running compression and returns to configure', async () => {
+      renderWithProviders(<CompressPdf />);
+      const compression = createDeferred<never>();
+      compressPdfMock.mockReturnValueOnce(compression.promise);
+
+      await user.upload(screen.getByLabelText(/select PDF file/i), await generateDummyPdf(1, 'test.pdf'));
+      await user.click(await screen.findByRole('button', { name: /compress PDF/i }));
+      await user.click(await screen.findByRole('button', { name: /cancel/i }));
+
+      const [, , options] = compressPdfMock.mock.calls[0];
+      expect((options as { signal: AbortSignal }).signal.aborted).toBe(true);
+      expect(await screen.findByRole('button', { name: /compress PDF/i })).toBeInTheDocument();
+
+      await act(async () => {
+        compression.reject(new CompressionCancelledError());
+        await compression.promise.catch(() => undefined);
+      });
+      expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+      expect(screen.queryByRole('link', { name: /download/i })).not.toBeInTheDocument();
+    });
+
+    it('shows the size-limit message', async () => {
+      renderWithProviders(<CompressPdf />);
+      compressPdfMock.mockRejectedValueOnce(
+        new CompressionLimitError('This file is 150.0 MB. Compression is limited to 100 MB per file.'),
+      );
+
+      await user.upload(screen.getByLabelText(/select PDF file/i), await generateDummyPdf(1, 'test.pdf'));
+      await user.click(await screen.findByRole('button', { name: /compress PDF/i }));
+
+      expect(await screen.findByText(/compression is limited to 100 MB/i)).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: /compress PDF/i })).toBeInTheDocument();
+    });
+  });
+
+  describe('Never larger', () => {
+    it('says when the original file was returned', async () => {
+      renderWithProviders(<CompressPdf />);
+      compressPdfMock.mockResolvedValueOnce({
+        bytes: new Uint8Array([1, 2, 3]),
+        notes: ['The compressed version was not smaller than the original, so the original file was returned unchanged.'],
+        keptOriginal: true,
+      });
+
+      await user.upload(screen.getByLabelText(/select PDF file/i), await generateDummyPdf(1, 'test.pdf'));
+      await user.click(await screen.findByRole('button', { name: /compress PDF/i }));
+
+      expect(await screen.findByText(/could not be made smaller/i)).toBeInTheDocument();
+      expect(screen.queryByText(/compressed from/i)).not.toBeInTheDocument();
     });
   });
 });

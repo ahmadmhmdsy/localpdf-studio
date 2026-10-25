@@ -12,7 +12,7 @@
 
 | Tool | State | What is done | What blocks release |
 |---|---|---|---|
-| compress-pdf | disabled | Real image recompression (`src/lib/compress.ts`) with presets: light 200 DPI / q0.8, balanced 150 / q0.65, strong 96 / q0.5. CMYK, indexed and 16-bit images are skipped. Result notes are shown in the UI. Unit-tested. | Independent verification on a real corpus; no cancellation; no per-file size limit. |
+| compress-pdf | disabled | Real image recompression (`src/lib/compress.ts`) with presets: light 200 DPI / q0.8, balanced 150 / q0.65, strong 96 / q0.5. CMYK, indexed and 16-bit images and soft masks are left unchanged and listed in the notes. WS2: a generated fixture corpus (`src/tests/fixtures/compressionCorpus.ts`) with per-preset tests; a never-larger fallback that returns the original bytes and says so; cancellation via `AbortSignal` with a Cancel button; a 100 MB limit; one "Compression level" choice (Lossless / Light / Balanced / Strong) in place of the three packing buttons. Fixed: soft masks (SMask) were re-encoded as RGB JPEG, which broke transparency. | Independent verification on real files in a production build; the release flip needs user approval. |
 | ocr-pdf | limited | Self-hosted worker and core emitted by the `ocrAssets()` Vite plugin; invisible text layer positioned per word (rotation-aware); pages with text skipped; a missing-language-data error; English and Arabic data (tessdata_fast 4.1.0) self-hosted; a glyphless Unicode text layer (Arabic written in visual order, verified by a pdf.js round trip); cancellation via `AbortSignal` with a Cancel button that terminates the worker; 200-page and 50 MB limits (`src/constants/limits.ts`) shown in the configure step; an optional page-range input (the page cap applies to the selected pages, so a long PDF can be done in parts). Unit-tested. | No e2e run; only English and Arabic data; independent verification. |
 
 ---
@@ -33,10 +33,10 @@
 
 ## Workstream 2: Verify and enable compression
 
-1. Build a fixture corpus in `src/tests/fixtures/` (generated, not downloaded): a JPEG-heavy scan, a PNG with alpha, a CMYK JPEG, an indexed PNG, a text-only PDF, and an already-optimized PDF.
-2. Add tests asserting, for each preset, that output ≤ input for image-heavy files, that output is never larger than the input (fall back to the original bytes and say so), that skipped image kinds are listed in the notes, and that page count and text extraction are unchanged.
-3. Add cancellation and a size limit, the same way as for OCR.
-4. Replace the three "Compression Level" buttons, which only change object-stream packing, with a single preset choice; image presets are what users expect "compression level" to mean. Keep `quality` in the library API for compatibility.
+1. **Done.** Build a fixture corpus in `src/tests/fixtures/` (generated, not downloaded): a JPEG-heavy scan, a PNG with alpha, a CMYK JPEG, an indexed PNG, a text-only PDF, and an already-optimized PDF.
+2. **Done.** Add tests asserting, for each preset, that output ≤ input for image-heavy files, that output is never larger than the input (fall back to the original bytes and say so), that skipped image kinds are listed in the notes, and that page count and text extraction are unchanged.
+3. **Done (100 MB).** Add cancellation and a size limit, the same way as for OCR.
+4. **Done.** Replace the three "Compression Level" buttons, which only change object-stream packing, with a single preset choice; image presets are what users expect "compression level" to mean. Keep `quality` in the library API for compatibility.
 5. Flip to `limited` after independent verification, with the user's approval.
 
 ## Workstream 3: Protect / Unlock (protect-pdf, decrypt-pdf)

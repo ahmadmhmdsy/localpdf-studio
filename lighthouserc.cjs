@@ -1,6 +1,10 @@
 module.exports = {
   ci: {
     collect: {
+      // Same preview server as playwright.config.ts; lhci's default ready
+      // pattern doesn't match Vite's output, so wait for the URL it prints.
+      startServerCommand: 'npm run preview -- --host 127.0.0.1 --port 4173 --strictPort',
+      startServerReadyPattern: '127.0.0.1',
       url: ['http://127.0.0.1:4173'],
       numberOfRuns: 1,
       settings: {
