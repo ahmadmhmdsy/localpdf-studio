@@ -1,5 +1,8 @@
 import { useCallback } from 'react';
 import { useToolsStore } from '../store/toolsStore';
+import { categoryName, toolCopy, toolDescription, toolName, type ToolCopy } from './catalog';
+import type { ToolCategoryId } from '../constants/tools';
+import type { ToolId } from '../config/featureRegistry';
 import { directionFor, translate, type Direction, type Locale, type MessageKey } from './index';
 
 export type I18n = {
@@ -7,6 +10,12 @@ export type I18n = {
   dir: Direction;
   setLocale: (locale: Locale) => void;
   t: (key: MessageKey, vars?: Record<string, string | number>) => string;
+  /** Tool name + description from the locale-bound catalog copy (B1.2). */
+  tool: (toolId: ToolId) => ToolCopy;
+  toolName: (toolId: ToolId) => string;
+  toolDescription: (toolId: ToolId) => string;
+  /** Category heading from the locale-bound catalog copy (B1.2). */
+  categoryName: (categoryId: ToolCategoryId) => string;
 };
 
 /**
@@ -22,6 +31,22 @@ export function useI18n(): I18n {
     (key: MessageKey, vars?: Record<string, string | number>) => translate(locale, key, vars),
     [locale],
   );
+  const tool = useCallback((toolId: ToolId) => toolCopy(locale, toolId), [locale]);
+  const name = useCallback((toolId: ToolId) => toolName(locale, toolId), [locale]);
+  const description = useCallback((toolId: ToolId) => toolDescription(locale, toolId), [locale]);
+  const category = useCallback(
+    (categoryId: ToolCategoryId) => categoryName(locale, categoryId),
+    [locale],
+  );
 
-  return { locale, dir: directionFor(locale), setLocale, t };
+  return {
+    locale,
+    dir: directionFor(locale),
+    setLocale,
+    t,
+    tool,
+    toolName: name,
+    toolDescription: description,
+    categoryName: category,
+  };
 }

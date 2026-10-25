@@ -1,8 +1,9 @@
 /**
  * Generated tool route table (roadmap backlog #15, CLAUDE.md §6a).
  *
- * The catalog (`src/constants/tools.ts`) owns the tool list, display names and
- * order; the release registry (`./featureRegistry`) owns availability. This module
+ * The catalog (`src/constants/tools.ts`) owns the tool list and order; the release
+ * registry (`./featureRegistry`) owns availability. Display names are locale data
+ * (`src/i18n/catalog.ts`), rendered by `ToolRoute`. This module
  * turns that data into the `/tools/<tool-id>` route table, so a tool is added by
  * adding it to the catalog + registry instead of hand-listing routes in `App.tsx`.
  *
@@ -62,8 +63,6 @@ export function toolRoutePath(toolId: ToolId): string {
 
 export interface ToolRouteDefinition {
   toolId: ToolId;
-  /** Display name from the catalog; used by the error boundary and the availability gate. */
-  name: string;
   /** Relative path, nested under the layout route in `App.tsx`. */
   path: string;
   Component: ToolComponent;
@@ -77,7 +76,6 @@ export const TOOL_ROUTES: readonly ToolRouteDefinition[] = TOOL_CATEGORIES.flatM
   (category) =>
     category.tools.map((tool) => ({
       toolId: tool.id,
-      name: tool.name,
       path: toolRoutePath(tool.id),
       Component: TOOL_COMPONENTS[tool.id],
     })),

@@ -2,6 +2,7 @@ import { readFileSync, readdirSync } from 'node:fs';
 import { join, relative, resolve, sep } from 'node:path';
 import { describe, expect, it } from 'vitest';
 import { TOOL_CATEGORIES } from '../constants/tools';
+import { toolCopyEn } from '../i18n/locales/catalog.en';
 import { TOOL_RELEASE_REGISTRY } from './featureRegistry';
 
 type TauriConfig = {
@@ -15,10 +16,9 @@ const readme = readFileSync(resolve(process.cwd(), 'README.md'), 'utf8');
 const tauriConfig = JSON.parse(
   readFileSync(resolve(process.cwd(), 'src-tauri/tauri.conf.json'), 'utf8'),
 ) as TauriConfig;
-const blackoutDescription =
-  TOOL_CATEGORIES.flatMap((category) => category.tools).find(
-    (tool) => tool.id === 'blackout-pdf',
-  )?.description ?? '';
+// Display copy now lives in the locale catalogs (B1.2); the claim guards read the
+// English source locale, which is what the release surfaces render by default.
+const blackoutDescription = toolCopyEn['blackout-pdf'].description;
 
 const readSource = (path: string) => readFileSync(resolve(process.cwd(), path), 'utf8');
 
@@ -252,7 +252,7 @@ const advertisingPattern = (toolName: string): RegExp => {
 
 const disabledToolNames = TOOL_CATEGORIES.flatMap((category) => category.tools)
   .filter((tool) => TOOL_RELEASE_REGISTRY[tool.id].releaseState === 'disabled')
-  .map((tool) => tool.name);
+  .map((tool) => toolCopyEn[tool.id].name);
 
 const UNAVAILABILITY_QUALIFIER =
   /\b(?:unavailable|not available|disabled|currently|never|does not|do not)\b/i;
