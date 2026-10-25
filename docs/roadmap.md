@@ -273,3 +273,27 @@ The rule allows: protocol constants that are fixed by a specification (for examp
 3. Decide on qpdf → A3. Decide on the redaction engine → A4.
 4. A5.1, A6.1, and B8 (skin fixes).
 5. B2–B7, then Phases C, D and E in order.
+
+## 10. Things you may have missed
+
+Items found during the Phase A work that are easy to lose track of. Each one points to the milestone or decision that owns it.
+
+1. **Three PRs are open.** #2 (compression WS2), #3 (README) and #4 (this roadmap). Most next steps in §9 need #2 merged first.
+2. **Compression is not switched on.** It passed on generated files in the production build (§6.2). The real UI has not been checked with real scans, in Firefox, or on mobile (A2.2). The flip to `limited` needs the owner's OK.
+3. **OCR has no end-to-end test.** Its release checklist is incomplete (A1.3–A1.5).
+4. **Decisions are waiting on the owner** (§8): qpdf, the redaction engine (PDFium vs AGPL MuPDF), the camera policy, the owner-password-only unlock policy, and the AI route.
+5. **The UI is English only.** Do B1 (i18n, Arabic and RTL) early. Every new screen built before B1 adds strings to move later.
+6. **Some tool descriptions copy competitor wording** (A7.10). Rewrite them before any public launch.
+7. **Known visual bugs** (B8):
+   - the glass skin's header overlaps page content;
+   - the editor's "Export Page" button is clipped in the Bento skin;
+   - the status badge is misplaced in the glass skin;
+   - editor dark mode inverts the PDF page itself.
+8. **Stale local branches.** `master`, `feat/tauri-desktop`, `task-28/finish-remaining-work` and the task28 worktree are merged (0 commits ahead of `main`) and safe to delete. Nothing has been deleted (§8, item 9).
+9. **The dev server binds `0.0.0.0`.** It is reachable from other devices on the LAN. Bind to `localhost` by default and make LAN access opt-in through config.
+10. **136 lint warnings predate this work.** They are warnings, not errors, so CI passes. Pay them down in small PRs; don't mix them into feature PRs.
+11. **The agent and contributor docs disagree with the code and with each other:**
+    - `AGENTS.md` says the tool routes are hard-coded in `src/App.tsx`. That conflicts with the registry-driven rule in CLAUDE.md §6a.
+    - `CONTRIBUTING.md` says to add a Gemini API key to `.env`. `AGENTS.md` says the web build accepts no key.
+    - `CONTRIBUTING.md` points to `TASK.md` and `PLANNING.md`, not to this roadmap.
+    - The PR template lists only typecheck, lint, test and build. It is missing `check:bundle`, e2e, the roadmap ID, the release gate, and the no-hardcoding check.
