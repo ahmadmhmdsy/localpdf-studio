@@ -1,6 +1,6 @@
 # Competitive Analysis & Feature Roadmap
 
-Status: PLANNED — research and proposal only; no code has changed.
+Status: REFERENCE — the research and proposal as of 2026-10-24. Progress is tracked in [roadmap.md](roadmap.md); OCR has since shipped as `limited`, and compression is in review.
 Date: 2026-10-24
 
 ## 1. Where LocalPDF Studio stands today
@@ -14,7 +14,7 @@ From `src/config/featureRegistry.ts` and `docs/release/production-inventory.md`:
 
 | State | Tools |
 |---|---|
-| Disabled (9) | Scan to PDF, OCR, PDF→PowerPoint, Blackout/Redact, Unlock, Protect, AI Summarizer, Translate, (PPT→PDF is "limited"/lossy) |
+| Disabled (9, at the time of writing) | Scan to PDF, OCR (now `limited`), PDF→PowerPoint, Blackout/Redact, Unlock, Protect, AI Summarizer, Translate, (PPT→PDF is "limited"/lossy) |
 | Shallow | Compress (pdf-lib can't re-encode images), Compare (side-by-side only, no diff), Watermark (fixed text/style), Rotate (all pages same angle) |
 | Missing vs competitors | PDF Forms (fill + create), PDF → Markdown/Text, bookmarks/TOC, metadata editor, flatten, batch processing, workflows/chaining, i18n |
 

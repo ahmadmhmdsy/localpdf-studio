@@ -35,6 +35,7 @@ src-tauri/gen/
 src-tauri/.lock
 src-tauri/WixTools/
 .claude/handoffs/
+.claude/settings.local.json
 
 # Local lint scratch output
 lint-*.txt
