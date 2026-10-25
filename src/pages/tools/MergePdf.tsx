@@ -113,7 +113,7 @@ export default function MergePdf() {
   return (
     <ToolLayout
       title="Merge PDF"
-      description="Combine PDFs in the order you want with the easiest PDF merger available."
+      description="Combine PDFs in the order you choose into a single document."
     >
       <StepTrack steps={STEPS} currentStep={getStepIndex()} />
 

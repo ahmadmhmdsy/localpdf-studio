@@ -59,7 +59,7 @@ export default function PdfToJpg() {
   return (
     <ToolLayout 
       title="PDF to JPG" 
-      description="Extract images from your PDF or save each page as a separate image."
+      description="Render every PDF page as a JPG image and download them in a ZIP file."
     >
       {step === 'upload' && (
         <FileUploadZone 

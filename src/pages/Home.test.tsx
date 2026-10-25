@@ -102,7 +102,7 @@ describe('Home', () => {
         'Merge PDF', 'Split PDF', 'Remove pages', 'Extract pages', 'Organize PDF', 'Scan to PDF',
         'Compress PDF', 'Repair PDF', 'OCR PDF',
         'JPG to PDF', 'HTML to PDF', 'WORD to PDF', 'EXCEL to PDF', 'POWERPOINT to PDF',
-        'PDF to JPG', 'PDF to PDF/A', 'PDF to WORD', 'PDF to EXCEL', 'PDF to POWERPOINT',
+        'PDF to JPG', 'PDF to PDF/A-style', 'PDF to WORD', 'PDF to EXCEL', 'PDF to POWERPOINT',
         'Rotate PDF', 'Add page numbers', 'Add watermark', 'Crop PDF', 'Edit PDF',
         'Sign PDF', 'Blackout PDF', 'Compare PDF', 'Decrypt PDF', 'Protect PDF',
         'AI Summarizer', 'Translate PDF',
@@ -140,7 +140,7 @@ describe('Home', () => {
 
     it('links Remove pages to /editor?tool=remove-pages', () => {
       renderHome();
-      const link = screen.getByRole('link', { name: /remove pages remove pages from/i });
+      const link = screen.getByRole('link', { name: /remove pages delete/i });
       expect(link).toHaveAttribute('href', '/editor?tool=remove-pages');
     });
 

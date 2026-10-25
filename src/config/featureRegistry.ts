@@ -64,7 +64,7 @@ const REGISTRY: Record<ToolId, ToolAvailability> = {
     privacy: 'local-only',
     support: 'Produces extracted output; the core split path runs.',
     limitation:
-      'Produces one extracted PDF, not a set of independent files as users may expect.',
+      'Output is a ZIP of separate PDFs (one per range, every N pages, or one file per page); complex catalog structures such as forms, outlines and links may be lost.',
   },
   'remove-pages': {
     releaseState: 'limited',
@@ -105,7 +105,7 @@ const REGISTRY: Record<ToolId, ToolAvailability> = {
     privacy: 'local-only',
     support: 'The parse/resave path runs.',
     limitation:
-      'Parse/resave only; unrecoverable files become placeholder PDFs containing parser error text.',
+      'Parse/resave only; a file that cannot be repaired returns a clear failure instead of a placeholder PDF.',
   },
   'ocr-pdf': {
     releaseState: 'limited',
@@ -159,8 +159,9 @@ const REGISTRY: Record<ToolId, ToolAvailability> = {
   'pdf-to-pdfa': {
     releaseState: 'limited',
     privacy: 'local-only',
-    support: 'Best-effort metadata only; the UI already warns it is not conformant.',
-    limitation: 'Not PDF/A conformant; only best-effort metadata/OutputIntent is added.',
+    support: 'Best-effort PDF/A-style metadata only; the UI warns that conformance is not validated.',
+    limitation:
+      'PDF/A-style metadata/OutputIntent only; the output is not PDF/A-conformant and is not validated (the web build has no veraPDF checker).',
   },
   'pdf-to-word': {
     releaseState: 'limited',

@@ -86,7 +86,7 @@ export default function JpgToPdf() {
   return (
     <ToolLayout 
       title="JPG to PDF" 
-      description="Convert JPG images to PDF in seconds. Easily adjust orientation and margins."
+      description="Turn JPG images into a PDF with one image per page."
     >
       {step === 'upload' && (
         <FileUploadZone

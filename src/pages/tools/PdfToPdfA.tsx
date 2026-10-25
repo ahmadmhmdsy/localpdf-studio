@@ -66,8 +66,8 @@ export default function PdfToPdfA() {
 
   return (
     <ToolLayout
-      title="PDF to PDF/A"
-      description="Best-effort PDF/A-style metadata only. Output is NOT validated; verify with veraPDF or similar after download."
+      title="PDF to PDF/A-style"
+      description="Apply PDF/A-style metadata only. The output is not validated as PDF/A-conformant; verify with veraPDF or a similar validator after download."
     >
       {step === 'upload' && (
         <FileUploadZone
@@ -101,7 +101,7 @@ export default function PdfToPdfA() {
             </p>
           </div>
 
-          <h3 className="text-lg font-semibold text-[var(--text)]">Select PDF/A Compliance Level</h3>
+          <h3 className="text-lg font-semibold text-[var(--text)]">Select the PDF/A level to target</h3>
 
           <div className="w-full space-y-3">
             {PDFA_LEVELS.map((level) => (

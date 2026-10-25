@@ -2,6 +2,7 @@ import { describe, it, expect, vi } from 'vitest';
 import { screen } from '@testing-library/react';
 import ToolAvailabilityGate from './ToolAvailabilityGate';
 import { renderWithProviders } from '../../tests/utils';
+import { getToolAvailability } from '../../config/featureRegistry';
 
 const DISABLED_IDS = [
   'scan-to-pdf', 'compress-pdf', 'pdf-to-powerpoint',
@@ -47,11 +48,8 @@ describe('ToolAvailabilityGate', () => {
       </ToolAvailabilityGate>
     );
     expect(screen.getByText('WORKFLOW_CONTENT')).toBeInTheDocument();
-    expect(
-      screen.getByText(
-        'Produces one extracted PDF, not a set of independent files as users may expect.'
-      )
-    ).toBeInTheDocument();
+    // Read the copy from the registry so the assertion cannot drift from the source of truth.
+    expect(screen.getByText(getToolAvailability('split-pdf').limitation)).toBeInTheDocument();
   });
 
   it('does not render the workflow and shows a truthful unavailable screen for disabled tools', () => {

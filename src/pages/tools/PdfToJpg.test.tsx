@@ -43,7 +43,7 @@ describe('PdfToJpg', () => {
       renderWithProviders(<PdfToJpg />);
       
       expect(screen.getByRole('heading', { name: /PDF to JPG/i })).toBeInTheDocument();
-      expect(screen.getByText(/extract images/i)).toBeInTheDocument();
+      expect(screen.getByText(/render every PDF page as a JPG/i)).toBeInTheDocument();
     });
   });
 

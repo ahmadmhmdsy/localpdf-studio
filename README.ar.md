@@ -69,7 +69,7 @@
 | الحالة | الأدوات |
 |---|---|
 | ✅ **مستقرة** | Merge PDF · PDF to JPG · Rotate PDF · Crop PDF · Compare PDF |
-| 🟡 **محدودة**: تعمل، مع قيود موثّقة | OCR PDF *(الإنجليزية، العربية)* · Split PDF · Remove Pages · Extract Pages · Organize PDF · Repair PDF · JPG to PDF · HTML to PDF · Word to PDF · Excel to PDF · PowerPoint to PDF · PDF to PDF/A *(أفضل جهد، غير مطابق للمعيار)* · PDF to Word · PDF to Excel · Add Page Numbers · Add Watermark · Edit PDF *(يضيف طبقات فوق الصفحة)* · Sign PDF *(توقيع مرئي، غير مدعوم بشهادة)* |
+| 🟡 **محدودة**: تعمل، مع قيود موثّقة | OCR PDF *(الإنجليزية، العربية)* · Split PDF · Remove Pages · Extract Pages · Organize PDF · Repair PDF · JPG to PDF · HTML to PDF · Word to PDF · Excel to PDF · PowerPoint to PDF · PDF to PDF/A-style *(بيانات وصفية فقط، غير مُتحقَّق من مطابقتها)* · PDF to Word · PDF to Excel · Add Page Numbers · Add Watermark · Edit PDF *(يضيف طبقات فوق الصفحة)* · Sign PDF *(توقيع مرئي، غير مدعوم بشهادة)* |
 | ⛔ **معطّلة**: قيد التطوير | Compress PDF · Scan to PDF · PDF to PowerPoint · Protect PDF · Unlock PDF · Redact (Blackout) PDF · AI Summarizer · Translate PDF |
 
 خطة المرحلة A لتفعيل الأدوات المعطّلة موجودة في [`docs/superpowers/plans/2026-10-24-phase-a-tools.md`](docs/superpowers/plans/2026-10-24-phase-a-tools.md).

@@ -55,7 +55,7 @@ export default function WordToPdf() {
   return (
     <ToolLayout
       title="WORD to PDF"
-      description="Convert Word documents to PDF format quickly and easily."
+      description="Convert DOCX documents to PDF with approximate layout."
     >
       {step === 'upload' && (
         <FileUploadZone
