@@ -128,6 +128,129 @@ export async function extractPages(file: File, rangeString: string): Promise<Uin
   return await newPdf.save();
 }
 
+/** Prefix for every file the Split PDF tool produces, e.g. `split_invoice_1-3.pdf`. */
+const SPLIT_FILE_PREFIX = 'split_';
+
+/** Base name used when the uploaded file has no usable name. */
+const SPLIT_FALLBACK_BASE_NAME = 'document';
+
+/**
+ * Characters that must not appear in a generated file name: the Windows-reserved
+ * set plus control characters. They are replaced with an underscore when a
+ * file name is derived from the upload.
+ */
+// eslint-disable-next-line no-control-regex -- control characters are invalid in a download name
+const UNSAFE_FILE_NAME_CHARS = /[\\/:*?"<>|\u0000-\u001f]/g;
+
+/** How the Split PDF tool divides a document. */
+export type SplitMode = 'ranges' | 'every-n' | 'each-page';
+
+export interface SplitOptions {
+  /** Comma-separated page ranges; one output file per range. Used by `ranges`. */
+  rangeString?: string;
+  /** Pages per output file; must be a whole number of at least 1. Used by `every-n`. */
+  pagesPerFile?: number;
+}
+
+/** One document produced by a split. */
+export interface SplitFile {
+  /** Suggested download name, e.g. `split_invoice_1-3.pdf`. */
+  fileName: string;
+  /** PDF bytes of this segment. */
+  data: Uint8Array;
+}
+
+/**
+ * Split a PDF into one document per range, per N pages, or per page.
+ *
+ * The source document is loaded once and each output is built by copying the
+ * relevant pages into a fresh `PDFDocument`, so an output never carries
+ * unreferenced objects from the pages it leaves out.
+ *
+ * @throws {InvalidPageRangeError} If a range is malformed or out of bounds.
+ * @throws {Error} If `pagesPerFile` is not a whole number of at least 1.
+ */
+export async function splitPdfToFiles(
+  file: File,
+  mode: SplitMode,
+  options: SplitOptions = {},
+): Promise<SplitFile[]> {
+  const arrayBuffer = await file.arrayBuffer();
+  const pdf = await PDFDocument.load(arrayBuffer);
+  const totalPages = pdf.getPageCount();
+
+  if (totalPages < 1) {
+    throw new Error('The document has no pages to split.');
+  }
+
+  const groups = planSplitGroups(totalPages, mode, options);
+  const baseName = splitBaseName(file.name);
+  const files: SplitFile[] = [];
+
+  for (const pageIndices of groups) {
+    const outputPdf = await PDFDocument.create();
+    const copiedPages = await outputPdf.copyPages(pdf, pageIndices);
+    copiedPages.forEach((page) => outputPdf.addPage(page));
+    files.push({
+      fileName: `${SPLIT_FILE_PREFIX}${baseName}_${pageRangeLabel(pageIndices)}.pdf`,
+      data: await outputPdf.save(),
+    });
+  }
+
+  return files;
+}
+
+/** Suggested ZIP name for a multi-file split, e.g. `split_invoice.zip`. */
+export function getSplitArchiveFileName(fileName: string): string {
+  return `${SPLIT_FILE_PREFIX}${splitBaseName(fileName)}.zip`;
+}
+
+function planSplitGroups(totalPages: number, mode: SplitMode, options: SplitOptions): number[][] {
+  if (mode === 'ranges') {
+    return parseSplitRanges(options.rangeString ?? '', totalPages);
+  }
+  if (mode === 'each-page') {
+    return Array.from({ length: totalPages }, (_, index) => [index]);
+  }
+
+  const pagesPerFile = options.pagesPerFile;
+  if (pagesPerFile === undefined || !Number.isInteger(pagesPerFile) || pagesPerFile < 1) {
+    throw new Error('Pages per file must be a whole number of at least 1.');
+  }
+
+  const groups: number[][] = [];
+  for (let start = 0; start < totalPages; start += pagesPerFile) {
+    const end = Math.min(start + pagesPerFile, totalPages);
+    groups.push(Array.from({ length: end - start }, (_, offset) => start + offset));
+  }
+  return groups;
+}
+
+/** One group per comma-separated range, so `"1-3, 7"` yields two documents. */
+function parseSplitRanges(rangeString: string, totalPages: number): number[][] {
+  const parts = rangeString.split(',').map((part) => part.trim()).filter((part) => part.length > 0);
+  if (parts.length === 0) {
+    throw new InvalidPageRangeError('Page range cannot be empty.', rangeString);
+  }
+  return parts.map((part) => parsePageRanges(part, totalPages));
+}
+
+/** `split_<base>` part of a generated name, built from the uploaded file name. */
+function splitBaseName(fileName: string): string {
+  const sanitized = (fileName ?? '')
+    .replace(/\.pdf$/i, '')
+    .replace(UNSAFE_FILE_NAME_CHARS, '_')
+    .trim();
+  return sanitized.length > 0 ? sanitized : SPLIT_FALLBACK_BASE_NAME;
+}
+
+/** 1-based label for a contiguous group of zero-based page indices. */
+function pageRangeLabel(pageIndices: number[]): string {
+  const first = pageIndices[0] + 1;
+  const last = pageIndices[pageIndices.length - 1] + 1;
+  return first === last ? `${first}` : `${first}-${last}`;
+}
+
 export async function addWatermark(file: File, text: string): Promise<Uint8Array> {
   const arrayBuffer = await file.arrayBuffer();
   const pdf = await PDFDocument.load(arrayBuffer);
@@ -173,20 +296,21 @@ export async function removePages(file: File, rangeString: string): Promise<Uint
   const totalPages = pdf.getPageCount();
 
   const pagesToRemove = parsePageRanges(rangeString, totalPages);
-  const sortedPagesToRemove = pagesToRemove.sort((a, b) => b - a);
-  
-  if (sortedPagesToRemove.length === totalPages) {
+
+  if (pagesToRemove.length === totalPages) {
     throw new Error("Cannot remove all pages from the document.");
   }
-  if (sortedPagesToRemove.length === 0) {
-    throw new Error(`No valid pages selected to remove. The document has ${totalPages} pages. Please ensure your range is within 1-${totalPages}.`);
-  }
 
-  for (const pageIndex of sortedPagesToRemove) {
-    pdf.removePage(pageIndex);
-  }
+  const removedPages = new Set(pagesToRemove);
+  const keptPageIndices = pdf.getPageIndices().filter((pageIndex) => !removedPages.has(pageIndex));
 
-  return await pdf.save();
+  // Build a fresh document from the kept pages instead of mutating the source:
+  // the removed pages (and anything only they referenced) are never written.
+  const newPdf = await PDFDocument.create();
+  const copiedPages = await newPdf.copyPages(pdf, keptPageIndices);
+  copiedPages.forEach((page) => newPdf.addPage(page));
+
+  return await newPdf.save();
 }
 
 
@@ -358,7 +482,31 @@ export async function removePages(file: File, rangeString: string): Promise<Uint
 
 
 
-export async function addPageNumbers(file: File, position: 'top-left' | 'top-center' | 'top-right' | 'bottom-left' | 'bottom-center' | 'bottom-right' = 'bottom-center'): Promise<Uint8Array> {
+/**
+ * Positions offered by the Add Page Numbers tool, listed top row first so the
+ * 3x3 picker in the UI renders them in reading order.
+ */
+export const PAGE_NUMBER_POSITIONS = [
+  'top-left',
+  'top-center',
+  'top-right',
+  'middle-left',
+  'middle-center',
+  'middle-right',
+  'bottom-left',
+  'bottom-center',
+  'bottom-right',
+] as const;
+
+export type PageNumberPosition = (typeof PAGE_NUMBER_POSITIONS)[number];
+
+/** Default placement, kept unchanged for existing users of the tool. */
+export const DEFAULT_PAGE_NUMBER_POSITION: PageNumberPosition = 'bottom-center';
+
+export async function addPageNumbers(
+  file: File,
+  position: PageNumberPosition = DEFAULT_PAGE_NUMBER_POSITION,
+): Promise<Uint8Array> {
   const arrayBuffer = await file.arrayBuffer();
   const pdf = await PDFDocument.load(arrayBuffer);
   const font = await pdf.embedFont(StandardFonts.Helvetica);
@@ -385,6 +533,8 @@ export async function addPageNumbers(file: File, position: 'top-left' | 'top-cen
     if (position.includes('left')) x = margin;
     if (position.includes('right')) x = width - margin - textWidth;
     if (position.includes('top')) y = height - margin - fontSize;
+    // Middle row: center the text box on the vertical axis of the page box.
+    if (position.includes('middle')) y = (height - fontSize) / 2;
     
     // Add a subtle background for better visibility
     const padding = 4;
