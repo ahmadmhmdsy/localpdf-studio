@@ -20,6 +20,11 @@ const SAME_IN_BOTH = new Set([
   'shell.brand',
   'shell.sidebar.brandMark',
   'shell.sidebar.quick.pdfJpg',
+  // Pure interpolation templates: the surrounding text is a symbol or a dash,
+  // and the words inside {braces} are translated at the call site.
+  'home.bento.state.item',
+  'home.bento.chip.composed',
+  'home.bento.chip.stateSuffix',
 ]);
 
 describe('i18n', () => {

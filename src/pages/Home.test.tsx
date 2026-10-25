@@ -112,6 +112,30 @@ describe('Home', () => {
       });
     });
 
+    it('localizes the hero and the unavailable toast in Arabic', async () => {
+      useToolsStore.setState({ locale: 'ar' });
+      renderHome();
+
+      expect(
+        screen.getByRole('heading', { name: /كل الأدوات التي تحتاجها/ }),
+      ).toBeInTheDocument();
+      // The English subtitle is gone with the copy moved into the catalog.
+      expect(screen.queryByText(/Every tool you need to use PDFs/i)).not.toBeInTheDocument();
+
+      const link = screen.getByRole('link', {
+        name: (accessibleName) =>
+          /ضغط PDF/.test(accessibleName) && /غير متاح/.test(accessibleName),
+      });
+      await user.click(link);
+
+      expect(window.location.pathname).toBe('/');
+      expect(showToastMock).toHaveBeenCalledWith({
+        message: 'هذه الأداة غير متاحة ريثما تُعالَج العيوب المعروفة.',
+        type: 'warning',
+        duration: 3000,
+      });
+    });
+
     it('renders catalog names and categories in Arabic when that locale is active', () => {
       useToolsStore.setState({ locale: 'ar' });
       renderHome();

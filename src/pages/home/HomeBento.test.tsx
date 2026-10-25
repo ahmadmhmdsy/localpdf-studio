@@ -284,6 +284,13 @@ describe('HomeBento availability messaging', () => {
     // Category heading and the Organize card share the same Arabic name.
     expect(screen.getAllByText('تنظيم PDF').length).toBeGreaterThan(0);
     expect(screen.queryByText('Merge PDF')).not.toBeInTheDocument();
+
+    // The chrome follows the locale too: search, status badges and the privacy block.
+    expect(screen.getByPlaceholderText(/^ابحث في \d+ أداة/)).toBeInTheDocument();
+    expect(screen.getAllByLabelText('غير متاح').length).toBeGreaterThan(0);
+    const privacyBlock = screen.getByRole('complementary', { name: 'التعامل مع البيانات' });
+    expect(privacyBlock).toHaveTextContent(/التخزين المحلي/);
+    expect(privacyBlock).not.toHaveTextContent(/local storage/i);
   });
 
   it('presents the sample strip as examples, not as a record of the reader\'s work', () => {
