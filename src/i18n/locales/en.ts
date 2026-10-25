@@ -228,6 +228,104 @@ export const en = {
   'tool.organize.successTitle': 'PDF organized successfully!',
   'tool.organize.successDescription': 'Your document pages have been reordered.',
 
+  // Shared tool-page copy (B1.3b)
+  'tool.common.cancel': 'Cancel',
+  'tool.common.tryAgain': 'Try Again',
+  'tool.common.error': 'An error occurred. Please try again.',
+
+  // Compress PDF
+  'tool.compress.preset.off.name': 'Lossless',
+  'tool.compress.preset.off.hint': 'Re-pack the file; images stay exactly as they are',
+  'tool.compress.preset.light.name': 'Light',
+  'tool.compress.preset.light.hint': 'Up to 200 DPI, high quality',
+  'tool.compress.preset.balanced.name': 'Balanced',
+  'tool.compress.preset.balanced.hint': 'Up to 150 DPI, good for screens',
+  'tool.compress.preset.strong.name': 'Strong',
+  'tool.compress.preset.strong.hint': 'Up to 96 DPI, smallest file',
+  'tool.compress.levelLegend': 'Compression level',
+  'tool.compress.losslessWarning':
+    'Lossless only shrinks files with unoptimized metadata or object streams. The other levels are irreversible: original pixels are replaced, and CMYK, indexed and 16-bit images are left as they are.',
+  'tool.compress.presetsNote':
+    'Light, Balanced and Strong re-encode images as JPEG. If the result is not smaller, you get the original file back. Limit: {limit} MB per file.',
+  'tool.compress.submit': 'Compress PDF',
+  'tool.compress.processingTitle': 'Compressing PDF...',
+  'tool.compress.processingDescription':
+    'Please wait while we compress your document. This is happening locally in your browser.',
+  'tool.compress.doneTitle': 'Done',
+  'tool.compress.doneKeptOriginal':
+    'The file could not be made smaller, so your original {size} file is returned unchanged.',
+  'tool.compress.doneCompressed': 'Compressed from {from} to {to}.',
+  'tool.compress.notes': 'Notes',
+
+  // Repair PDF
+  'tool.repair.uploadTitle': 'Select a corrupted PDF',
+  'tool.repair.uploadSubtitle': 'or drop PDF file here',
+  'tool.repair.processingTitle': 'Attempting repair...',
+  'tool.repair.processingDescription': 'Analyzing and fixing PDF structure issues.',
+  'tool.repair.successTitle': 'Repair Successful!',
+  'tool.repair.successSummary': 'PDF repaired successfully. Fixed {count} issue(s).',
+  'tool.repair.issuesHeading': 'Issues Fixed:',
+  'tool.repair.issue.structureValidated': 'Validated PDF structure',
+  'tool.repair.issue.titleAdded': 'Added missing title metadata',
+  'tool.repair.issue.authorAdded': 'Added missing author metadata',
+  'tool.repair.issue.pageSizeFixed': 'Fixed invalid page dimensions on page {page}',
+  'tool.repair.download': 'Download Repaired PDF',
+  'tool.repair.again': 'Repair Another PDF',
+  'tool.repair.failedTitle': 'Repair Failed',
+  'tool.repair.failedHint':
+    'For severely damaged files, a server-side PDF repair service may be able to recover more content.',
+  'tool.repair.tooDamaged':
+    'This PDF is too damaged to repair in the browser. No repaired file was produced; your original file is unchanged.',
+  'tool.repair.error': 'Failed to repair PDF',
+
+  // OCR PDF
+  'tool.ocr.uploadTitle': 'Select a scanned PDF',
+  'tool.ocr.languageLabel': 'Document language',
+  'tool.ocr.language.eng': 'English',
+  'tool.ocr.language.ara': 'Arabic',
+  'tool.ocr.pagesLabel': 'Pages (optional)',
+  'tool.ocr.pagesPlaceholder': 'All pages, or e.g. 1-3, 7',
+  'tool.ocr.pagesHelp':
+    'Pages that already contain text are skipped. The scanned image is kept as it is; an invisible text layer is added on top so you can search, select and copy.',
+  'tool.ocr.limits': 'Limits: up to {pages} pages and {size} MB per file. For a longer document, choose a page range.',
+  'tool.ocr.submit': 'Recognize text',
+  'tool.ocr.engineLoading': 'Loading the OCR engine...',
+  'tool.ocr.status.rendering': 'Rendering page...',
+  'tool.ocr.status.recognizing': 'Recognizing text...',
+  'tool.ocr.status.embedding': 'Adding searchable text...',
+  'tool.ocr.status.skipped': 'Page already has text, skipping...',
+  'tool.ocr.progressPage': '{status} (Page {page} of {total})',
+  'tool.ocr.progressPageRange': '{status} (Page {pageNumber}; {page} of {total})',
+  'tool.ocr.processingTitle': 'Processing with OCR...',
+  'tool.ocr.progressLabel': 'OCR progress',
+  'tool.ocr.doneTitle': 'OCR Complete!',
+  'tool.ocr.summaryWords': '{words} words added on {pages} page(s).',
+  'tool.ocr.summarySkipped': '{pages} page(s) already had text and were left as they are.',
+  'tool.ocr.summaryDropped': '{count} character(s) could not be stored in the text layer and were left out.',
+  'tool.ocr.noText': 'No text was recognized. Check the document language, or try a sharper scan.',
+  'tool.ocr.download': 'Download Searchable PDF',
+  'tool.ocr.again': 'OCR Another PDF',
+  'tool.ocr.failedTitle': 'OCR Failed',
+  'tool.ocr.memoryHint': 'Note: Large PDFs may cause memory issues. Try splitting the PDF first.',
+  'tool.ocr.error': 'Failed to OCR PDF',
+  'tool.ocr.languageDataHint': 'Ask the person who deployed this app to add the language file.',
+
+  // Scan to PDF
+  'tool.scan.description': 'Capture document scans from your camera and convert them instantly to PDF.',
+  'tool.scan.cameraDeniedTitle': 'Camera access denied or not available.',
+  'tool.scan.cameraDeniedBody': 'Please allow camera access in your browser settings to use this tool.',
+  'tool.scan.viewImages': 'View captured images',
+  'tool.scan.capture': 'Capture image from camera',
+  'tool.scan.capturedPages': 'Captured Pages ({count})',
+  'tool.scan.addMore': 'Add more pages',
+  'tool.scan.pageAlt': 'Scan {number}',
+  'tool.scan.removePage': 'Remove page',
+  'tool.scan.submit': 'Convert to PDF',
+  'tool.scan.processingTitle': 'Creating PDF...',
+  'tool.scan.processingDescription': 'Please wait while we convert your scanned images to a PDF document.',
+  'tool.scan.successTitle': 'PDF created successfully!',
+  'tool.scan.successDescription': 'Your scanned document is ready to download.',
+
 } as const;
 
 export type MessageKey = keyof typeof en;

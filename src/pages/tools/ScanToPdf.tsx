@@ -6,6 +6,7 @@ import DownloadState from '../../components/tools/DownloadState';
 import { jpgsToPdf } from '../../lib/image';
 import { logError } from '../../lib/logger';
 import { useToast } from '../../contexts/ToastContext';
+import { useI18n } from '../../i18n/useI18n';
 
 type Step = 'capture' | 'preview' | 'processing' | 'download';
 
@@ -16,7 +17,8 @@ export default function ScanToPdf() {
   const [resultSize, setResultSize] = useState<string>('');
   const [hasCamera, setHasCamera] = useState<boolean>(true);
   const { showToast } = useToast();
-  
+  const { t, toolName } = useI18n();
+
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -104,7 +106,7 @@ export default function ScanToPdf() {
     } catch (error) {
       logError('Error creating PDF:', error);
       showToast({
-        message: 'An error occurred. Please try again.',
+        message: t('tool.common.error'),
         type: 'error',
         duration: 5000,
       });
@@ -122,16 +124,13 @@ export default function ScanToPdf() {
   };
 
   return (
-    <ToolLayout 
-      title="Scan to PDF" 
-      description="Capture document scans from your camera and convert them instantly to PDF."
-    >
+    <ToolLayout title={toolName('scan-to-pdf')} description={t('tool.scan.description')}>
       {step === 'capture' && (
         <div className="w-full max-w-3xl mx-auto">
           {!hasCamera ? (
             <div className="bg-red-50 text-red-600 p-6 rounded-xl text-center">
-              <p className="font-semibold mb-2">Camera access denied or not available.</p>
-              <p className="text-sm">Please allow camera access in your browser settings to use this tool.</p>
+              <p className="font-semibold mb-2">{t('tool.scan.cameraDeniedTitle')}</p>
+              <p className="text-sm">{t('tool.scan.cameraDeniedBody')}</p>
             </div>
           ) : (
             <div className="bg-black rounded-2xl overflow-hidden relative shadow-xl">
@@ -148,7 +147,7 @@ export default function ScanToPdf() {
                   <button 
                     onClick={() => setStep('preview')}
                     className="bg-[var(--surface)]/20 hover:bg-[var(--surface)]/30 text-white p-3 rounded-full backdrop-blur-sm transition-colors"
-                    title="View captured images"
+                    title={t('tool.scan.viewImages')}
                   >
                     <ImageIcon size={24} />
                     <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold w-6 h-6 flex items-center justify-center rounded-full">
@@ -160,7 +159,7 @@ export default function ScanToPdf() {
                 <button 
                   onClick={captureImage}
                   className="w-16 h-16 bg-[var(--surface)] rounded-full border-4 border-[var(--border)] hover:border-white hover:scale-105 transition-all flex items-center justify-center shadow-lg"
-                  aria-label="Capture image from camera"
+                  aria-label={t('tool.scan.capture')}
                 >
                   <div className="w-12 h-12 bg-[var(--surface)] rounded-full border border-[var(--border)]"></div>
                 </button>
@@ -178,25 +177,31 @@ export default function ScanToPdf() {
         <div className="w-full max-w-5xl">
           <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-sm p-6 mb-8">
             <div className="flex items-center justify-between mb-6 pb-4 border-b border-[var(--border)]">
-              <h3 className="text-lg font-semibold text-[var(--text)]">Captured Pages ({images.length})</h3>
+              <h3 className="text-lg font-semibold text-[var(--text)]">
+                {t('tool.scan.capturedPages', { count: images.length })}
+              </h3>
               <button 
                 onClick={() => setStep('capture')}
                 className="flex items-center gap-2 text-sm font-medium text-red-600 hover:text-red-700 bg-red-50 px-4 py-2 rounded-lg transition-colors"
               >
                 <Plus size={16} />
-                Add more pages
+                {t('tool.scan.addMore')}
               </button>
             </div>
 
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4">
               {images.map((img, index) => (
                 <div key={index} className="relative group rounded-xl border border-[var(--border)] overflow-hidden bg-[var(--surface-2)] aspect-[3/4]">
-                  <img src={img} alt={`Scan ${index + 1}`} className="w-full h-full object-cover" />
+                  <img
+                    src={img}
+                    alt={t('tool.scan.pageAlt', { number: index + 1 })}
+                    className="w-full h-full object-cover"
+                  />
                   <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
                     <button 
                       onClick={() => removeImage(index)}
                       className="bg-[var(--surface)] text-red-600 p-2 rounded-full hover:bg-red-50 transition-colors shadow-lg"
-                      title="Remove page"
+                      title={t('tool.scan.removePage')}
                     >
                       <X size={20} />
                     </button>
@@ -214,23 +219,23 @@ export default function ScanToPdf() {
               onClick={handleProcess}
               className="bg-red-600 hover:bg-red-700 text-white font-semibold py-4 px-12 rounded-xl text-xl transition-colors shadow-lg"
             >
-              Convert to PDF
+              {t('tool.scan.submit')}
             </button>
           </div>
         </div>
       )}
 
       {step === 'processing' && (
-        <ProcessingState 
-          title="Creating PDF..." 
-          description="Please wait while we convert your scanned images to a PDF document."
+        <ProcessingState
+          title={t('tool.scan.processingTitle')}
+          description={t('tool.scan.processingDescription')}
         />
       )}
 
       {step === 'download' && resultUrl && (
-        <DownloadState 
-          title="PDF created successfully!"
-          description="Your scanned document is ready to download."
+        <DownloadState
+          title={t('tool.scan.successTitle')}
+          description={t('tool.scan.successDescription')}
           fileName="scanned_document.pdf"
           fileUrl={resultUrl}
           fileSize={resultSize}

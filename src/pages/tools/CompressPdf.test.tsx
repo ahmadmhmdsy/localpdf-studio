@@ -1,9 +1,10 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { act, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import CompressPdf from './CompressPdf';
 import { createDeferred, renderWithProviders } from '../../tests/utils';
 import { generateDummyPdf, generateLargePdf } from '../../tests/fixtures/pdfGenerator';
+import { useToolsStore } from '../../store/toolsStore';
 
 const { compressPdfMock } = vi.hoisted(() => ({
   compressPdfMock: vi.fn(),
@@ -30,6 +31,10 @@ describe('CompressPdf', () => {
     vi.clearAllMocks();
   });
 
+  afterEach(() => {
+    useToolsStore.setState({ locale: 'en' });
+  });
+
   describe('Initial State', () => {
     it('renders upload zone on initial load', () => {
       renderWithProviders(<CompressPdf />);
@@ -43,6 +48,19 @@ describe('CompressPdf', () => {
       expect(screen.getByRole('heading', { name: /compress PDF/i })).toBeInTheDocument();
       expect(screen.getByText(/reduce file size/i)).toBeInTheDocument();
     });
+  });
+
+  it('renders the compress flow in Arabic when that locale is active', async () => {
+    useToolsStore.setState({ locale: 'ar' });
+    renderWithProviders(<CompressPdf />);
+
+    expect(screen.getByRole('heading', { name: 'ضغط PDF' })).toBeInTheDocument();
+
+    await user.upload(screen.getByLabelText('اختر ملف PDF'), await generateDummyPdf(2, 'test.pdf'));
+
+    expect(await screen.findByText('مستوى الضغط')).toBeInTheDocument();
+    expect(screen.getByRole('radio', { name: /بلا فقدان/ })).toBeChecked();
+    expect(screen.getByRole('button', { name: 'ضغط PDF' })).toBeInTheDocument();
   });
 
   describe('File Upload', () => {

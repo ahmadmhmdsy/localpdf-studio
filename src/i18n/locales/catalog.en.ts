@@ -44,15 +44,17 @@ export const toolCopyEn: Record<ToolId, ToolCopy> = {
   },
   'compress-pdf': {
     name: 'Compress PDF',
-    description: 'Reduce file size by re-packing streams and, optionally, downsampling embedded images.',
+    description:
+      'Reduce file size by re-packing PDF streams and, optionally, downsampling embedded images. Image re-encoding is lossy and irreversible.',
   },
   'repair-pdf': {
     name: 'Repair PDF',
-    description: 'Attempt to repair a damaged PDF by re-parsing and re-saving it.',
+    description:
+      'Attempt to repair a damaged PDF by re-parsing and re-saving it. A file that cannot be repaired reports a clear failure instead of producing a placeholder.',
   },
   'ocr-pdf': {
     name: 'OCR PDF',
-    description: 'Make scanned PDFs searchable, on your device.',
+    description: 'Make scanned PDFs searchable. Text recognition runs on your device; your file is not uploaded.',
   },
   'jpg-to-pdf': {
     name: 'JPG to PDF',
