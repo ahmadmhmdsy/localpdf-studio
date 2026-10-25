@@ -47,8 +47,8 @@ export const TOOL_CATEGORIES: ToolCategory[] = [
   {
     name: "CONVERT TO PDF",
     tools: [
-      { id: "jpg-to-pdf", name: "JPG to PDF", description: "Turn JPG images into a PDF with one image per page.", icon: Image, color: "text-yellow-500", isMVP: true },
-      { id: "html-to-pdf", name: "HTML to PDF", description: "Render pasted HTML into a PDF; external URLs are not fetched.", icon: Globe, color: "text-blue-400", isMVP: true },
+      { id: "jpg-to-pdf", name: "JPG to PDF", description: "Turn JPG and PNG images into one PDF, one image per page, with page sizes taken from each image's own DPI.", icon: Image, color: "text-yellow-500", isMVP: true },
+      { id: "html-to-pdf", name: "HTML to PDF", description: "Render pasted HTML into a paginated A4 PDF, portrait or landscape; external URLs are not fetched.", icon: Globe, color: "text-blue-400", isMVP: true },
       { id: "word-to-pdf", name: "WORD to PDF", description: "Convert DOCX documents to PDF with approximate layout.", icon: FileText, color: "text-yellow-500", isMVP: true },
       { id: "excel-to-pdf", name: "EXCEL to PDF", description: "Convert XLSX spreadsheets to PDF with basic table layout.", icon: FileSpreadsheet, color: "text-yellow-500", isMVP: true },
       { id: "powerpoint-to-pdf", name: "POWERPOINT to PDF", description: "Convert PPTX slides to PDF with approximate layout.", icon: Presentation, color: "text-yellow-500", isMVP: true },
@@ -69,7 +69,7 @@ export const TOOL_CATEGORIES: ToolCategory[] = [
     tools: [
       { id: "rotate-pdf", name: "Rotate PDF", description: "Rotate one PDF's pages by 90°, 180°, or 270°. All pages are rotated by the same angle.", icon: RotateCw, color: "text-purple-500", isMVP: true },
       { id: "add-page-numbers", name: "Add page numbers", description: "Add page numbers to every page of your PDF. Choose from 9 positions (corners, edges, center).", icon: ListOrdered, color: "text-purple-500", isMVP: true },
-      { id: "add-watermark", name: "Add watermark", description: "Stamp a text watermark over every page of your PDF. The watermark is rendered in a fixed light-gray, diagonal style.", icon: Stamp, color: "text-purple-500", isMVP: true },
+      { id: "add-watermark", name: "Add watermark", description: "Stamp a text or PNG/JPEG image watermark over your PDF, with control over size, opacity, rotation and page range.", icon: Stamp, color: "text-purple-500", isMVP: true },
       { id: "crop-pdf", name: "Crop PDF", description: "Crop all pages of a PDF to the same selected area.", icon: Crop, color: "text-purple-500", isMVP: true },
       { id: "edit-pdf", name: "Edit PDF", description: "Add text, images, shapes or freehand annotations to a PDF document.", icon: Edit, color: "text-purple-500", isMVP: true },
     ]

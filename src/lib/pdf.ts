@@ -1,4 +1,20 @@
-import { PDFDocument, rgb, degrees, StandardFonts } from 'pdf-lib';
+import {
+  PDFDocument,
+  rgb,
+  degrees,
+  StandardFonts,
+  type PDFFont,
+  type PDFImage,
+} from 'pdf-lib';
+import {
+  DEFAULT_WATERMARK_COLOR,
+  DEFAULT_WATERMARK_FONT_SIZE,
+  DEFAULT_WATERMARK_OPACITY,
+  DEFAULT_WATERMARK_ROTATION,
+  WATERMARK_IMAGE_SCALE,
+  WATERMARK_OPACITY_MAX,
+  WATERMARK_OPACITY_MIN,
+} from '../constants/watermark';
 
 export async function mergePdfs(files: File[]): Promise<Uint8Array> {
   const mergedPdf = await PDFDocument.create();
@@ -251,29 +267,204 @@ function pageRangeLabel(pageIndices: number[]): string {
   return first === last ? `${first}` : `${first}-${last}`;
 }
 
-export async function addWatermark(file: File, text: string): Promise<Uint8Array> {
+/** A watermark source: text, or a PNG/JPEG image. Exactly one is required. */
+export interface WatermarkOptions {
+  /** Text to stamp on the page. */
+  text?: string;
+  /** Image to stamp on the page (PNG or JPEG). */
+  image?: File | Uint8Array;
+  /** Image format; inferred from a File's MIME type or extension when omitted. */
+  imageType?: 'png' | 'jpeg';
+  /** Text size in points. Defaults to 60. */
+  fontSize?: number;
+  /** Opacity from 0 to 1. Defaults to 0.3. */
+  opacity?: number;
+  /** Rotation in degrees, counter-clockwise. Defaults to 45. */
+  rotation?: number;
+  /** 1-based page selection, e.g. `"1-3, 7"`. Omit or leave blank for every page. */
+  pageRange?: string;
+  /** Text colour, one 0..1 channel each. Defaults to light gray. */
+  color?: { r: number; g: number; b: number };
+}
+
+/**
+ * Anchor point for a `width`x`height` box that is rotated `rotationDegrees`
+ * about its own bottom-left corner, chosen so the box's CENTRE lands exactly on
+ * `(centreX, centreY)`. pdf-lib rotates around the drawing origin, so a naive
+ * centre offset would push rotated content off-centre.
+ */
+function rotationAnchor(
+  centreX: number,
+  centreY: number,
+  width: number,
+  height: number,
+  rotationDegrees: number,
+): { x: number; y: number } {
+  const radians = (rotationDegrees * Math.PI) / 180;
+  const cos = Math.cos(radians);
+  const sin = Math.sin(radians);
+  const halfWidth = width / 2;
+  const halfHeight = height / 2;
+
+  return {
+    x: centreX - (halfWidth * cos - halfHeight * sin),
+    y: centreY - (halfWidth * sin + halfHeight * cos),
+  };
+}
+
+/**
+ * pdf-lib's standard fonts are WinAnsi-encoded: a character outside that set
+ * makes the embedder throw. Surface a readable message instead of letting the
+ * glyphs disappear silently.
+ */
+function ensureWinAnsiText(font: PDFFont, text: string): void {
+  try {
+    font.widthOfTextAtSize(text, 1);
+  } catch {
+    throw new Error(
+      'Watermark text must use Latin (WinAnsi) characters: the built-in PDF font cannot encode other scripts. Use an image watermark for Arabic or other non-Latin text.',
+    );
+  }
+}
+
+/** Embed the image, turning pdf-lib's decoder errors into a readable message. */
+async function embedWatermarkImage(
+  pdf: PDFDocument,
+  imageBytes: Uint8Array,
+  imageType: 'png' | 'jpeg',
+): Promise<PDFImage> {
+  try {
+    return imageType === 'png' ? await pdf.embedPng(imageBytes) : await pdf.embedJpg(imageBytes);
+  } catch {
+    throw new Error('The watermark image could not be read. Use a PNG or JPEG image.');
+  }
+}
+
+/** Resolve the image format from an explicit option, a File's MIME type or its extension. */
+function resolveWatermarkImageType(
+  image: File | Uint8Array,
+  explicit?: 'png' | 'jpeg',
+): 'png' | 'jpeg' {
+  if (explicit === 'png' || explicit === 'jpeg') {
+    return explicit;
+  }
+  if (image instanceof File) {
+    if (image.type === 'image/png') return 'png';
+    if (image.type === 'image/jpeg' || image.type === 'image/jpg') return 'jpeg';
+    const fileName = image.name.toLowerCase();
+    if (fileName.endsWith('.png')) return 'png';
+    if (fileName.endsWith('.jpg') || fileName.endsWith('.jpeg')) return 'jpeg';
+  }
+  throw new Error('Image watermark type is unknown. Upload a PNG or JPEG image, or pass imageType.');
+}
+
+/**
+ * Stamp a text or image watermark on the requested pages.
+ *
+ * The content is centred on each page, including when it is rotated, and the
+ * opacity/rotation/size options are honoured. Text is limited to the WinAnsi
+ * character set because it is drawn with a pdf-lib standard font.
+ *
+ * @throws {Error} If both or neither watermark source is supplied, if a numeric
+ *         option is out of range, if the text is not WinAnsi-encodable, or if
+ *         the image / page range cannot be used.
+ */
+export async function addWatermark(
+  file: File,
+  options: WatermarkOptions = {},
+): Promise<Uint8Array> {
+  const text = (options.text ?? '').trim();
+  const imageSource = options.image;
+  const hasText = text.length > 0;
+  const hasImage = imageSource !== undefined && imageSource !== null;
+
+  if (hasText === hasImage) {
+    throw new Error('Provide exactly one watermark source: text or an image.');
+  }
+
+  const opacity = options.opacity ?? DEFAULT_WATERMARK_OPACITY;
+  if (!Number.isFinite(opacity) || opacity < WATERMARK_OPACITY_MIN || opacity > WATERMARK_OPACITY_MAX) {
+    throw new Error(
+      `Watermark opacity must be a number between ${WATERMARK_OPACITY_MIN} and ${WATERMARK_OPACITY_MAX}.`,
+    );
+  }
+
+  const rotation = options.rotation ?? DEFAULT_WATERMARK_ROTATION;
+  if (!Number.isFinite(rotation)) {
+    throw new Error('Watermark rotation must be a number of degrees.');
+  }
+
+  const fontSize = options.fontSize ?? DEFAULT_WATERMARK_FONT_SIZE;
+  if (hasText && (!Number.isFinite(fontSize) || fontSize <= 0)) {
+    throw new Error('Watermark font size must be a positive number of points.');
+  }
+
+  const color = options.color ?? DEFAULT_WATERMARK_COLOR;
+  for (const channel of [color.r, color.g, color.b]) {
+    if (!Number.isFinite(channel) || channel < 0 || channel > 1) {
+      throw new Error('Watermark colour channels must each be a number between 0 and 1.');
+    }
+  }
+
   const arrayBuffer = await file.arrayBuffer();
   const pdf = await PDFDocument.load(arrayBuffer);
-  const font = await pdf.embedFont(StandardFonts.HelveticaBold);
-  
   const pages = pdf.getPages();
-  for (const page of pages) {
-    const { width, height } = page.getSize();
-    const fontSize = 60;
+
+  const pageIndices =
+    options.pageRange && options.pageRange.trim().length > 0
+      ? parsePageRanges(options.pageRange, pages.length)
+      : pdf.getPageIndices();
+
+  if (hasText) {
+    const font = await pdf.embedFont(StandardFonts.HelveticaBold);
+    ensureWinAnsiText(font, text);
     const textWidth = font.widthOfTextAtSize(text, fontSize);
     const textHeight = font.heightAtSize(fontSize);
-    
-    page.drawText(text, {
-      x: width / 2 - textWidth / 2,
-      y: height / 2 - textHeight / 2,
-      size: fontSize,
-      font: font,
-      color: rgb(0.5, 0.5, 0.5),
-      opacity: 0.3,
-      rotate: degrees(45),
-    });
+
+    for (const pageIndex of pageIndices) {
+      const page = pages[pageIndex];
+      const { width: pageWidth, height: pageHeight } = page.getSize();
+      const { x, y } = rotationAnchor(pageWidth / 2, pageHeight / 2, textWidth, textHeight, rotation);
+
+      page.drawText(text, {
+        x,
+        y,
+        size: fontSize,
+        font,
+        color: rgb(color.r, color.g, color.b),
+        opacity,
+        rotate: degrees(rotation),
+      });
+    }
+  } else if (imageSource) {
+    const imageBytes =
+      imageSource instanceof Uint8Array
+        ? imageSource
+        : new Uint8Array(await imageSource.arrayBuffer());
+    const imageType = resolveWatermarkImageType(imageSource, options.imageType);
+
+    const embeddedImage = await embedWatermarkImage(pdf, imageBytes, imageType);
+
+    for (const pageIndex of pageIndices) {
+      const page = pages[pageIndex];
+      const { width: pageWidth, height: pageHeight } = page.getSize();
+      const drawWidth = pageWidth * WATERMARK_IMAGE_SCALE;
+      const drawHeight = drawWidth * (embeddedImage.height / embeddedImage.width);
+      const { x, y } = rotationAnchor(pageWidth / 2, pageHeight / 2, drawWidth, drawHeight, rotation);
+
+      page.drawImage(embeddedImage, {
+        x,
+        y,
+        width: drawWidth,
+        height: drawHeight,
+        opacity,
+        rotate: degrees(rotation),
+      });
+    }
+  } else {
+    throw new Error('Provide exactly one watermark source: text or an image.');
   }
-  
+
   return await pdf.save();
 }
 
