@@ -144,6 +144,12 @@ test('the OCR route mounts its workflow and contacts only the app host', async (
   await expect(page.getByRole('heading', { name: /OCR PDF/i }).first()).toBeVisible();
   await expect(page.locator('input[type="file"]')).toHaveCount(1);
 
+  // Mounting the workflow alone does not pull the OCR engine: the worker, WASM
+  // core and language data load only when a run starts, so opening the tool stays
+  // cheap. The run itself - including that every one of its requests stays on the
+  // app origin - is covered by e2e/ocr.spec.ts.
+  expect(requested.filter((requestUrl) => matchesWorkerAsset(requestUrl))).toEqual([]);
+
   const externalHosts = requested
     .map(toUrl)
     .filter((url): url is URL => url !== null && /^https?:$/.test(url.protocol))
@@ -189,9 +195,11 @@ test('disabled routes load no quarantined tool code and contact no other host', 
   // enablement, and that pair turned a real hole into a passing test: only
   // Tesseract-shaped asset names were forbidden, so any other external fetch - a
   // font CDN, a telemetry collector, a pixel host - passed every check. Naming hosts
-  // as acceptable is a silent policy change, so the list is gone. If OCR is enabled,
-  // add its hosts here on purpose, in the same commit that widens the CSP, and
-  // record the new data boundary in docs/privacy/data-flow.md.
+  // as acceptable is a silent policy change, so the list is gone. OCR is enabled and
+  // self-hosted: its worker, WASM core and language data are served by the app origin
+  // (e2e/ocr.spec.ts checks that on a real run), so there is still no host to add.
+  // Widening this needs a deliberate CSP change and a new data boundary in
+  // docs/privacy/data-flow.md.
   const externalHosts = [
     ...new Set(
       requested
