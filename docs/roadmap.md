@@ -57,7 +57,7 @@ This is the single place to see what is done, what is in review and what is next
 | OCR e2e (A1.3), shallow-tool fixes (A7.1, A7.2, A7.5, A7.7, A7.9, A7.10), generated tool routes (backlog #15) | DONE | [PR #6](https://github.com/ahmadmhmdsy/localpdf-studio/pull/6), merged |
 | HTML-to-PDF pagination and orientation (A7.3), DPI-aware JPG-to-PDF (A7.4), watermark options (A7.6), office-chunk recheck (A6.3) | DONE | [PR #7](https://github.com/ahmadmhmdsy/localpdf-studio/pull/7), merged |
 | i18n foundation and RTL (B1.1): typed English/Arabic catalogs, persisted locale, header language switcher, `dir="rtl"`, translated shell and tool chrome | DONE | [PR #8](https://github.com/ahmadmhmdsy/localpdf-studio/pull/8), merged |
-| i18n catalog copy (B1.2a): tool names, descriptions and category headings in locale files, Arabic catalog (31 tools, 7 categories), locale-bound `useI18n()` helpers, Home/HomeBento search and Limitations reading them | IN REVIEW | `phase-b/i18n-catalog` |
+| i18n catalog copy (B1.2a): tool names, descriptions and category headings in locale files, Arabic catalog (31 tools, 7 categories), locale-bound `useI18n()` helpers, Home/HomeBento search and Limitations reading them | IN REVIEW | [PR #9](https://github.com/ahmadmhmdsy/localpdf-studio/pull/9), `phase-b/i18n-catalog` |
 
 **Tool release states on `main`, from `src/config/featureRegistry.ts`:**
 - `ocr-pdf` is `limited`.
@@ -169,7 +169,7 @@ Goal: every catalog tool delivers what its name promises, locally, or stays `dis
 | ID | Scope | Status |
 |---|---|---|
 | B1.1 | i18n foundation with no new dependency: flat `en`/`ar` catalogs in `src/i18n/locales/`, typed keys, interpolation, the locale in the persisted UI store, a `DocumentLanguage` component syncing `lang`/`dir` on `<html>`, a header language switcher, and the shared shell and tool chrome (Header, Sidebar, Footer, Layout skip link, FileUploadZone, ProcessingState, DownloadState, StepTrack) translated. RTL e2e plus an Arabic axe scan. | DONE, PR #8 merged |
-| B1.2a | Catalog metadata: tool names, descriptions and category headings move out of `src/constants/tools.ts` into `src/i18n/locales/catalog.en.ts` / `catalog.ar.ts`, read through `useI18n()` helpers; Home, the bento skin, the Limitations page and the route table use them. The catalog keeps identity and presentation only (id, icon, color, category). | IN REVIEW, `phase-b/i18n-catalog` |
+| B1.2a | Catalog metadata: tool names, descriptions and category headings move out of `src/constants/tools.ts` into `src/i18n/locales/catalog.en.ts` / `catalog.ar.ts`, read through `useI18n()` helpers; Home, the bento skin, the Limitations page and the route table use them. The catalog keeps identity and presentation only (id, icon, color, category). | IN REVIEW, [PR #9](https://github.com/ahmadmhmdsy/localpdf-studio/pull/9) |
 | B1.2b | Home page chrome: hero, search placeholder, bento tiles, status-badge labels, quick-pick contexts, privacy block and the unavailable/MVP toasts move to the locale catalogs in every skin. | READY, after B1.2a |
 | B1.3 | Tool pages: `ToolLayout` title/description and every per-tool literal move to catalogs, one tool group per PR. | READY, after B1.1 |
 | B1.4 | Remaining surfaces: editor, onboarding tour, toasts, settings, error boundaries, Limitations, NotFound. | READY, after B1.2b and B1.3 |
