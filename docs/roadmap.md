@@ -167,7 +167,7 @@ Goal: every catalog tool delivers what its name promises, locally, or stays `dis
 | B5 | **Richer options:** per-page rotate in Organize; page-number formats ("Page 1 of N", a start number, ranges); watermark position and page range | A7.5, A7.6 | Unit and UI tests |
 | B6 | **Command palette** (Ctrl+K), built from the feature registry, not a second list | None | Keyboard only; screen-reader labels |
 | B7 | **One result screen** for every tool: download, continue with another tool, start over | B4 | The same component on every tool page |
-| B8 | **Skin and visual fixes found during the README work:** the glass skin's header overlaps content at 1440 px; the editor's "Export Page" button is clipped in Bento; the "UNAVAILABLE" badge is misplaced in the glass skin; in editor dark mode the PDF page renders inverted | None | Geometry tests per skin in `e2e/skins.spec.ts` (Playwright). Measured positions replace screenshot baselines, which differ between operating systems. IN REVIEW |
+| B8 | **Skin and visual fixes found during the README work:** the glass skin's header overlaps content at 1440 px; the editor's "Export Page" button is clipped in Bento; the "UNAVAILABLE" badge is misplaced in the glass skin; in editor dark mode the PDF page renders inverted | None | Geometry tests per skin in `e2e/skins.spec.ts` (Playwright). Measured positions replace screenshot baselines, which differ between operating systems. DONE, merged in [PR #24](https://github.com/ahmadmhmdsy/localpdf-studio/pull/24) |
 
 **B1 slices:**
 
@@ -257,7 +257,7 @@ Each new tool is added through the feature registry and the catalog, with its li
 | 25 | Unused or duplicate dependencies: `@sentry/tracing` 7.x is unused and mismatched with `@sentry/react` 11.x, `html2canvas` is unused in `src/`, and `@hello-pangea/dnd` and `@dnd-kit` both do drag and drop | Dependencies | Owner approval, then remove in a small PR |
 | 26 | The CSP `connect-src` still allows `generativelanguage.googleapis.com` while both AI tools are disabled | Security | Remove or keep with the E0 decision (CSP change, ask first) |
 | 27 | Tracked clutter: third-party book PDFs in `input/` (17 MB, a possible copyright problem), `design-preview/`, `audit-evidence/`, old root reports and screenshots | Repo hygiene | Owner decides (§8, item 13); the PDFs stay in git history unless it is rewritten |
-| 28 | The full `npm audit` reports 32 vulnerabilities (21 high), all in the dev tree; CI audits production dependencies only, which report 0 | Dependencies | Ongoing, upgrade `@lhci/cli` and friends in a small PR |
+| 28 | The full `npm audit` reports 15 vulnerabilities (13 high), down from 32, and all come through `@lhci/cli` 0.15.1, the latest release. CI audits production dependencies only, which report 0 | Dependencies | Waiting on an `@lhci/cli` release. Forcing its dependencies with `overrides` could break the Lighthouse run, which only uses them in CI |
 | 29 | `npm run test:lhci` fails on Windows: chrome-launcher hits EPERM removing its temp folder, so no local scores are produced. CI on Linux passes | Tooling | Ongoing |
 | 30 | The axe e2e run leaves dark-theme color-contrast nodes "incomplete" (12 on home, 11 on merge, 5 on protect), so they need a manual review | Accessibility | B8 or the redesign |
 | 31 | AI consent: accepting runs the old closure, where `aiConsentGiven` is still false, so the dialog reopens and needs a second accept; `handleSummarize` also never leaves the upload step until then | AI tools | Before enabling AI tools |
@@ -324,14 +324,14 @@ The rule allows: protocol constants that are fixed by a specification (for examp
 1. ~~Merge PR #2 and PR #3.~~ Done. A1.3 is done (merged in PR #6); A1.4 and A2.2 need real scans from the owner; A1.5 follows them; then the compression flip (owner approval).
 2. B1 (i18n and RTL) is under way: B1.1 (the no-dependency foundation plus the shared shell and tool chrome) merged as PR #8, B1.2a (catalog names, descriptions and category headings in the locale files, with an Arabic catalog) merged as PR #9, and B1.2b (home-page chrome) merged as PR #10; B1.3a (organize tool pages) merged as [PR #11](https://github.com/ahmadmhmdsy/localpdf-studio/pull/11); B1.3b (optimize group plus Scan to PDF) merged as [PR #12](https://github.com/ahmadmhmdsy/localpdf-studio/pull/12), B1.3c (convert-to group) merged as [PR #15](https://github.com/ahmadmhmdsy/localpdf-studio/pull/15), B1.3d1 (convert-from group) merged as [PR #16](https://github.com/ahmadmhmdsy/localpdf-studio/pull/16), B1.3d2 (edit group) merged as [PR #17](https://github.com/ahmadmhmdsy/localpdf-studio/pull/17), B1.3d3 (security group) merged as [PR #18](https://github.com/ahmadmhmdsy/localpdf-studio/pull/18), B1.3d4 (intelligence group) merged as [PR #19](https://github.com/ahmadmhmdsy/localpdf-studio/pull/19), B1.4a (app chrome) merged as [PR #20](https://github.com/ahmadmhmdsy/localpdf-studio/pull/20), B1.4b (editor workspace) merged as [PR #21](https://github.com/ahmadmhmdsy/localpdf-studio/pull/21), B1.4c (registry sentences) merged as [PR #22](https://github.com/ahmadmhmdsy/localpdf-studio/pull/22), and the B1.5 guard merged as [PR #23](https://github.com/ahmadmhmdsy/localpdf-studio/pull/23). The A7 shallow-tool work merged as PRs #6 (A1.3, A7.1, A7.2, A7.5, A7.7, A7.9, A7.10, backlog #15) and #7 (A7.3, A7.4, A7.6, A6.3); only A7.8 (sign-pdf wording) is ONGOING.
 3. Decide on qpdf → A3. Decide on the redaction engine → A4.
-4. A5.1 and A6.1 (package fixed, in review; opening in Office not verified). B8 (skin fixes) is merged.
+4. A5.1 and A6.1 (package fixed, in review; opening in Office not verified). B8 (skin fixes) merged as [PR #24](https://github.com/ahmadmhmdsy/localpdf-studio/pull/24).
 5. B2–B7, then Phases C, D and E in order.
 
 ## 10. Things you may have missed
 
 Items found during the Phase A work that are easy to lose track of. Each one points to the milestone or decision that owns it.
 
-1. **All Phase A slices so far are merged** (PRs #2, #3, #4, #6 and #7). The open milestone slice is B8. A stacked PR gets CI only when its base is `main` (backlog #23).
+1. **All Phase A slices so far are merged** (PRs #2, #3, #4, #6 and #7). No milestone slice is open. A stacked PR gets CI only when its base is `main` (backlog #23).
 2. **Compression is not switched on.** It passed on generated files in the production build (§6.2). The real UI has not been checked with real scans, in Firefox, or on mobile (A2.2). The flip to `limited` needs the owner's OK.
 3. **OCR's release checklist is incomplete.** The e2e test merged in PR #6 (A1.3); A1.4 (real scans) and A1.5 (CSP/data-flow audit) still need the owner's scans.
 4. **Decisions are waiting on the owner** (§8): qpdf, the redaction engine (PDFium vs AGPL MuPDF), the camera policy, the owner-password-only unlock policy, and the AI route.
