@@ -10,10 +10,13 @@ import { pdfjsLib } from '../../lib/pdfjs';
 import { logWarn } from '../../lib/logger';
 import { useToolsStore } from '../../store';
 import AiConsentDialog from '../../components/tools/AiConsentDialog';
+import { useI18n } from '../../i18n/useI18n';
+import type { MessageKey } from '../../i18n';
 
 type Step = 'upload' | 'language' | 'translating' | 'done' | 'error';
 
 export default function TranslatePdf() {
+  const { t, toolName } = useI18n();
   const [step, setStep] = useState<Step>('upload');
   const [file, setFile] = useState<File | null>(null);
   const [targetLang, setTargetLang] = useState('es');
@@ -127,7 +130,7 @@ export default function TranslatePdf() {
       setResultData(result);
       setStep('done');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to translate PDF');
+      setError(err instanceof Error ? err.message : t('tool.translate.failedFallback'));
       setStep('error');
     }
   };
@@ -152,17 +155,17 @@ export default function TranslatePdf() {
 
   return (
     <ToolLayout
-      title="Translate PDF"
-      description="Translate PDF content to another language using AI."
+      title={toolName('translate-pdf')}
+      description={t('tool.translate.description')}
     >
       {step === 'upload' && (
         <FileUploadZone
           
-          ariaLabel="Select PDF file" onFilesSelected={handleFilesSelected}
+          ariaLabel={t('tool.common.selectPdfFile')} onFilesSelected={handleFilesSelected}
           accept={{ 'application/pdf': ['.pdf'] }}
           maxFiles={1}
-          title="Select a PDF to translate"
-          subtitle="or drop PDF file here"
+          title={t('tool.translate.uploadTitle')}
+          subtitle={t('tool.common.dropPdfFile')}
         />
       )}
 
@@ -178,7 +181,7 @@ export default function TranslatePdf() {
 
           <div className="w-full">
             <label className="block text-sm font-medium text-[var(--text-2)] mb-2">
-              Select Target Language
+              {t('tool.translate.targetLanguage')}
             </label>
             <div className="relative">
               <select
@@ -188,11 +191,11 @@ export default function TranslatePdf() {
               >
                 {SUPPORTED_LANGUAGES.map((lang) => (
                   <option key={lang.code} value={lang.code}>
-                    {lang.name}
+                    {t(`tool.translate.lang.${lang.code}` as MessageKey)}
                   </option>
                 ))}
               </select>
-              <ChevronDown className="absolute right-3 top-3.5 w-5 h-5 text-[var(--text-3)] pointer-events-none" />
+              <ChevronDown className="absolute end-3 top-3.5 w-5 h-5 text-[var(--text-3)] pointer-events-none" />
             </div>
           </div>
 
@@ -201,14 +204,14 @@ export default function TranslatePdf() {
               onClick={reset}
               className="flex-1 px-6 py-3 text-[var(--text-2)] hover:text-[var(--text)] font-medium border border-[var(--border)] rounded-xl hover:bg-[var(--surface-2)]"
             >
-              Cancel
+              {t('tool.common.cancel')}
             </button>
             <button
               onClick={handleTranslate}
               className="flex-1 flex items-center justify-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors"
             >
               <Languages className="w-5 h-5" />
-              Translate
+              {t('tool.translate.translate')}
             </button>
           </div>
         </div>
@@ -217,8 +220,8 @@ export default function TranslatePdf() {
       {step === 'translating' && (
         <div className="flex flex-col items-center py-12">
           <ProcessingState
-            title="Translating..."
-            description={`Processing page ${progress.page} of ${progress.total}`}
+            title={t('tool.translate.translating')}
+            description={t('tool.translate.progress', { page: progress.page, total: progress.total })}
           />
           <div className="mt-6 w-64 bg-[var(--surface-2)] rounded-full h-2">
             <div
@@ -235,25 +238,25 @@ export default function TranslatePdf() {
             <Languages className="w-10 h-10 text-green-600" />
           </div>
           <div className="text-center">
-            <h3 className="text-xl font-semibold text-[var(--text)]">Translation Complete!</h3>
+            <h3 className="text-xl font-semibold text-[var(--text)]">{t('tool.translate.doneTitle')}</h3>
             <p className="text-[var(--text-3)] mt-2">
-              Translations have been added to your PDF.
+              {t('tool.translate.doneBody')}
             </p>
             <p className="text-sm text-[var(--text-3)] mt-1">
-              Note: Translations appear as blue text annotations below original content.
+              {t('tool.translate.doneNote')}
             </p>
           </div>
           <button
             onClick={handleDownload}
             className="px-8 py-4 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors"
           >
-            Download Translated PDF
+            {t('tool.translate.download')}
           </button>
           <button
             onClick={reset}
             className="text-blue-600 hover:text-blue-700 font-medium"
           >
-            Translate Another PDF
+            {t('tool.translate.again')}
           </button>
         </div>
       )}
@@ -264,17 +267,17 @@ export default function TranslatePdf() {
             <AlertCircle className="w-10 h-10 text-red-600" />
           </div>
           <div className="text-center max-w-md">
-            <h3 className="text-xl font-semibold text-[var(--text)]">Translation Failed</h3>
+            <h3 className="text-xl font-semibold text-[var(--text)]">{t('tool.translate.failedTitle')}</h3>
             <p className="text-red-500 mt-2">{error}</p>
             <p className="text-[var(--text-3)] mt-4 text-sm">
-              Make sure you have set up your Gemini API key in the environment variables.
+              {t('tool.translate.apiKeyHint')}
             </p>
           </div>
           <button
             onClick={reset}
             className="text-blue-600 hover:text-blue-700 font-medium"
           >
-            Try Again
+            {t('tool.common.tryAgain')}
           </button>
         </div>
       )}
@@ -286,7 +289,7 @@ export default function TranslatePdf() {
           handleTranslate();
         }}
         onDecline={() => setShowConsent(false)}
-        toolName="Translate PDF"
+        toolName={toolName('translate-pdf')}
       />
     </ToolLayout>
   );

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Sparkles, Shield, AlertTriangle } from 'lucide-react';
+import { useI18n } from '../../i18n/useI18n';
 
 interface AiConsentDialogProps {
   isOpen: boolean;
@@ -14,6 +15,7 @@ export default function AiConsentDialog({
   onDecline,
   toolName,
 }: AiConsentDialogProps) {
+  const { t } = useI18n();
   const [isDeclining, setIsDeclining] = useState(false);
 
   if (!isOpen) return null;
@@ -51,7 +53,7 @@ export default function AiConsentDialog({
               id="ai-consent-title"
               className="text-lg font-semibold text-[var(--text)]"
             >
-              AI Tool Consent
+              {t('tool.aiConsent.title')}
             </h2>
             <p className="text-sm text-[var(--text-3)]">{toolName}</p>
           </div>
@@ -61,10 +63,9 @@ export default function AiConsentDialog({
           <div className="flex items-start gap-3 p-3 rounded-lg" style={{ background: 'var(--surface-2)' }}>
             <Shield className="w-5 h-5 text-blue-500 mt-0.5 flex-shrink-0" />
             <div>
-              <p className="text-sm font-medium text-[var(--text-2)]">Your data stays private</p>
+              <p className="text-sm font-medium text-[var(--text-2)]">{t('tool.aiConsent.dataTitle')}</p>
               <p className="text-xs text-[var(--text-3)] mt-1">
-                Your PDF content is sent to Google's Gemini API for processing. 
-                No data is stored on our servers.
+                {t('tool.aiConsent.dataBody')}
               </p>
             </div>
           </div>
@@ -72,9 +73,9 @@ export default function AiConsentDialog({
           <div className="flex items-start gap-3 p-3 rounded-lg" style={{ background: 'var(--surface-2)' }}>
             <AlertTriangle className="w-5 h-5 text-amber-500 mt-0.5 flex-shrink-0" />
             <div>
-              <p className="text-sm font-medium text-[var(--text-2)]">API usage may incur costs</p>
+              <p className="text-sm font-medium text-[var(--text-2)]">{t('tool.aiConsent.costTitle')}</p>
               <p className="text-xs text-[var(--text-3)] mt-1">
-                AI processing uses your configured API key and may count towards your usage limits.
+                {t('tool.aiConsent.costBody')}
               </p>
             </div>
           </div>
@@ -86,18 +87,18 @@ export default function AiConsentDialog({
             disabled={isDeclining}
             className="flex-1 px-4 py-2.5 text-[var(--text-2)] font-medium rounded-xl border border-[var(--border)] hover:bg-[var(--surface-2)] transition-colors disabled:opacity-50"
           >
-            Decline
+            {t('tool.aiConsent.decline')}
           </button>
           <button
             onClick={onAccept}
             className="flex-1 px-4 py-2.5 bg-purple-600 text-white font-medium rounded-xl hover:bg-purple-700 transition-colors"
           >
-            Accept & Continue
+            {t('tool.aiConsent.accept')}
           </button>
         </div>
 
         <p className="text-xs text-[var(--text-3)] text-center mt-4">
-          You can change this setting at any time in Settings.
+          {t('tool.aiConsent.settingsNote')}
         </p>
       </div>
     </div>

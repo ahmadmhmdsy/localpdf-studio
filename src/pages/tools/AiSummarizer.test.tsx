@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { useToolsStore } from '../../store/toolsStore';
 import { act, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import AiSummarizer from './AiSummarizer';
@@ -24,6 +25,7 @@ describe('AiSummarizer', () => {
   let user: ReturnType<typeof userEvent.setup>;
 
   beforeEach(() => {
+    useToolsStore.setState({ locale: 'en' });
     user = userEvent.setup();
     extractPdfTextMock.mockReset();
     extractPdfTextMock.mockResolvedValue('Extracted text content from PDF.');
@@ -107,5 +109,11 @@ describe('AiSummarizer', () => {
     await waitFor(() => {
       expect(screen.getByText(/AI Summary Generated/i)).toBeInTheDocument();
     }, { timeout: 3000 });
+  });
+
+  it('renders the page in Arabic when that locale is active', () => {
+    useToolsStore.setState({ locale: 'ar' });
+    renderWithProviders(<AiSummarizer />);
+    expect(screen.getByText('اختر ملف PDF لتلخيصه')).toBeInTheDocument();
   });
 });

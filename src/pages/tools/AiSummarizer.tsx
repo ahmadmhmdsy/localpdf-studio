@@ -6,10 +6,12 @@ import ProcessingState from '../../components/tools/ProcessingState';
 import { extractPdfText, summarizePdf } from '../../lib/ai';
 import { useToolsStore } from '../../store';
 import AiConsentDialog from '../../components/tools/AiConsentDialog';
+import { useI18n } from '../../i18n/useI18n';
 
 type Step = 'upload' | 'extracting' | 'summarizing' | 'done' | 'error';
 
 export default function AiSummarizer() {
+  const { t, toolName } = useI18n();
   const [step, setStep] = useState<Step>('upload');
   const [file, setFile] = useState<File | null>(null);
   const [extractedText, setExtractedText] = useState('');
@@ -53,7 +55,7 @@ export default function AiSummarizer() {
       setSummary(summaryResult);
       setStep('done');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to summarize PDF');
+      setError(err instanceof Error ? err.message : t('tool.summarizer.failedFallback'));
       setStep('error');
     }
   };
@@ -66,7 +68,7 @@ export default function AiSummarizer() {
 
   const handleDownload = () => {
     const blob = new Blob(
-      [`# Summary of ${file?.name || 'PDF'}\n\n${summary}\n\n---\n\n# Original Text\n\n${extractedText}`],
+      [`# ${t('tool.summarizer.exportHeading', { name: file?.name || 'PDF' })}\n\n${summary}\n\n---\n\n# ${t('tool.summarizer.exportOriginal')}\n\n${extractedText}`],
       { type: 'text/markdown' }
     );
     const url = URL.createObjectURL(blob);
@@ -89,31 +91,31 @@ export default function AiSummarizer() {
 
   return (
     <ToolLayout
-      title="AI Summarizer"
-      description="Get an AI-generated summary of your PDF content using Google Gemini."
+      title={toolName('ai-summarizer')}
+      description={t('tool.summarizer.description')}
     >
       {step === 'upload' && (
         <FileUploadZone
           
-          ariaLabel="Select PDF file" onFilesSelected={handleFilesSelected}
+          ariaLabel={t('tool.common.selectPdfFile')} onFilesSelected={handleFilesSelected}
           accept={{ 'application/pdf': ['.pdf'] }}
           maxFiles={1}
-          title="Select a PDF to summarize"
-          subtitle="or drop PDF file here"
+          title={t('tool.summarizer.uploadTitle')}
+          subtitle={t('tool.common.dropPdfFile')}
         />
       )}
 
       {step === 'extracting' && (
         <ProcessingState
-          title="Extracting text..."
-          description={`Processing page content... ${extractionProgress}%`}
+          title={t('tool.summarizer.extracting')}
+          description={t('tool.summarizer.extractingProgress', { percent: extractionProgress })}
         />
       )}
 
       {step === 'summarizing' && (
         <ProcessingState
-          title="Generating summary..."
-          description={`AI is analyzing the content... ${summarizationProgress}%`}
+          title={t('tool.summarizer.generating')}
+          description={t('tool.summarizer.generatingProgress', { percent: summarizationProgress })}
         />
       )}
 
@@ -125,7 +127,7 @@ export default function AiSummarizer() {
                 <Sparkles className="w-6 h-6 text-purple-600" />
               </div>
               <div>
-                <h3 className="font-semibold text-[var(--text)]">AI Summary Generated</h3>
+                <h3 className="font-semibold text-[var(--text)]">{t('tool.summarizer.doneTitle')}</h3>
                 <p className="text-sm text-[var(--text-3)]">{file?.name}</p>
               </div>
             </div>
@@ -135,14 +137,14 @@ export default function AiSummarizer() {
                 className="flex items-center gap-2 px-4 py-2 text-[var(--text-2)] bg-[var(--surface-2)] rounded-lg hover:bg-[var(--surface-2)] transition-colors"
               >
                 {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
-                {copied ? 'Copied!' : 'Copy'}
+                {copied ? t('tool.summarizer.copied') : t('tool.summarizer.copy')}
               </button>
               <button
                 onClick={handleDownload}
                 className="flex items-center gap-2 px-4 py-2 text-blue-700 bg-blue-100 rounded-lg hover:bg-blue-200 transition-colors"
               >
                 <Download className="w-4 h-4" />
-                Download
+                {t('tool.summarizer.download')}
               </button>
             </div>
           </div>
@@ -162,7 +164,7 @@ export default function AiSummarizer() {
               onClick={reset}
               className="px-6 py-3 text-blue-600 hover:text-blue-700 font-medium"
             >
-              Summarize Another PDF
+              {t('tool.summarizer.again')}
             </button>
           </div>
         </div>
@@ -174,17 +176,17 @@ export default function AiSummarizer() {
             <FileText className="w-10 h-10 text-red-600" />
           </div>
           <div className="text-center max-w-md">
-            <h3 className="text-xl font-semibold text-[var(--text)]">Summarization Failed</h3>
+            <h3 className="text-xl font-semibold text-[var(--text)]">{t('tool.summarizer.failedTitle')}</h3>
             <p className="text-red-500 mt-2">{error}</p>
             <p className="text-[var(--text-3)] mt-4 text-sm">
-              Make sure you have set up your Gemini API key in the environment variables.
+              {t('tool.summarizer.apiKeyHint')}
             </p>
           </div>
           <button
             onClick={reset}
             className="text-blue-600 hover:text-blue-700 font-medium"
           >
-            Try Again
+            {t('tool.common.tryAgain')}
           </button>
         </div>
       )}
@@ -196,7 +198,7 @@ export default function AiSummarizer() {
           if (file) handleSummarize(file);
         }}
         onDecline={() => setShowConsent(false)}
-        toolName="AI Summarizer"
+        toolName={toolName('ai-summarizer')}
       />
     </ToolLayout>
   );
