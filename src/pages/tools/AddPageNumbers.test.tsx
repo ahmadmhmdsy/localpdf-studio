@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { useToolsStore } from '../../store/toolsStore';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import AddPageNumbers from './AddPageNumbers';
@@ -28,6 +29,7 @@ describe('AddPageNumbers', () => {
   let user: ReturnType<typeof userEvent.setup>;
 
   beforeEach(() => {
+    useToolsStore.setState({ locale: 'en' });
     user = userEvent.setup();
     addPageNumbersMock.mockReset();
     addPageNumbersMock.mockResolvedValue(RESULT_BYTES);
@@ -79,5 +81,11 @@ describe('AddPageNumbers', () => {
     await waitFor(() => {
       expect(addPageNumbersMock).toHaveBeenCalledWith(pdfFile, 'middle-left');
     });
+  });
+
+  it('renders the page in Arabic when that locale is active', () => {
+    useToolsStore.setState({ locale: 'ar' });
+    renderWithProviders(<AddPageNumbers />);
+    expect(screen.getByText('اختر ملف PDF')).toBeInTheDocument();
   });
 });

@@ -7,10 +7,12 @@ import DownloadState from '../../components/tools/DownloadState';
 import { rotatePdf } from '../../lib/pdf';
 import { logError } from '../../lib/logger';
 import { useToast } from '../../contexts/ToastContext';
+import { useI18n } from '../../i18n/useI18n';
 
 type Step = 'upload' | 'configure' | 'processing' | 'download';
 
 export default function RotatePdf() {
+  const { t, toolName, toolDescription } = useI18n();
   const [step, setStep] = useState<Step>('upload');
   const [file, setFile] = useState<File | null>(null);
   const [angle, setAngle] = useState<number>(90);
@@ -41,7 +43,7 @@ export default function RotatePdf() {
     } catch (error) {
       logError('Error rotating PDF:', error);
       showToast({
-        message: 'An error occurred. Please try again.',
+        message: t('tool.common.error'),
         type: 'error',
         duration: 5000,
       });
@@ -60,16 +62,13 @@ export default function RotatePdf() {
   };
 
   return (
-    <ToolLayout 
-      title="Rotate PDF" 
-      description="Rotate your PDFs the way you need them. You can even rotate multiple PDFs at once!"
-    >
+    <ToolLayout title={toolName('rotate-pdf')} description={toolDescription('rotate-pdf')}>
       {step === 'upload' && (
         <FileUploadZone 
           
-          ariaLabel="Select PDF file" onFilesSelected={handleFilesSelected} 
-          title="Select PDF file"
-          subtitle="or drop PDF here"
+          ariaLabel={t('tool.common.selectPdfFile')} onFilesSelected={handleFilesSelected} 
+          title={t('tool.common.selectPdfFile')}
+          subtitle={t('tool.common.dropPdf')}
           maxFiles={1}
         />
       )}
@@ -90,7 +89,7 @@ export default function RotatePdf() {
               <button 
                 onClick={startOver}
                 className="p-2 text-[var(--text-3)] hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                aria-label="Remove file"
+                aria-label={t('tool.common.removeFile')}
               >
                 <X size={24} />
               </button>
@@ -98,26 +97,26 @@ export default function RotatePdf() {
 
             <div className="space-y-4">
               <label className="block text-sm font-medium text-[var(--text-2)]">
-                Rotation Angle
+                {t('tool.rotate.angle')}
               </label>
               <div className="flex gap-4">
                 <button
                   onClick={() => setAngle(90)}
                   className={`px-6 py-3 rounded-xl border font-medium transition-colors ${angle === 90 ? 'bg-purple-50 border-purple-500 text-purple-700' : 'border-[var(--border)] text-[var(--text-2)] hover:bg-[var(--surface-2)]'}`}
                 >
-                  Right (90°)
+                  {t('tool.rotate.right')}
                 </button>
                 <button
                   onClick={() => setAngle(180)}
                   className={`px-6 py-3 rounded-xl border font-medium transition-colors ${angle === 180 ? 'bg-purple-50 border-purple-500 text-purple-700' : 'border-[var(--border)] text-[var(--text-2)] hover:bg-[var(--surface-2)]'}`}
                 >
-                  Upside Down (180°)
+                  {t('tool.rotate.upsideDown')}
                 </button>
                 <button
                   onClick={() => setAngle(270)}
                   className={`px-6 py-3 rounded-xl border font-medium transition-colors ${angle === 270 ? 'bg-purple-50 border-purple-500 text-purple-700' : 'border-[var(--border)] text-[var(--text-2)] hover:bg-[var(--surface-2)]'}`}
                 >
-                  Left (270°)
+                  {t('tool.rotate.left')}
                 </button>
               </div>
             </div>
@@ -128,7 +127,7 @@ export default function RotatePdf() {
               onClick={handleProcess}
               className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-4 px-12 rounded-xl text-xl transition-colors shadow-lg"
             >
-              Rotate PDF
+              {t('tool.rotate.submit')}
             </button>
           </div>
         </div>
@@ -136,15 +135,15 @@ export default function RotatePdf() {
 
       {step === 'processing' && (
         <ProcessingState 
-          title="Rotating PDF..." 
-          description="Please wait while we rotate your document. This is happening locally in your browser."
+          title={t('tool.rotate.processingTitle')}
+          description={t('tool.rotate.processingDescription')}
         />
       )}
 
       {step === 'download' && resultUrl && (
         <DownloadState 
-          title="PDF rotated successfully!"
-          description="Your document has been rotated."
+          title={t('tool.rotate.successTitle')}
+          description={t('tool.rotate.successDescription')}
           fileName={`rotated_${file?.name || 'document.pdf'}`}
           fileUrl={resultUrl}
           fileSize={resultSize}

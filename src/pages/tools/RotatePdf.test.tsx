@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { useToolsStore } from '../../store/toolsStore';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import RotatePdf from './RotatePdf';
@@ -15,6 +16,7 @@ describe('RotatePdf', () => {
   let user: ReturnType<typeof userEvent.setup>;
 
   beforeEach(() => {
+    useToolsStore.setState({ locale: 'en' });
     user = userEvent.setup();
     vi.clearAllMocks();
   });
@@ -55,5 +57,11 @@ describe('RotatePdf', () => {
       expect(screen.getByRole('button', { name: /upside down \(180/i })).toBeInTheDocument();
       expect(screen.getByRole('button', { name: /left \(270/i })).toBeInTheDocument();
     });
+  });
+
+  it('renders the page in Arabic when that locale is active', () => {
+    useToolsStore.setState({ locale: 'ar' });
+    renderWithProviders(<RotatePdf />);
+    expect(screen.getByText('اختر ملف PDF')).toBeInTheDocument();
   });
 });

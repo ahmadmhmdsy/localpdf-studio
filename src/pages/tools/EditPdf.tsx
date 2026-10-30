@@ -7,12 +7,13 @@ import DownloadState from '../../components/tools/DownloadState';
 import { getPdfPageThumbnails } from '../../lib/image';
 import { editPdf, TextAnnotation } from '../../lib/edit';
 import { logError } from '../../lib/logger';
-
 import { useToast } from '../../contexts/ToastContext';
+import { useI18n } from '../../i18n/useI18n';
 
 type Step = 'upload' | 'loading_thumbnails' | 'configure' | 'processing' | 'download';
 
 export default function EditPdf() {
+  const { t, toolName } = useI18n();
   const [step, setStep] = useState<Step>('upload');
   const [file, setFile] = useState<File | null>(null);
   const [thumbnails, setThumbnails] = useState<string[]>([]);
@@ -46,7 +47,7 @@ export default function EditPdf() {
       } catch (error) {
         logError("Error loading thumbnails:", error);
         showToast({
-          message: "Failed to load PDF preview. Please try another file.",
+          message: t('tool.common.previewFailed'),
           type: 'error',
           duration: 5000,
         });
@@ -94,7 +95,7 @@ export default function EditPdf() {
     } catch (error) {
       logError('Error editing PDF:', error);
       showToast({
-        message: 'An error occurred. Please try again.',
+        message: t('tool.common.error'),
         type: 'error',
         duration: 5000,
       });
@@ -115,24 +116,21 @@ export default function EditPdf() {
   };
 
   return (
-    <ToolLayout 
-      title="Edit PDF" 
-      description="Add text annotations to your PDF document. Click anywhere on the page to place your text."
-    >
+    <ToolLayout title={toolName('edit-pdf')} description={t('tool.editPdf.description')}>
       {step === 'upload' && (
         <FileUploadZone 
           
-          ariaLabel="Select PDF file" onFilesSelected={handleFilesSelected} 
-          title="Select PDF file"
-          subtitle="or drop PDF here"
+          ariaLabel={t('tool.common.selectPdfFile')} onFilesSelected={handleFilesSelected} 
+          title={t('tool.common.selectPdfFile')}
+          subtitle={t('tool.common.dropPdf')}
           maxFiles={1}
         />
       )}
 
       {step === 'loading_thumbnails' && (
         <ProcessingState 
-          title="Loading pages..." 
-          description="Please wait while we generate previews of your document."
+          title={t('tool.common.loadingPages')}
+          description={t('tool.common.loadingPagesDescription')}
         />
       )}
 
@@ -148,13 +146,13 @@ export default function EditPdf() {
                   </div>
                   <div className="flex flex-col overflow-hidden">
                     <span className="font-semibold text-[var(--text)] truncate">{file.name}</span>
-                    <span className="text-xs text-[var(--text-3)]">{thumbnails.length} pages</span>
+                    <span className="text-xs text-[var(--text-3)]">{t('tool.common.pageCount', { count: thumbnails.length })}</span>
                   </div>
                 </div>
                 <button 
                   onClick={startOver}
                   className="p-2 text-[var(--text-3)] hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                  title="Remove file"
+                  title={t('tool.common.removeFile')}
                 >
                   <X size={20} />
                 </button>
@@ -162,19 +160,19 @@ export default function EditPdf() {
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-[var(--text-2)] mb-1">Text to add</label>
+                  <label className="block text-sm font-medium text-[var(--text-2)] mb-1">{t('tool.editPdf.text')}</label>
                   <input
                     type="text"
                     value={currentText}
                     onChange={(e) => setCurrentText(e.target.value)}
-                    placeholder="Type here, then click on page"
+                    placeholder={t('tool.editPdf.textPlaceholder')}
                     className="w-full p-3 border border-[var(--border)] rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all"
                   />
                 </div>
                 
                 <div className="flex gap-4">
                   <div className="flex-1">
-                    <label className="block text-sm font-medium text-[var(--text-2)] mb-1">Size</label>
+                    <label className="block text-sm font-medium text-[var(--text-2)] mb-1">{t('tool.editPdf.size')}</label>
                     <input
                       type="number"
                       value={currentSize}
@@ -183,7 +181,7 @@ export default function EditPdf() {
                     />
                   </div>
                   <div className="flex-1">
-                    <label className="block text-sm font-medium text-[var(--text-2)] mb-1">Color</label>
+                    <label className="block text-sm font-medium text-[var(--text-2)] mb-1">{t('tool.editPdf.color')}</label>
                     <div className="flex items-center gap-2 p-1 border border-[var(--border)] rounded-xl h-[50px]">
                       <input
                         type="color"
@@ -198,21 +196,21 @@ export default function EditPdf() {
             </div>
 
             <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-sm p-6">
-              <h3 className="text-sm font-bold text-[var(--text)] mb-4 uppercase tracking-wider">Annotations ({annotations.length})</h3>
+              <h3 className="text-sm font-bold text-[var(--text)] mb-4 uppercase tracking-wider">{t('tool.editPdf.annotations', { count: annotations.length })}</h3>
               {annotations.length === 0 ? (
-                <p className="text-sm text-[var(--text-3)] italic">No annotations added yet.</p>
+                <p className="text-sm text-[var(--text-3)] italic">{t('tool.editPdf.noAnnotations')}</p>
               ) : (
-                <ul className="space-y-2 max-h-60 overflow-y-auto pr-2">
+                <ul className="space-y-2 max-h-60 overflow-y-auto pe-2">
                   {annotations.map((ann, i) => (
                     <li key={i} className="flex items-center justify-between p-2 bg-[var(--surface-2)] rounded-lg border border-[var(--border)]">
                       <div className="flex flex-col overflow-hidden">
                         <span className="text-sm font-medium text-[var(--text)] truncate" style={{ color: ann.color }}>"{ann.text}"</span>
-                        <span className="text-xs text-[var(--text-3)]">Page {ann.pageIndex + 1}</span>
+                        <span className="text-xs text-[var(--text-3)]">{t('tool.common.page', { page: ann.pageIndex + 1 })}</span>
                       </div>
                       <button 
                         onClick={() => removeAnnotation(i)}
                         className="p-1 text-[var(--text-3)] hover:text-red-500 rounded transition-colors"
-                        aria-label={`Remove annotation: ${ann.text}`}
+                        aria-label={t('tool.editPdf.removeAnnotation', { text: ann.text })}
                       >
                         <X size={14} />
                       </button>
@@ -227,7 +225,7 @@ export default function EditPdf() {
               className="w-full bg-red-600 hover:bg-red-700 text-white font-semibold py-4 px-6 rounded-xl text-lg transition-colors shadow-lg flex items-center justify-center gap-2"
             >
               <Type size={20} />
-              Apply Edits
+              {t('tool.editPdf.submit')}
             </button>
           </div>
 
@@ -238,20 +236,20 @@ export default function EditPdf() {
                 onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
                 disabled={currentPage === 0}
                 className="p-1 text-[var(--text-2)] hover:text-red-600 disabled:text-[var(--text-3)] transition-colors"
-                aria-label="Previous page"
+                aria-label={t('tool.common.previousPage')}
               >
-                <ChevronLeft size={24} />
+                <ChevronLeft size={24} className="rtl:rotate-180" />
               </button>
               <span className="text-sm font-medium text-[var(--text-2)]">
-                Page {currentPage + 1} of {thumbnails.length}
+                {t('tool.common.pageOf', { page: currentPage + 1, total: thumbnails.length })}
               </span>
               <button 
                 onClick={() => setCurrentPage(Math.min(thumbnails.length - 1, currentPage + 1))}
                 disabled={currentPage === thumbnails.length - 1}
                 className="p-1 text-[var(--text-2)] hover:text-red-600 disabled:text-[var(--text-3)] transition-colors"
-                aria-label="Next page"
+                aria-label={t('tool.common.nextPage')}
               >
-                <ChevronRight size={24} />
+                <ChevronRight size={24} className="rtl:rotate-180" />
               </button>
             </div>
 
@@ -260,7 +258,7 @@ export default function EditPdf() {
                 <img 
                   ref={imgRef}
                   src={thumbnails[currentPage]} 
-                  alt={`Page ${currentPage + 1}`} 
+                  alt={t('tool.common.page', { page: currentPage + 1 })}
                   className="max-w-full h-auto shadow-md"
                   onClick={handleImageClick}
                 />
@@ -286,7 +284,7 @@ export default function EditPdf() {
               </div>
             </div>
             <p className="text-sm text-[var(--text-3)] mt-4 text-center">
-              Enter text in the sidebar, then click anywhere on the document to place it.
+              {t('tool.editPdf.hint')}
             </p>
           </div>
         </div>
@@ -294,15 +292,15 @@ export default function EditPdf() {
 
       {step === 'processing' && (
         <ProcessingState 
-          title="Applying edits..." 
-          description="Please wait while we add your annotations to the PDF. This is happening locally in your browser."
+          title={t('tool.editPdf.processingTitle')}
+          description={t('tool.editPdf.processingDescription')}
         />
       )}
 
       {step === 'download' && resultUrl && (
         <DownloadState 
-          title="PDF edited successfully!"
-          description="Your text annotations have been added to the document."
+          title={t('tool.editPdf.successTitle')}
+          description={t('tool.editPdf.successDescription')}
           fileName={`edited_${file?.name || 'document.pdf'}`}
           fileUrl={resultUrl}
           fileSize={resultSize}

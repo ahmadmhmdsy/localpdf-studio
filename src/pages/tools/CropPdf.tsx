@@ -10,10 +10,12 @@ import { getPdfPageThumbnails } from '../../lib/image';
 import { cropPdf, CropRect } from '../../lib/edit';
 import { logError } from '../../lib/logger';
 import { useToast } from '../../contexts/ToastContext';
+import { useI18n } from '../../i18n/useI18n';
 
 type Step = 'upload' | 'loading_thumbnail' | 'configure' | 'processing' | 'download';
 
 export default function CropPdf() {
+  const { t, toolName, toolDescription } = useI18n();
   const [step, setStep] = useState<Step>('upload');
   const [file, setFile] = useState<File | null>(null);
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
@@ -47,7 +49,7 @@ export default function CropPdf() {
       } catch (error) {
         logError("Error loading thumbnail:", error);
         showToast({
-          message: "Failed to load PDF preview. Please try another file.",
+          message: t('tool.common.previewFailed'),
           type: 'error',
           duration: 5000,
         });
@@ -58,7 +60,7 @@ export default function CropPdf() {
 
   const handleProcess = async () => {
     if (!file || !crop.width || !crop.height) {
-      showToast({ message: 'Please select a valid crop area.', type: 'warning' });
+      showToast({ message: t('tool.crop.invalidArea'), type: 'warning' });
       return;
     }
 
@@ -95,7 +97,7 @@ export default function CropPdf() {
     } catch (error) {
       logError('Error cropping PDF:', error);
       showToast({
-        message: 'An error occurred. Please try again.',
+        message: t('tool.common.error'),
         type: 'error',
         duration: 5000,
       });
@@ -114,24 +116,21 @@ export default function CropPdf() {
   };
 
   return (
-    <ToolLayout 
-      title="Crop PDF" 
-      description="Crop all pages of a PDF to the same selected area."
-    >
+    <ToolLayout title={toolName('crop-pdf')} description={toolDescription('crop-pdf')}>
       {step === 'upload' && (
         <FileUploadZone 
           
-          ariaLabel="Select PDF file" onFilesSelected={handleFilesSelected} 
-          title="Select PDF file"
-          subtitle="or drop PDF here"
+          ariaLabel={t('tool.common.selectPdfFile')} onFilesSelected={handleFilesSelected} 
+          title={t('tool.common.selectPdfFile')}
+          subtitle={t('tool.common.dropPdf')}
           maxFiles={1}
         />
       )}
 
       {step === 'loading_thumbnail' && (
         <ProcessingState 
-          title="Loading preview..." 
-          description="Please wait while we generate a preview of your document."
+          title={t('tool.crop.loadingTitle')}
+          description={t('tool.crop.loadingDescription')}
         />
       )}
 
@@ -145,13 +144,13 @@ export default function CropPdf() {
                 </div>
                 <div className="flex flex-col">
                   <span className="font-semibold text-[var(--text)]">{file.name}</span>
-                  <span className="text-xs text-[var(--text-3)]">Draw a rectangle to crop all pages</span>
+                  <span className="text-xs text-[var(--text-3)]">{t('tool.crop.hint')}</span>
                 </div>
               </div>
               <button 
                 onClick={startOver}
                 className="p-2 text-[var(--text-3)] hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                aria-label="Remove file"
+                aria-label={t('tool.common.removeFile')}
               >
                 <X size={20} />
               </button>
@@ -166,7 +165,7 @@ export default function CropPdf() {
                 <img 
                   ref={imgRef}
                   src={thumbnailUrl} 
-                  alt="PDF Preview" 
+                  alt={t('tool.crop.previewAlt')}
                   className="max-h-[60vh] object-contain shadow-sm"
                 />
               </ReactCrop>
@@ -179,7 +178,7 @@ export default function CropPdf() {
               className="bg-red-600 hover:bg-red-700 text-white font-semibold py-4 px-12 rounded-xl text-xl transition-colors shadow-lg flex items-center gap-2"
             >
               <CropIcon size={24} />
-              Crop PDF
+              {t('tool.crop.submit')}
             </button>
           </div>
         </div>
@@ -187,15 +186,15 @@ export default function CropPdf() {
 
       {step === 'processing' && (
         <ProcessingState 
-          title="Cropping PDF..." 
-          description="Please wait while we apply the crop to all pages. This is happening locally in your browser."
+          title={t('tool.crop.processingTitle')}
+          description={t('tool.crop.processingDescription')}
         />
       )}
 
       {step === 'download' && resultUrl && (
         <DownloadState 
-          title="PDF cropped successfully!"
-          description="Your document has been cropped to the selected area."
+          title={t('tool.crop.successTitle')}
+          description={t('tool.crop.successDescription')}
           fileName={`cropped_${file?.name || 'document.pdf'}`}
           fileUrl={resultUrl}
           fileSize={resultSize}

@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { useToolsStore } from '../../store/toolsStore';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import CropPdf from './CropPdf';
@@ -23,6 +24,7 @@ describe('CropPdf', () => {
   let user: ReturnType<typeof userEvent.setup>;
 
   beforeEach(() => {
+    useToolsStore.setState({ locale: 'en' });
     user = userEvent.setup();
     vi.clearAllMocks();
   });
@@ -64,5 +66,11 @@ describe('CropPdf', () => {
     await waitFor(() => {
       expect(screen.getByText(/draw a rectangle to crop all pages/i)).toBeInTheDocument();
     });
+  });
+
+  it('renders the page in Arabic when that locale is active', () => {
+    useToolsStore.setState({ locale: 'ar' });
+    renderWithProviders(<CropPdf />);
+    expect(screen.getByText('اختر ملف PDF')).toBeInTheDocument();
   });
 });
