@@ -10,10 +10,12 @@ import { signPdf, SignatureAnnotation } from '../../lib/security';
 import { logError } from '../../lib/logger';
 import { useToast } from '../../contexts/ToastContext';
 import { useManagedObjectUrl } from '../../hooks/useObjectUrl';
+import { useI18n } from '../../i18n/useI18n';
 
 type Step = 'upload' | 'loading_thumbnails' | 'configure' | 'processing' | 'download';
 
 export default function SignPdf() {
+  const { t, toolName } = useI18n();
   const [step, setStep] = useState<Step>('upload');
   const [file, setFile] = useState<File | null>(null);
   const [thumbnails, setThumbnails] = useState<string[]>([]);
@@ -61,7 +63,7 @@ export default function SignPdf() {
       } catch (error) {
         logError("Error loading thumbnails:", error);
         showToast({
-          message: "Failed to load PDF preview. Please try another file.",
+          message: t('tool.common.previewFailed'),
           type: 'error',
           duration: 5000,
         });
@@ -120,7 +122,7 @@ export default function SignPdf() {
     } catch (error) {
       logError('Error signing PDF:', error);
       showToast({
-        message: 'An error occurred. Please try again.',
+        message: t('tool.common.error'),
         type: 'error',
         duration: 5000,
       });
@@ -143,24 +145,21 @@ export default function SignPdf() {
   };
 
   return (
-    <ToolLayout 
-      title="Sign PDF" 
-      description="Add your handwritten signature to a PDF document. Draw your signature and place it anywhere on the page."
-    >
+    <ToolLayout title={toolName('sign-pdf')} description={t('tool.sign.description')}>
       {step === 'upload' && (
         <FileUploadZone 
           
-          ariaLabel="Select PDF file" onFilesSelected={handleFilesSelected} 
-          title="Select PDF file"
-          subtitle="or drop PDF here"
+          ariaLabel={t('tool.common.selectPdfFile')} onFilesSelected={handleFilesSelected} 
+          title={t('tool.common.selectPdfFile')}
+          subtitle={t('tool.common.dropPdf')}
           maxFiles={1}
         />
       )}
 
       {step === 'loading_thumbnails' && (
         <ProcessingState 
-          title="Loading pages..." 
-          description="Please wait while we generate previews of your document."
+          title={t('tool.common.loadingPages')} 
+          description={t('tool.common.loadingPagesDescription')}
         />
       )}
 
@@ -176,20 +175,20 @@ export default function SignPdf() {
                   </div>
                   <div className="flex flex-col overflow-hidden">
                     <span className="font-semibold text-[var(--text)] truncate">{file.name}</span>
-                    <span className="text-xs text-[var(--text-3)]">{thumbnails.length} pages</span>
+                    <span className="text-xs text-[var(--text-3)]">{t('tool.common.pageCount', { count: thumbnails.length })}</span>
                   </div>
                 </div>
                 <button 
                   onClick={startOver}
                   className="p-2 text-[var(--text-3)] hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                  title="Remove file"
+                  title={t('tool.common.removeFile')}
                 >
                   <X size={20} />
                 </button>
               </div>
 
               <div className="space-y-4">
-                <h3 className="text-sm font-bold text-[var(--text)] uppercase tracking-wider">Your Signature</h3>
+                <h3 className="text-sm font-bold text-[var(--text)] uppercase tracking-wider">{t('tool.sign.yourSignature')}</h3>
                 
                 {!currentSignatureData && !isDrawing ? (
                   <button 
@@ -197,7 +196,7 @@ export default function SignPdf() {
                     className="w-full py-3 px-4 border-2 border-dashed border-[var(--border)] rounded-xl text-[var(--text-2)] hover:border-blue-500 hover:text-blue-600 transition-colors flex items-center justify-center gap-2"
                   >
                     <PenTool size={18} />
-                    Create Signature
+                    {t('tool.sign.create')}
                   </button>
                 ) : isDrawing ? (
                   <div className="space-y-3">
@@ -205,7 +204,7 @@ export default function SignPdf() {
                       <canvas
                         ref={sigCanvasRef}
                         className="signature-pad-canvas w-full h-40 cursor-crosshair"
-                        aria-label="Signature drawing area"
+                        aria-label={t('tool.sign.drawingArea')}
                       />
                     </div>
                     <div className="flex gap-2">
@@ -213,21 +212,21 @@ export default function SignPdf() {
                         onClick={clearSignature}
                         className="flex-1 py-2 px-4 border border-[var(--border)] rounded-lg text-[var(--text-2)] hover:bg-[var(--surface-2)] transition-colors text-sm font-medium"
                       >
-                        Clear
+                        {t('tool.sign.clear')}
                       </button>
                       <button 
                         onClick={saveSignature}
                         className="flex-1 py-2 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm font-medium flex items-center justify-center gap-1"
                       >
                         <Check size={16} />
-                        Save
+                        {t('tool.sign.save')}
                       </button>
                     </div>
                   </div>
                 ) : (
                   <div className="space-y-3">
                     <div className="border border-[var(--border)] rounded-xl p-4 bg-[var(--surface-2)] flex justify-center items-center h-24">
-                      <img src={currentSignatureData!} alt="Signature" className="max-h-full max-w-full object-contain" />
+                      <img src={currentSignatureData!} alt={t('tool.sign.signatureAlt')} className="max-h-full max-w-full object-contain" />
                     </div>
                     <button 
                       onClick={() => {
@@ -236,7 +235,7 @@ export default function SignPdf() {
                       }}
                       className="w-full py-2 px-4 border border-[var(--border)] rounded-lg text-[var(--text-2)] hover:bg-[var(--surface-2)] transition-colors text-sm font-medium"
                     >
-                      Change Signature
+                      {t('tool.sign.change')}
                     </button>
                   </div>
                 )}
@@ -244,21 +243,21 @@ export default function SignPdf() {
             </div>
 
             <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-sm p-6">
-              <h3 className="text-sm font-bold text-[var(--text)] mb-4 uppercase tracking-wider">Placed Signatures ({signatures.length})</h3>
+              <h3 className="text-sm font-bold text-[var(--text)] mb-4 uppercase tracking-wider">{t('tool.sign.placed', { count: signatures.length })}</h3>
               {signatures.length === 0 ? (
-                <p className="text-sm text-[var(--text-3)] italic">Click on the document to place your signature.</p>
+                <p className="text-sm text-[var(--text-3)] italic">{t('tool.sign.placeEmpty')}</p>
               ) : (
-                <ul className="space-y-2 max-h-60 overflow-y-auto pr-2">
+                <ul className="space-y-2 max-h-60 overflow-y-auto pe-2">
                   {signatures.map((sig, i) => (
                     <li key={i} className="flex items-center justify-between p-2 bg-[var(--surface-2)] rounded-lg border border-[var(--border)]">
                       <div className="flex items-center gap-2 overflow-hidden">
-                        <img src={sig.imageDataUrl} alt="Signature thumbnail" className="h-6 w-auto object-contain bg-[var(--surface)] border border-[var(--border)]" />
-                        <span className="text-xs text-[var(--text-3)]">Page {sig.pageIndex + 1}</span>
+                        <img src={sig.imageDataUrl} alt={t('tool.sign.thumbnailAlt')} className="h-6 w-auto object-contain bg-[var(--surface)] border border-[var(--border)]" />
+                        <span className="text-xs text-[var(--text-3)]">{t('tool.common.page', { page: sig.pageIndex + 1 })}</span>
                       </div>
                       <button 
                         onClick={() => removeSignature(i)}
                         className="p-1 text-[var(--text-3)] hover:text-red-500 rounded transition-colors"
-                        aria-label={`Remove signature ${i + 1}`}
+                        aria-label={t('tool.sign.remove', { index: i + 1 })}
                       >
                         <X size={14} />
                       </button>
@@ -274,7 +273,7 @@ export default function SignPdf() {
               className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-300 text-white font-semibold py-4 px-6 rounded-xl text-lg transition-colors shadow-lg flex items-center justify-center gap-2"
             >
               <PenTool size={20} />
-              Sign PDF
+              {t('tool.sign.submit')}
             </button>
           </div>
 
@@ -285,20 +284,20 @@ export default function SignPdf() {
                 onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
                 disabled={currentPage === 0}
                 className="p-1 text-[var(--text-2)] hover:text-blue-600 disabled:text-[var(--text-3)] transition-colors"
-                aria-label="Previous page"
+                aria-label={t('tool.common.previousPage')}
               >
-                <ChevronLeft size={24} />
+                <ChevronLeft size={24} className="rtl:rotate-180" />
               </button>
               <span className="text-sm font-medium text-[var(--text-2)]">
-                Page {currentPage + 1} of {thumbnails.length}
+                {t('tool.common.pageOf', { page: currentPage + 1, total: thumbnails.length })}
               </span>
               <button 
                 onClick={() => setCurrentPage(Math.min(thumbnails.length - 1, currentPage + 1))}
                 disabled={currentPage === thumbnails.length - 1}
                 className="p-1 text-[var(--text-2)] hover:text-blue-600 disabled:text-[var(--text-3)] transition-colors"
-                aria-label="Next page"
+                aria-label={t('tool.common.nextPage')}
               >
-                <ChevronRight size={24} />
+                <ChevronRight size={24} className="rtl:rotate-180" />
               </button>
             </div>
 
@@ -307,7 +306,7 @@ export default function SignPdf() {
                 <img 
                   ref={imgRef}
                   src={thumbnails[currentPage]} 
-                  alt={`Page ${currentPage + 1}`} 
+                  alt={t('tool.common.page', { page: currentPage + 1 })} 
                   className="max-w-full h-auto shadow-md"
                   onClick={handleImageClick}
                 />
@@ -325,13 +324,13 @@ export default function SignPdf() {
                       transform: 'translate(-50%, -50%)',
                     }}
                   >
-                    <img src={sig.imageDataUrl} alt="Placed signature" className="w-full h-full object-contain" />
+                    <img src={sig.imageDataUrl} alt={t('tool.sign.placedAlt')} className="w-full h-full object-contain" />
                   </div>
                 ))}
               </div>
             </div>
             <p className="text-sm text-[var(--text-3)] mt-4 text-center">
-              Create a signature, then click anywhere on the document to place it.
+              {t('tool.sign.hint')}
             </p>
           </div>
         </div>
@@ -339,15 +338,15 @@ export default function SignPdf() {
 
       {step === 'processing' && (
         <ProcessingState 
-          title="Signing PDF..." 
-          description="Please wait while we add your signatures to the PDF. This is happening locally in your browser."
+          title={t('tool.sign.processingTitle')} 
+          description={t('tool.sign.processingDescription')}
         />
       )}
 
       {step === 'download' && resultUrl && (
         <DownloadState 
-          title="PDF signed successfully!"
-          description="Your signatures have been added to the document."
+          title={t('tool.sign.successTitle')}
+          description={t('tool.sign.successDescription')}
           fileName={`signed_${file?.name || 'document.pdf'}`}
           fileUrl={resultUrl}
           fileSize={resultSize}

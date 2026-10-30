@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { useToolsStore } from '../../store/toolsStore';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import BlackoutPdf from './BlackoutPdf';
@@ -17,6 +18,7 @@ describe('BlackoutPdf', () => {
   let user: ReturnType<typeof userEvent.setup>;
 
   beforeEach(() => {
+    useToolsStore.setState({ locale: 'en' });
     user = userEvent.setup();
     vi.clearAllMocks();
   });
@@ -47,5 +49,11 @@ describe('BlackoutPdf', () => {
     await waitFor(() => {
       expect(screen.getByText(/blackouts \(0\)/i)).toBeInTheDocument();
     });
+  });
+
+  it('renders the page in Arabic when that locale is active', () => {
+    useToolsStore.setState({ locale: 'ar' });
+    renderWithProviders(<BlackoutPdf />);
+    expect(screen.getByText('اختر ملف PDF')).toBeInTheDocument();
   });
 });
