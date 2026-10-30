@@ -97,7 +97,7 @@ export const availabilityCopyAr: Record<ToolId, AvailabilityCopy> = {
   'pdf-to-powerpoint': {
     support: NOT_AVAILABLE,
     limitation:
-      'تتحول كل صفحة إلى صورة JPEG في شريحة مستقلة، فلا يمكن تعديل النص. لا تتضمن الحزمة جزء السمة (theme) ولا اختبارًا على مستوى المخطط، وهي موقوفة إلى حين تحقق مستقل من OOXML.',
+      'تتحول كل صفحة إلى صورة JPEG في شريحة مستقلة، فلا يمكن تعديل النص. تُمدَّد الصورة لتملأ شريحة 16:9 فتتشوه الصفحات الطولية، والأداة موقوفة إلى حين فتح الملف في PowerPoint وLibreOffice.',
   },
   'rotate-pdf': {
     support: NO_BLOCKER,

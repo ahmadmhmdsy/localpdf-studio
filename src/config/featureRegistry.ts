@@ -180,7 +180,7 @@ const REGISTRY: Record<ToolId, ToolAvailability> = {
     privacy: 'local-only',
     support: 'Not available — disabled pending remediation; see the production inventory for audit evidence.',
     limitation:
-      'Each page becomes a JPEG image on its own slide, so text is not editable. The package has no theme part and no schema-level test; blocked pending independent OOXML validation.',
+      'Each page becomes a JPEG image on its own slide, so text is not editable. Images are stretched to fill a 16:9 slide, so portrait pages are distorted; blocked until the file is opened in PowerPoint and LibreOffice.',
   },
   'rotate-pdf': {
     releaseState: 'stable',
