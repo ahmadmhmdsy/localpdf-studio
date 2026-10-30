@@ -6,6 +6,7 @@
 - [competitive-analysis.md](competitive-analysis.md): the phases and the reasons for them.
 - [Phase A plan](superpowers/plans/2026-10-24-phase-a-tools.md): workstream detail for Phase A.
 - [production-inventory.md](release/production-inventory.md): the release state of each tool.
+- [Finish plan](superpowers/plans/2026-10-30-finish-plan.md): the production v1 bar and the order of the remaining work.
 
 This is the single place to see what is done, what is in review and what is next. Each milestone has an ID (for example `A2.3`) for use in branch names, commits and PR titles. When a milestone changes state, update this file in the same PR.
 
