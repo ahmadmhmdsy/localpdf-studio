@@ -6,6 +6,7 @@ import { PageMeta } from '../../contexts/EditorContext';
 import { useEffect, useState, useRef } from 'react';
 import { pdfjsLib } from '../../lib/pdfjs';
 import { logError } from '../../lib/logger';
+import { useI18n } from '../../i18n/useI18n';
 
 interface SortableThumbnailProps {
   page: PageMeta;
@@ -27,6 +28,7 @@ function SortableThumbnailInner({
   onDelete
 }: SortableThumbnailProps) {
   const [thumbnailUrl, setThumbnailUrl] = useState<string | null>(null);
+  const { t } = useI18n();
   const containerRef = useRef<HTMLDivElement>(null);
   const hasLoadedRef = useRef(false);
 
@@ -122,7 +124,7 @@ function SortableThumbnailInner({
         {thumbnailUrl ? (
           <img 
             src={thumbnailUrl} 
-            alt={`Page ${index + 1}`} 
+            alt={t('editor.thumb.page', { page: index + 1 })} 
             className="w-full h-full object-contain transition-transform duration-300"
             style={{ transform: `rotate(${page.rotation}deg)` }}
             draggable={false}
@@ -136,16 +138,16 @@ function SortableThumbnailInner({
           <button 
             onClick={onRotate}
             className="p-1.5 bg-[var(--surface)] text-[var(--text-2)] rounded-full hover:bg-[var(--surface-2)] hover:text-blue-600 transition-colors shadow-sm"
-            aria-label="Rotate 90 degrees"
-            title="Rotate 90°"
+            aria-label={t('editor.thumb.rotateLabel')}
+            title={t('editor.thumb.rotate')}
           >
             <RotateCw size={14} />
           </button>
           <button 
             onClick={onDelete}
             className="p-1.5 bg-[var(--surface)] text-[var(--text-2)] rounded-full hover:bg-[var(--surface-2)] hover:text-red-600 transition-colors shadow-sm"
-            aria-label="Delete Page"
-            title="Delete Page"
+            aria-label={t('editor.thumb.delete')}
+            title={t('editor.thumb.delete')}
           >
             <Trash2 size={14} />
           </button>

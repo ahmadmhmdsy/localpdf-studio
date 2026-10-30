@@ -1,48 +1,50 @@
 import { X } from 'lucide-react';
+import type { MessageKey } from '../../i18n';
+import { useI18n } from '../../i18n/useI18n';
 
 interface ShortcutGroup {
-  label: string;
-  shortcuts: { keys: string; desc: string }[];
+  label: MessageKey;
+  shortcuts: { keys: string; desc: MessageKey }[];
 }
 
 const groups: ShortcutGroup[] = [
   {
-    label: 'Undo & Redo',
+    label: 'editor.shortcuts.group.history',
     shortcuts: [
-      { keys: 'Ctrl+Z', desc: 'Undo' },
-      { keys: 'Ctrl+Shift+Z', desc: 'Redo' },
-      { keys: 'Ctrl+Y', desc: 'Redo (alternative)' },
+      { keys: 'Ctrl+Z', desc: 'editor.shortcuts.undo' },
+      { keys: 'Ctrl+Shift+Z', desc: 'editor.shortcuts.redo' },
+      { keys: 'Ctrl+Y', desc: 'editor.shortcuts.redoAlt' },
     ],
   },
   {
-    label: 'Editing',
+    label: 'editor.shortcuts.group.editing',
     shortcuts: [
-      { keys: 'Delete / Backspace', desc: 'Delete selected annotation' },
+      { keys: 'Delete / Backspace', desc: 'editor.shortcuts.deleteAnnotation' },
     ],
   },
   {
-    label: 'Zoom',
+    label: 'editor.shortcuts.group.zoom',
     shortcuts: [
-      { keys: 'Ctrl+= / Ctrl++', desc: 'Zoom in' },
-      { keys: 'Ctrl+-', desc: 'Zoom out' },
+      { keys: 'Ctrl+= / Ctrl++', desc: 'editor.shortcuts.zoomIn' },
+      { keys: 'Ctrl+-', desc: 'editor.shortcuts.zoomOut' },
     ],
   },
   {
-    label: 'View',
+    label: 'editor.shortcuts.group.view',
     shortcuts: [
-      { keys: 'Ctrl+,', desc: 'Toggle properties panel' },
+      { keys: 'Ctrl+,', desc: 'editor.shortcuts.toggleProperties' },
     ],
   },
   {
-    label: 'Tools',
+    label: 'editor.shortcuts.group.tools',
     shortcuts: [
-      { keys: 'Ctrl+V', desc: 'Select tool' },
-      { keys: 'Ctrl+H', desc: 'Pan tool' },
-      { keys: 'Ctrl+T', desc: 'Text tool' },
-      { keys: 'Ctrl+D', desc: 'Draw tool' },
-      { keys: 'Ctrl+I', desc: 'Image tool' },
-      { keys: 'Ctrl+C', desc: 'Crop tool' },
-      { keys: 'Ctrl+S', desc: 'Signature tool' },
+      { keys: 'Ctrl+V', desc: 'editor.shortcuts.selectTool' },
+      { keys: 'Ctrl+H', desc: 'editor.shortcuts.panTool' },
+      { keys: 'Ctrl+T', desc: 'editor.shortcuts.textTool' },
+      { keys: 'Ctrl+D', desc: 'editor.shortcuts.drawTool' },
+      { keys: 'Ctrl+I', desc: 'editor.shortcuts.imageTool' },
+      { keys: 'Ctrl+C', desc: 'editor.shortcuts.cropTool' },
+      { keys: 'Ctrl+S', desc: 'editor.shortcuts.signatureTool' },
     ],
   },
 ];
@@ -53,6 +55,7 @@ interface Props {
 }
 
 export default function KeyboardShortcutsHelp({ isOpen, onClose }: Props) {
+  const { t } = useI18n();
   if (!isOpen) return null;
 
   return (
@@ -60,15 +63,15 @@ export default function KeyboardShortcutsHelp({ isOpen, onClose }: Props) {
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
-      aria-label="Keyboard shortcuts"
+      aria-label={t('editor.shortcuts.dialog')}
     >
       <div className="bg-[var(--surface)] rounded-xl shadow-2xl w-full max-w-lg overflow-hidden">
         <div className="flex items-center justify-between p-4 border-b border-[var(--border)]">
-          <h3 className="font-semibold text-[var(--text)]">Keyboard Shortcuts</h3>
+          <h3 className="font-semibold text-[var(--text)]">{t('editor.shortcuts.title')}</h3>
           <button
             onClick={onClose}
             className="p-1 text-[var(--text-3)] hover:text-[var(--text-2)] rounded-full hover:bg-[var(--surface-2)] transition-colors"
-            aria-label="Close shortcuts"
+            aria-label={t('editor.shortcuts.close')}
           >
             <X size={20} />
           </button>
@@ -78,12 +81,12 @@ export default function KeyboardShortcutsHelp({ isOpen, onClose }: Props) {
           {groups.map((group) => (
             <div key={group.label}>
               <h4 className="text-xs font-semibold text-[var(--text-3)] uppercase tracking-wider mb-2">
-                {group.label}
+                {t(group.label)}
               </h4>
               <div className="space-y-1">
                 {group.shortcuts.map((shortcut) => (
                   <div key={shortcut.keys} className="flex items-center justify-between py-1">
-                    <span className="text-sm text-[var(--text-2)]">{shortcut.desc}</span>
+                    <span className="text-sm text-[var(--text-2)]">{t(shortcut.desc)}</span>
                     <kbd className="px-2 py-0.5 text-xs font-mono font-medium bg-[var(--surface-2)] text-[var(--text-2)] rounded border border-[var(--border)]">
                       {shortcut.keys}
                     </kbd>
@@ -93,7 +96,7 @@ export default function KeyboardShortcutsHelp({ isOpen, onClose }: Props) {
             </div>
           ))}
           <p className="text-xs text-[var(--text-3)] pt-2 border-t border-[var(--border)]">
-            Press <kbd className="px-1 py-0.5 text-xs font-mono bg-[var(--surface-2)] rounded border border-[var(--border)]">?</kbd> to toggle this dialog
+            {t('editor.shortcuts.togglePrefix')} <kbd className="px-1 py-0.5 text-xs font-mono bg-[var(--surface-2)] rounded border border-[var(--border)]">?</kbd> {t('editor.shortcuts.toggleSuffix')}
           </p>
         </div>
 
@@ -102,7 +105,7 @@ export default function KeyboardShortcutsHelp({ isOpen, onClose }: Props) {
             onClick={onClose}
             className="px-4 py-2 text-sm font-medium text-[var(--text-2)] hover:bg-[var(--surface-2)] rounded-lg transition-colors"
           >
-            Close
+            {t('confirm.close')}
           </button>
         </div>
       </div>

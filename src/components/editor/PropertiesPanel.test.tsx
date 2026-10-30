@@ -15,13 +15,20 @@ vi.mock('../../lib/pdfjs', () => ({
 // Mock stores
 const mockFile = new File([''], 'test.pdf', { type: 'application/pdf' });
 
+// Stand-in for the zustand hook: useI18n reads the store through a selector.
+const toolsState = (state: any) =>
+  ((selector?: (s: any) => unknown) => {
+    const full = { locale: 'en', setLocale: vi.fn(), ...state };
+    return selector ? selector(full) : full;
+  }) as any;
+
 describe('PropertiesPanel', () => {
   beforeEach(() => {
     vi.clearAllMocks();
   });
 
   it('renders empty state when no tool or annotation is selected', () => {
-    vi.spyOn(ToolsStoreModule, 'useToolsStore').mockReturnValue({ activeTool: 'select', propertiesPanelVisible: true } as any);
+    vi.spyOn(ToolsStoreModule, 'useToolsStore').mockImplementation(toolsState({ activeTool: 'select', propertiesPanelVisible: true }));
     vi.spyOn(DocumentStoreModule, 'useDocumentStore').mockReturnValue({ file: mockFile } as any);
     vi.spyOn(AnnotationsStoreModule, 'useAnnotationsStore').mockReturnValue({
       annotations: [],
@@ -36,7 +43,7 @@ describe('PropertiesPanel', () => {
   });
 
   it('renders text settings when text tool is active', () => {
-    vi.spyOn(ToolsStoreModule, 'useToolsStore').mockReturnValue({ activeTool: 'text', propertiesPanelVisible: true } as any);
+    vi.spyOn(ToolsStoreModule, 'useToolsStore').mockImplementation(toolsState({ activeTool: 'text', propertiesPanelVisible: true }));
     vi.spyOn(DocumentStoreModule, 'useDocumentStore').mockReturnValue({ file: mockFile } as any);
     vi.spyOn(AnnotationsStoreModule, 'useAnnotationsStore').mockReturnValue({ 
       annotations: [],
@@ -52,10 +59,10 @@ describe('PropertiesPanel', () => {
   });
 
   it('does not expose redaction settings for a legacy redaction record', () => {
-    vi.spyOn(ToolsStoreModule, 'useToolsStore').mockReturnValue({
+    vi.spyOn(ToolsStoreModule, 'useToolsStore').mockImplementation(toolsState({
       activeTool: 'select',
       propertiesPanelVisible: true,
-    } as any);
+    }));
     vi.spyOn(DocumentStoreModule, 'useDocumentStore').mockReturnValue({
       file: mockFile,
       pages: [],
@@ -85,10 +92,10 @@ describe('PropertiesPanel', () => {
   });
 
   it('does not expose settings for a stale redaction active tool', () => {
-    vi.spyOn(ToolsStoreModule, 'useToolsStore').mockReturnValue({
+    vi.spyOn(ToolsStoreModule, 'useToolsStore').mockImplementation(toolsState({
       activeTool: 'redact',
       propertiesPanelVisible: true,
-    } as any);
+    }));
     vi.spyOn(DocumentStoreModule, 'useDocumentStore').mockReturnValue({
       file: mockFile,
       pages: [],
@@ -107,7 +114,7 @@ describe('PropertiesPanel', () => {
   });
 
   it('renders nothing when no file is loaded', () => {
-    vi.spyOn(ToolsStoreModule, 'useToolsStore').mockReturnValue({ activeTool: 'select', propertiesPanelVisible: true } as any);
+    vi.spyOn(ToolsStoreModule, 'useToolsStore').mockImplementation(toolsState({ activeTool: 'select', propertiesPanelVisible: true }));
     vi.spyOn(DocumentStoreModule, 'useDocumentStore').mockReturnValue({ file: null } as any);
     vi.spyOn(AnnotationsStoreModule, 'useAnnotationsStore').mockReturnValue({ 
       annotations: [],

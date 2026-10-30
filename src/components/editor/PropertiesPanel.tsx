@@ -3,8 +3,10 @@ import { useToolsStore, useAnnotationsStore, useDocumentStore } from '../../stor
 import { useShallow } from 'zustand/react/shallow';
 import { Trash2 } from 'lucide-react';
 import { ANNOTATION_COLORS } from '../../constants/colors';
+import { useI18n } from '../../i18n/useI18n';
 
 export default function PropertiesPanel() {
+  const { t } = useI18n();
   const { activeTool, propertiesPanelVisible } = useToolsStore(
     useShallow((state) => ({
       activeTool: state.activeTool,
@@ -40,9 +42,9 @@ export default function PropertiesPanel() {
   if (!showProperties) return null;
 
   return (
-    <div className="w-72 bg-[var(--surface)] border-l border-[var(--border)] flex flex-col h-full overflow-hidden shadow-[-4px_0_15px_-3px_rgba(0,0,0,0.05)] z-10">
+    <div className="w-72 bg-[var(--surface)] border-s border-[var(--border)] flex flex-col h-full overflow-hidden shadow-[-4px_0_15px_-3px_rgba(0,0,0,0.05)] z-10">
       <div className="p-4 border-b border-[var(--border)] bg-[var(--surface-2)]">
-        <h3 className="font-semibold text-[var(--text)] text-sm uppercase tracking-wider">Properties</h3>
+        <h3 className="font-semibold text-[var(--text)] text-sm uppercase tracking-wider">{t('editor.props.title')}</h3>
       </div>
 
       <div className="flex-1 overflow-y-auto p-6">
@@ -53,7 +55,7 @@ export default function PropertiesPanel() {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 15l-2 5L9 9l11 4-5 2zm0 0l5 5M7.188 2.239l.777 2.897M5.136 7.965l-2.898-.777M13.95 4.05l-2.122 2.122m-5.657 5.656l-2.12 2.122" />
               </svg>
             </div>
-            Select a tool or an element on the canvas to see its properties here.
+            {t('editor.props.empty')}
           </div>
         ) : (
           <div className="space-y-6">
@@ -65,12 +67,12 @@ export default function PropertiesPanel() {
               <div className="space-y-4">
                 {activeTool === 'text' && !selectedAnnotation && (
                   <p className="text-xs text-[var(--text-3)] bg-[var(--surface-2)] p-3 rounded-lg border border-[var(--border)] mb-4">
-                    Click anywhere on the document to add text.
+                    {t('editor.props.textHint')}
                   </p>
                 )}
 
                 <div className={!selectedAnnotation ? 'opacity-50 pointer-events-none' : ''}>
-                  <label className="block text-xs font-medium text-[var(--text-3)] mb-1">Font Size</label>
+                  <label className="block text-xs font-medium text-[var(--text-3)] mb-1">{t('editor.props.fontSize')}</label>
                   <div className="flex items-center gap-3">
                     <input
                       type="range"
@@ -85,15 +87,15 @@ export default function PropertiesPanel() {
                 </div>
 
                 <div className={!selectedAnnotation ? 'opacity-50 pointer-events-none' : ''}>
-                  <label className="block text-xs font-medium text-[var(--text-3)] mb-1">Color</label>
+                  <label className="block text-xs font-medium text-[var(--text-3)] mb-1">{t('editor.props.color')}</label>
                   <div className="flex gap-2">
-                    {ANNOTATION_COLORS.map(({ value, label }) => (
+                    {ANNOTATION_COLORS.map(({ value, labelKey }) => (
                       <button
                         key={value}
                         onClick={() => selectedAnnotation && updateAnnotation(selectedAnnotation.id, { color: value }, pages)}
                         className={`w-8 h-8 rounded-full border-2 transition-all ${(selectedAnnotation as TextAnnotation)?.color === value ? 'border-[var(--border)] scale-110' : 'border-[var(--border)] hover:border-[var(--border)]'}`}
                         style={{ backgroundColor: value }}
-                        aria-label={`Select color ${label}`}
+                        aria-label={t('editor.props.selectColor', { color: t(labelKey) })}
                       />
                     ))}
                   </div>
@@ -106,7 +108,7 @@ export default function PropertiesPanel() {
                       className="flex items-center justify-center gap-2 w-full py-2 px-4 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-sm font-medium transition-colors"
                     >
                       <Trash2 size={16} />
-                      Delete Text
+                      {t('editor.props.deleteText')}
                     </button>
                   </div>
                 )}
@@ -122,7 +124,7 @@ export default function PropertiesPanel() {
                 )}
 
                 <div className={!selectedAnnotation ? 'opacity-50 pointer-events-none' : ''}>
-                  <label className="block text-xs font-medium text-[var(--text-3)] mb-1">Opacity</label>
+                  <label className="block text-xs font-medium text-[var(--text-3)] mb-1">{t('editor.props.opacity')}</label>
                   <div className="flex items-center gap-3">
                     <input
                       type="range"
@@ -137,7 +139,7 @@ export default function PropertiesPanel() {
                 </div>
 
                 <div className={!selectedAnnotation ? 'opacity-50 pointer-events-none' : ''}>
-                  <label className="block text-xs font-medium text-[var(--text-3)] mb-1">Rotation</label>
+                  <label className="block text-xs font-medium text-[var(--text-3)] mb-1">{t('editor.props.rotation')}</label>
                   <div className="flex items-center gap-3">
                     <input
                       type="range"
@@ -158,7 +160,7 @@ export default function PropertiesPanel() {
                       className="flex items-center justify-center gap-2 w-full py-2 px-4 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-sm font-medium transition-colors"
                     >
                       <Trash2 size={16} />
-                      Delete Image
+                      {t('editor.props.deleteImage')}
                     </button>
                   </div>
                 )}
@@ -169,7 +171,7 @@ export default function PropertiesPanel() {
               <div className="space-y-4">
                 {activeTool === 'crop' && !selectedAnnotation && (
                   <p className="text-xs text-[var(--text-3)] bg-[var(--surface-2)] p-3 rounded-lg border border-[var(--border)] mb-4">
-                    Click anywhere on the document to add a crop box. Only one crop box per page is allowed.
+                    {t('editor.props.cropHint')}
                   </p>
                 )}
 
@@ -180,7 +182,7 @@ export default function PropertiesPanel() {
                       className="flex items-center justify-center gap-2 w-full py-2 px-4 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-sm font-medium transition-colors"
                     >
                       <Trash2 size={16} />
-                      Delete Crop Box
+                      {t('editor.props.deleteCrop')}
                     </button>
                   </div>
                 )}
@@ -191,12 +193,12 @@ export default function PropertiesPanel() {
               <div className="space-y-4">
                 {activeTool === 'draw' && !selectedAnnotation && (
                   <p className="text-xs text-[var(--text-3)] bg-[var(--surface-2)] p-3 rounded-lg border border-[var(--border)] mb-4">
-                    Click and drag on the document to draw.
+                    {t('editor.props.drawHint')}
                   </p>
                 )}
 
                 <div className={!selectedAnnotation ? 'opacity-50 pointer-events-none' : ''}>
-                  <label className="block text-xs font-medium text-[var(--text-3)] mb-1">Stroke Width</label>
+                  <label className="block text-xs font-medium text-[var(--text-3)] mb-1">{t('editor.props.strokeWidth')}</label>
                   <div className="flex items-center gap-3">
                     <input
                       type="range"
@@ -211,15 +213,15 @@ export default function PropertiesPanel() {
                 </div>
 
                 <div className={!selectedAnnotation ? 'opacity-50 pointer-events-none' : ''}>
-                  <label className="block text-xs font-medium text-[var(--text-3)] mb-1">Color</label>
+                  <label className="block text-xs font-medium text-[var(--text-3)] mb-1">{t('editor.props.color')}</label>
                   <div className="flex gap-2">
-                    {ANNOTATION_COLORS.map(({ value, label }) => (
+                    {ANNOTATION_COLORS.map(({ value, labelKey }) => (
                       <button
                         key={value}
                         onClick={() => selectedAnnotation && updateAnnotation(selectedAnnotation.id, { color: value }, pages)}
                         className={`w-8 h-8 rounded-full border-2 transition-all ${(selectedAnnotation as DrawAnnotation)?.color === value ? 'border-[var(--border)] scale-110' : 'border-[var(--border)] hover:border-[var(--border)]'}`}
                         style={{ backgroundColor: value }}
-                        aria-label={`Select color ${label}`}
+                        aria-label={t('editor.props.selectColor', { color: t(labelKey) })}
                       />
                     ))}
                   </div>
@@ -232,7 +234,7 @@ export default function PropertiesPanel() {
                       className="flex items-center justify-center gap-2 w-full py-2 px-4 bg-red-50 text-red-600 hover:bg-red-100 rounded-lg text-sm font-medium transition-colors"
                     >
                       <Trash2 size={16} />
-                      Delete Drawing
+                      {t('editor.props.deleteDrawing')}
                     </button>
                   </div>
                 )}

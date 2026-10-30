@@ -1,10 +1,10 @@
 export const ANNOTATION_COLORS = [
-  { value: '#000000', label: 'Black' },
-  { value: '#EF4444', label: 'Red' },
-  { value: '#3B82F6', label: 'Blue' },
-  { value: '#10B981', label: 'Green' },
-  { value: '#F59E0B', label: 'Yellow' },
-  { value: '#6B7280', label: 'Gray' },
+  { value: '#000000', labelKey: 'editor.color.black' },
+  { value: '#EF4444', labelKey: 'editor.color.red' },
+  { value: '#3B82F6', labelKey: 'editor.color.blue' },
+  { value: '#10B981', labelKey: 'editor.color.green' },
+  { value: '#F59E0B', labelKey: 'editor.color.yellow' },
+  { value: '#6B7280', labelKey: 'editor.color.gray' },
 ] as const;
 
 export const REDACT_COLORS = [
