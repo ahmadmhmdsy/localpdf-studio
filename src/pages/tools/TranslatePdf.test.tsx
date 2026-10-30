@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { useToolsStore } from '../../store/toolsStore';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import TranslatePdf from './TranslatePdf';
@@ -24,6 +25,7 @@ describe('TranslatePdf', () => {
   let user: ReturnType<typeof userEvent.setup>;
 
   beforeEach(() => {
+    useToolsStore.setState({ locale: 'en' });
     user = userEvent.setup();
     vi.clearAllMocks();
   });
@@ -62,5 +64,11 @@ describe('TranslatePdf', () => {
     await waitFor(() => {
       expect(screen.getByRole('combobox')).toBeInTheDocument();
     });
+  });
+
+  it('renders the page in Arabic when that locale is active', () => {
+    useToolsStore.setState({ locale: 'ar' });
+    renderWithProviders(<TranslatePdf />);
+    expect(screen.getByText('اختر ملف PDF لترجمته')).toBeInTheDocument();
   });
 });
