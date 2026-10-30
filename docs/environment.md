@@ -37,7 +37,7 @@ Last inspected: 2026-10-25, on the owner's Windows workstation. Refresh this fil
 | Build | `npm run build` |
 | Bundle budget | `npm run check:bundle` (after a build) |
 | E2E | `npm run test:e2e` (Playwright, `e2e/`) |
-| Lighthouse | `npm run test:lhci` (`lighthouserc.js`) |
+| Lighthouse | `npm run test:lhci` (`lighthouserc.cjs`) |
 | Registry | `npx tsx scripts/validate-feature-registry.ts` |
 | Rust | `npm run cargo:check` (needs Rust plus MSVC) |
 

@@ -47,9 +47,9 @@
 | pdf-to-pdfa | PDF to PDF/A-style | Blocked as conformance | limited | local-only | Conversion Correctness | Audit outcome matrix: best-effort metadata only; UI warns conformance is not validated. | PDF/A-style metadata/OutputIntent only; the output is not PDF/A-conformant and is not validated (the web build has no veraPDF checker). |
 | pdf-to-word | PDF to Word | Limited | limited | local-only | Conversion Correctness | Audit outcome matrix: conversion runs. | Approximate plain paragraphs, not a layout-faithful editable conversion. |
 | pdf-to-excel | PDF to Excel | Limited | limited | local-only | Conversion Correctness | Audit outcome matrix: conversion runs. | Heuristic table extraction; no guarantee of complete/correct data. |
-| pdf-to-powerpoint | PDF to PowerPoint | Blocked | disabled | local-only | Conversion Correctness | Audit Conversions section: PNG declared while JPEG bytes are embedded; incomplete slide-master/layout relationships. | Outputs are structurally suspect PPTX packages; blocked pending independent OOXML validation. |
+| pdf-to-powerpoint | PDF to PowerPoint | Blocked | disabled | local-only | Conversion Correctness | The audit findings (PNG declared for JPEG bytes, missing master and layout) are fixed in code; the theme part and a package test are still missing (A6.1). | Each page becomes a JPEG image on its own slide, so text is not editable; no theme part and no schema-level test; blocked pending independent OOXML validation. |
 | rotate-pdf | Rotate PDF | OK narrow | stable | local-only | Editor/Accessibility | Audit outcome matrix and "What is genuinely usable": valid fixed-angle page rotation works. | Coordinate handling mixes PDF.js CropBox/rotation rendering with pdf-lib MediaBox assumptions; can misplace content on rotated/non-zero-CropBox pages at higher scope. |
-| add-page-numbers | Add Page Numbers | Limited | limited | local-only | Conversion Correctness | Audit outcome matrix: basic placement works. | Six implemented positions while catalog text says nine (implemented surface is smaller than advertised). |
+| add-page-numbers | Add Page Numbers | Limited | limited | local-only | Conversion Correctness | Audit outcome matrix: basic placement works. | Nine fixed positions, applied to every page as "page / total" in Helvetica; no custom placement, page range or Arabic numerals. |
 | add-watermark | Add Watermark | Limited | limited | local-only | Conversion Correctness | Audit outcome matrix; A7.6 added image watermarks and style/page-range controls. | Text watermarks are limited to Latin (WinAnsi) characters, so use an image watermark for Arabic and other scripts; the watermark is drawn into the page content, not flattened as security. |
 | crop-pdf | Crop PDF | OK with caveat | stable | local-only | Editor/Accessibility | Audit outcome matrix: one normalized crop is applied to all pages. | One shared crop for all pages; CropBox/MediaBox/origin normalization needs the unified transform (Phase 4). |
 | edit-pdf | Edit PDF | Limited | limited | local-only | Editor/Accessibility | Audit outcome matrix: overlay addition works. | Adds overlays only; does not edit existing PDF text/layout. |
@@ -61,7 +61,7 @@
 | ai-summarizer | AI Summarizer | Limited/High risk | disabled | optional-network | Privacy/AI/OCR | Audit P0 blocker 6: sends extracted text to Gemini without a consent step under absolute local-only claims; key/persistence issues. | Undisclosed text egress, no consent/cancellation/limits, summary download includes full source text by default. |
 | translate-pdf | Translate PDF (AI Translate) | Blocked/High risk | disabled | optional-network | Privacy/AI/OCR | Audit AI section: key resolver bypass, truncation, unsupported fonts, partial-success semantics. | Per-block requests can silently skip failures and report completion; Helvetica cannot encode several advertised CJK/Arabic/Hindi targets. |
 
-State totals: stable 5, limited 17, disabled 9, experimental 0 — 31 tools total.
+State totals: stable 5, limited 18, disabled 8, experimental 0 — 31 tools total.
 
 ## Privacy class assignments (baseline)
 

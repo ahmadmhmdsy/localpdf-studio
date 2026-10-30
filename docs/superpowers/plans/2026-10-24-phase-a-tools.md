@@ -116,9 +116,11 @@ Drawing black boxes is not redaction. Real redaction must remove text, image pix
 - **pdf-to-powerpoint (disabled):** declare the correct image content type (`image/jpeg` for JPEG bytes); add `slideMaster`, `slideLayout` and theme parts with their relationships; validate the package against the OOXML schema in tests (zip structure + `[Content_Types].xml` + rels). Independent check: opens in PowerPoint and LibreOffice.
 - **word-to-pdf / powerpoint-to-pdf (limited, outcome not achieved):** the honest local options are a better DOCX/PPTX layout renderer (large effort) or LibreOffice in the desktop build only. Recommend the desktop-only LibreOffice path, gated on detecting an installed `soffice`, using a safe subprocess API with a timeout; the web build keeps its "lossy" label.
 - **Legacy .doc/.ppt/.xls:** desktop-only via the same LibreOffice path; the web build rejects them with a clear message.
-- **Bundle:** `office-parsers` is 1773.8 KB against the 800 KB per-chunk limit in `scripts/check-bundle-size.mjs`. Split the parsers per format with dynamic imports so each tool loads only its own parser.
+- **Bundle:** done (A6.3). The old `office-parsers` chunk is split per format and `check:bundle` passes.
 
 ## Workstream 7: Shallow tools (smaller fixes)
+
+All merged except sign-pdf (A7.8) and the AI tools; `docs/roadmap.md` holds the live status.
 
 | Tool | Fix |
 |---|---|
@@ -126,7 +128,7 @@ Drawing black boxes is not redaction. Real redaction must remove text, image pix
 | remove-pages | Rebuild the document by copying the kept pages into a new PDF, so deleted objects are not reachable. |
 | html-to-pdf | Paginate by measuring content height per page instead of one rasterized page; offer orientation. |
 | jpg-to-pdf | Map pixels to points at the image DPI (default 96, cap to A4/Letter fit options); fix the MIME-loss skip. |
-| add-page-numbers | Implement the three missing positions, or change the catalog text to six. |
+| add-page-numbers | Done: the three middle positions are implemented (nine in total). |
 | add-watermark | Image watermark, font size, opacity and rotation controls; fix overstated copy. |
 | pdf-to-pdfa | Rename to "PDF/A-style" until a validator (veraPDF, desktop-only) confirms conformance. |
 | sign-pdf | Keep the "visual signature" wording; certificate signing is a separate future project. |
@@ -136,7 +138,7 @@ Drawing black boxes is not redaction. Real redaction must remove text, image pix
 ## Ordering
 
 1. OCR language data + cancellation + limits (Workstream 1), then compression verification (2): these close out the first slice.
-2. Split the office-parsers chunk so `check:bundle` passes again.
+2. ~~Split the office-parsers chunk so `check:bundle` passes again.~~ Done (A6.3).
 3. qpdf spike (3); if it passes, protect/unlock, then a real repair-pdf.
 4. Scan-to-PDF image fallback (5) and the small fixes (7), in parallel.
 5. Redaction engine evaluation (4) and the office conversions (6), each with its own plan once the engine decisions are made.

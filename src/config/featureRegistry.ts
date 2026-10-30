@@ -180,7 +180,7 @@ const REGISTRY: Record<ToolId, ToolAvailability> = {
     privacy: 'local-only',
     support: 'Not available — disabled pending remediation; see the production inventory for audit evidence.',
     limitation:
-      'PNG is declared while JPEG bytes are embedded; slide-master/layout relationships are missing. Outputs are structurally suspect PPTX packages; blocked pending independent OOXML validation.',
+      'Each page becomes a JPEG image on its own slide, so text is not editable. The package has no theme part and no schema-level test; blocked pending independent OOXML validation.',
   },
   'rotate-pdf': {
     releaseState: 'stable',
@@ -194,7 +194,7 @@ const REGISTRY: Record<ToolId, ToolAvailability> = {
     privacy: 'local-only',
     support: 'Basic placement works.',
     limitation:
-      'Six implemented positions while catalog text says nine (the implemented surface is smaller than advertised).',
+      'Nine fixed positions, applied to every page as "page / total" in Helvetica; no custom placement, page range or Arabic numerals.',
   },
   'add-watermark': {
     releaseState: 'limited',
