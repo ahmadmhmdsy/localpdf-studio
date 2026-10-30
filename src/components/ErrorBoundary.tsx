@@ -1,6 +1,12 @@
 import { Component, createRef, ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 import * as Sentry from '@sentry/react';
+import { translate, type MessageKey } from '../i18n';
+import { useToolsStore } from '../store/toolsStore';
+
+// A class component cannot call useI18n, so it reads the locale when it renders.
+const t = (key: MessageKey, vars?: Record<string, string | number>) =>
+  translate(useToolsStore.getState().locale, key, vars);
 
 interface Props {
   children: ReactNode;
@@ -57,15 +63,15 @@ export default class ErrorBoundary extends Component<Props, State> {
             </div>
 
             <h1 className="text-2xl font-bold text-[var(--text)] mb-2">
-              Something went wrong
+              {t('error.app.title')}
             </h1>
 
             <p className="text-[var(--text-2)] mb-6">
-              We apologize for the inconvenience. An unexpected error has occurred.
+              {t('error.app.body')}
             </p>
 
             {this.state.error && (
-              <div className="bg-[var(--surface-2)] rounded-lg p-4 mb-6 text-left">
+              <div className="bg-[var(--surface-2)] rounded-lg p-4 mb-6 text-start">
                 <p className="text-sm font-mono text-red-600 break-words">
                   {this.state.error.message}
                 </p>
@@ -78,14 +84,14 @@ export default class ErrorBoundary extends Component<Props, State> {
                 className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
               >
                 <RefreshCw className="w-4 h-4" />
-                Reload Page
+                {t('error.app.reload')}
               </button>
 
               <button
                 onClick={this.handleGoHome}
                 className="px-4 py-2 bg-[var(--surface-2)] hover:bg-[var(--surface-2)] text-[var(--text-2)] rounded-lg font-medium transition-colors"
               >
-                Go Home
+                {t('error.app.home')}
               </button>
             </div>
           </div>

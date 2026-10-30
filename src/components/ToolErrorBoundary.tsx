@@ -1,5 +1,11 @@
 import { Component, ErrorInfo, ReactNode } from 'react';
 import { AlertTriangle, RefreshCw, Home } from 'lucide-react';
+import { translate, type MessageKey } from '../i18n';
+import { useToolsStore } from '../store/toolsStore';
+
+// A class component cannot call useI18n, so it reads the locale when it renders.
+const t = (key: MessageKey, vars?: Record<string, string | number>) =>
+  translate(useToolsStore.getState().locale, key, vars);
 
 interface Props {
   children: ReactNode;
@@ -35,7 +41,7 @@ class ToolErrorBoundaryInner extends Component<Props, State> {
 
   public override render() {
     if (this.state.hasError) {
-      const toolName = this.props.toolName || 'This tool';
+      const toolName = this.props.toolName || t('error.tool.fallbackName');
       
       return (
         <div className="flex items-center justify-center p-8">
@@ -45,15 +51,15 @@ class ToolErrorBoundaryInner extends Component<Props, State> {
             </div>
             
             <h2 className="text-xl font-bold text-[var(--text)] mb-2">
-              {toolName} encountered an error
+              {t('error.tool.title', { name: toolName })}
             </h2>
             
             <p className="text-[var(--text-2)] mb-4">
-              Something went wrong while processing your file. Your data is safe - try again or use a different tool.
+              {t('error.tool.body')}
             </p>
 
             {this.state.error && (
-              <div className="bg-[var(--surface-2)] rounded-lg p-3 mb-6 text-left">
+              <div className="bg-[var(--surface-2)] rounded-lg p-3 mb-6 text-start">
                 <p className="text-xs font-mono text-red-600 break-words">
                   {this.state.error.message}
                 </p>
@@ -66,7 +72,7 @@ class ToolErrorBoundaryInner extends Component<Props, State> {
                 className="flex items-center gap-2 px-4 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg font-medium transition-colors"
               >
                 <RefreshCw className="w-4 h-4" />
-                Try Again
+                {t('error.tool.retry')}
               </button>
               
               <button
@@ -74,7 +80,7 @@ class ToolErrorBoundaryInner extends Component<Props, State> {
                 className="flex items-center gap-2 px-4 py-2 bg-[var(--surface-2)] hover:bg-[var(--surface-2)] text-[var(--text-2)] rounded-lg font-medium transition-colors"
               >
                 <Home className="w-4 h-4" />
-                All Tools
+                {t('error.tool.allTools')}
               </button>
             </div>
           </div>

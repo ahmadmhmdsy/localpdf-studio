@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useState } from 'react';
 import { X, Key, Trash2 } from 'lucide-react';
 import { useToast } from '../../contexts/ToastContext';
+import { useI18n } from '../../i18n/useI18n';
 import {
   API_KEY_CHANGED_EVENT,
   deleteStoreValue,
@@ -27,6 +28,7 @@ interface ApiKeySettingsProps {
  */
 export default function ApiKeySettings({ open, onClose }: ApiKeySettingsProps) {
   const { showToast } = useToast();
+  const { t } = useI18n();
   const [keyInput, setKeyInput] = useState('');
   const [saved, setSaved] = useState(false);
   const [busy, setBusy] = useState(false);
@@ -58,7 +60,7 @@ export default function ApiKeySettings({ open, onClose }: ApiKeySettingsProps) {
   const handleSave = useCallback(async () => {
     const trimmed = keyInput.trim();
     if (!trimmed) {
-      showToast({ message: 'Please paste a non-empty API key.', type: 'error', duration: 3000 });
+      showToast({ message: t('settings.apiKey.empty'), type: 'error', duration: 3000 });
       return;
     }
     setBusy(true);
@@ -71,7 +73,7 @@ export default function ApiKeySettings({ open, onClose }: ApiKeySettingsProps) {
       setSaved(true);
       setHasKey(true);
       setKeyInput('');
-      showToast({ message: 'Gemini API key saved.', type: 'success', duration: 2500 });
+      showToast({ message: t('settings.apiKey.savedToast'), type: 'success', duration: 2500 });
       // Close after a short beat so the user sees the success state.
       window.setTimeout(() => {
         setSaved(false);
@@ -79,14 +81,14 @@ export default function ApiKeySettings({ open, onClose }: ApiKeySettingsProps) {
       }, 700);
     } catch (err) {
       showToast({
-        message: 'Failed to save key: ' + (err instanceof Error ? err.message : String(err)),
+        message: t('settings.apiKey.saveFailed', { error: err instanceof Error ? err.message : String(err) }),
         type: 'error',
         duration: 5000,
       });
     } finally {
       setBusy(false);
     }
-  }, [keyInput, onClose, showToast]);
+  }, [keyInput, onClose, showToast, t]);
 
   const handleDelete = useCallback(async () => {
     setBusy(true);
@@ -95,17 +97,17 @@ export default function ApiKeySettings({ open, onClose }: ApiKeySettingsProps) {
       clearApiKeyCache();
       emitApiKeyChanged();
       setHasKey(false);
-      showToast({ message: 'API key removed.', type: 'success', duration: 2500 });
+      showToast({ message: t('settings.apiKey.removedToast'), type: 'success', duration: 2500 });
     } catch (err) {
       showToast({
-        message: 'Failed to delete key: ' + (err instanceof Error ? err.message : String(err)),
+        message: t('settings.apiKey.deleteFailed', { error: err instanceof Error ? err.message : String(err) }),
         type: 'error',
         duration: 5000,
       });
     } finally {
       setBusy(false);
     }
-  }, [showToast]);
+  }, [showToast, t]);
 
   if (!open) return null;
 
@@ -141,14 +143,14 @@ export default function ApiKeySettings({ open, onClose }: ApiKeySettingsProps) {
             id="api-key-settings-title"
             style={{ fontFamily: 'sans-serif', fontSize: '18px', fontWeight: 700 }}
           >
-            Gemini API Key
+            {t('settings.apiKey.title')}
           </h2>
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close settings"
+            aria-label={t('settings.apiKey.close')}
             style={{
-              marginLeft: 'auto', background: 'transparent', border: 'none',
+              marginInlineStart: 'auto', background: 'transparent', border: 'none',
               color: 'var(--text-2)', cursor: 'pointer', padding: '4px', borderRadius: '8px',
             }}
           >
@@ -157,8 +159,8 @@ export default function ApiKeySettings({ open, onClose }: ApiKeySettingsProps) {
         </div>
         <p style={{ color: 'var(--text-3)', fontSize: '13px', marginBottom: '20px' }}>
           {isTauri()
-            ? 'Stored locally in the app’s secure store. Used only for AI tools.'
-            : 'AI tools are unavailable in the public web beta. No API key is stored in the browser.'}
+            ? t('settings.apiKey.desktopHint')
+            : t('settings.apiKey.webHint')}
         </p>
 
         {!isTauri() ? (
@@ -171,12 +173,12 @@ export default function ApiKeySettings({ open, onClose }: ApiKeySettingsProps) {
             fontSize: '12px',
             color: 'var(--text-2)',
           }}>
-            <div>Status: not configured</div>
+            <div>{t('settings.apiKey.statusNone')}</div>
           </div>
         ) : (
           <>
             <label htmlFor="api-key-input" style={{ display: 'block', fontSize: '12px', color: 'var(--text-3)', marginBottom: '6px' }}>
-              {hasKey ? 'Replace key' : 'Enter your key'}
+              {hasKey ? t('settings.apiKey.replace') : t('settings.apiKey.enter')}
             </label>
             <input
               id="api-key-input"
@@ -186,7 +188,7 @@ export default function ApiKeySettings({ open, onClose }: ApiKeySettingsProps) {
               value={keyInput}
               onChange={(e) => setKeyInput(e.target.value)}
               placeholder="AIzaSy..."
-              aria-label="Gemini API key"
+              aria-label={t('settings.apiKey.inputLabel')}
               style={{
                 width: '100%', padding: '12px 14px', fontSize: '14px',
                 background: 'rgba(0,0,0,0.25)', color: 'var(--text)',
@@ -208,10 +210,10 @@ export default function ApiKeySettings({ open, onClose }: ApiKeySettingsProps) {
                     color: 'var(--text-2)', cursor: busy ? 'wait' : 'pointer',
                     fontSize: '13px', fontFamily: 'inherit',
                   }}
-                  aria-label="Delete saved API key"
+                  aria-label={t('settings.apiKey.delete')}
                 >
                   <Trash2 size={14} aria-hidden="true" />
-                  Remove saved key
+                  {t('settings.apiKey.remove')}
                 </button>
               )}
               <button
@@ -228,7 +230,7 @@ export default function ApiKeySettings({ open, onClose }: ApiKeySettingsProps) {
                   transition: 'all 200ms',
                 }}
               >
-                {saved ? 'Saved' : busy ? 'Saving…' : 'Save'}
+                {saved ? t('settings.apiKey.saved') : busy ? t('settings.apiKey.saving') : t('settings.apiKey.save')}
               </button>
             </div>
           </>
