@@ -66,7 +66,7 @@ export default function Layout() {
       <div className="grain" aria-hidden="true"></div>
       <div className="relative z-10 flex min-h-screen flex-col">
         <Header />
-        <main id="main-content" className="flex-1">
+        <main id="main-content" className="flex-1 pt-[var(--glass-header-offset)]">
           <Outlet />
         </main>
         <Footer />

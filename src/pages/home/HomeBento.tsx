@@ -394,7 +394,7 @@ function StatusBadge({ releaseState }: { releaseState: ReleaseState }) {
   return (
     <span
       className={cn(
-        'absolute right-2 top-2 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide',
+        'absolute end-2 top-2 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide',
         isUnavailable
           ? 'bg-red-500/15 text-red-700 dark:text-red-300'
           : 'bg-amber-500/15 text-amber-800 dark:text-amber-300'

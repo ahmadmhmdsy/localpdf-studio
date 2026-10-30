@@ -38,7 +38,7 @@ v1 is ready when every line below is PASS. Phases C, D and E come after v1 unles
 | 3 | B1.4: editor, onboarding, toasts, settings, error boundaries, Limitations, NotFound | Merged |
 | 4 | B1.5 guard: a test that fails on new literals | Merged |
 | 5 | A7.8: finish the sign-pdf wording | Merged |
-| 6 | B8: skin and visual bugs | Screenshot tests pass |
+| 6 | B8: skin and visual bugs | Geometry tests per skin pass (`e2e/skins.spec.ts`) |
 | 7 | Dev dependency upgrades (backlog #28), without adding packages | `npm audit` count drops, all checks pass |
 | 8 | A6.1: pdf-to-pptx theme part and package test | Unit test passes; the tool stays `disabled` |
 | 9 | Verification pass on generated files | Table below filled in |

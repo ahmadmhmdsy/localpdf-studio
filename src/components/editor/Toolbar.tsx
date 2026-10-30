@@ -200,8 +200,8 @@ export default function Toolbar() {
   if (!file) return null;
 
   return (
-    <div className="h-14 bg-[var(--surface)] border-b border-[var(--border)] flex items-center justify-between px-4 shadow-sm z-10">
-      <div className="flex items-center gap-4">
+    <div className="min-h-14 shrink-0 bg-[var(--surface)] border-b border-[var(--border)] flex flex-wrap items-center justify-between gap-x-4 gap-y-1 px-4 py-1 shadow-sm z-10">
+      <div className="flex flex-wrap items-center gap-4">
         <ToolPicker
           activeTool={activeTool}
           onSelect={setActiveTool}
@@ -227,7 +227,7 @@ export default function Toolbar() {
         />
       </div>
 
-      <div className="flex items-center gap-3">
+      <div className="flex min-w-0 flex-wrap items-center gap-3">
         <button
           onClick={toggleDarkMode}
           className={`p-2 min-w-[44px] min-h-[44px] rounded-md transition-colors ${darkMode ? 'bg-[var(--surface)] text-yellow-400' : 'text-[var(--text-2)] hover:bg-[var(--surface-2)]'}`}
