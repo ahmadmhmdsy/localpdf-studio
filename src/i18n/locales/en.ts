@@ -326,6 +326,85 @@ export const en = {
   'tool.scan.successTitle': 'PDF created successfully!',
   'tool.scan.successDescription': 'Your scanned document is ready to download.',
 
+  // Convert to PDF
+  'tool.common.convertToPdf': 'Convert to PDF',
+  'tool.common.convertingToPdf': 'Converting to PDF...',
+  'tool.common.conversionSuccess': 'Conversion Successful!',
+  'tool.common.conversionFailed': 'Conversion Failed',
+  'tool.common.downloadPdf': 'Download PDF',
+  'tool.common.startOver': 'Start over',
+
+  // JPG to PDF
+  'tool.jpg.uploadTitle': 'Select JPG images',
+  'tool.jpg.uploadSubtitle': 'or drop JPG images here',
+  'tool.jpg.reorder': 'Drag and drop to reorder images',
+  'tool.jpg.addMore': 'Add more images',
+  'tool.jpg.removeImage': 'Remove {name}',
+  'tool.jpg.pageLayout': 'Page layout',
+  'tool.jpg.pageSize': 'Page size',
+  'tool.jpg.pageSize.image': 'Image size',
+  'tool.jpg.pageSize.a4': 'A4',
+  'tool.jpg.pageSize.letter': 'Letter',
+  'tool.jpg.imageFit': 'Image fit',
+  'tool.jpg.fit.contain': 'Contain - keep the whole image, add margins',
+  'tool.jpg.fit.fill': 'Fill - stretch the image to the page',
+  'tool.jpg.pageSizeHint': "Image size keeps every page at the image's own dimensions, using the DPI stored in the image ({dpi} DPI when none is stored). A4 and Letter place every image on the same standard page.",
+  'tool.jpg.processingDescription': 'Please wait while we embed your images into a PDF document. This is happening locally in your browser.',
+  'tool.jpg.successTitle': 'PDF created successfully!',
+  'tool.jpg.successDescription': 'Your images have been combined into a single PDF file.',
+  'tool.jpg.skippedTitle': 'Some images were skipped',
+  'tool.jpg.skippedBody': 'These files could not be read as JPEG or PNG images, so they are not in the PDF: {files}.',
+  'tool.jpg.error': 'An error occurred while converting. Please try again.',
+
+  // HTML to PDF
+  'tool.html.description': 'Paste HTML to render it into an A4 PDF. The result is a raster image (text is not selectable), and only the HTML you paste is rendered — external URLs are not fetched.',
+  'tool.html.sample': '<h1>Hello World</h1><p>This is a sample HTML content to convert to PDF.</p>',
+  'tool.html.codeTab': 'HTML Code',
+  'tool.html.pasteLabel': 'Paste your HTML code here',
+  'tool.html.placeholder': '<h1>Your HTML here</h1>',
+  'tool.html.orientation': 'Page orientation',
+  'tool.html.portrait': 'Portrait',
+  'tool.html.landscape': 'Landscape',
+  'tool.html.orientationHint': 'Landscape suits wide content. Pages are A4 either way.',
+  'tool.html.preview': 'Preview',
+  'tool.html.empty': 'Please enter some HTML content.',
+  'tool.html.processingDescription': 'Please wait while we render your HTML and paginate it into A4 pages.',
+  'tool.html.successTitle': 'PDF generated successfully!',
+  'tool.html.successMany': 'Your HTML was converted into a {pages}-page A4 PDF.',
+  'tool.html.successOne': 'Your HTML was converted into a single A4 PDF page.',
+
+  // Word to PDF
+  'tool.word.uploadTitle': 'Select a Word document',
+  'tool.word.uploadSubtitle': 'or drop DOCX/DOC file here',
+  'tool.word.uploadAria': 'Select Word file',
+  'tool.word.invalidFile': 'Please select a Word document (.docx or .doc)',
+  'tool.word.processingDescription': 'Extracting content and creating PDF. This may take a moment.',
+  'tool.word.successDescription': 'Your Word document has been converted to PDF.',
+  'tool.word.download': 'Download {name}',
+  'tool.word.error': 'Failed to convert Word to PDF',
+
+  // Excel to PDF
+  'tool.excel.uploadTitle': 'Select an Excel file',
+  'tool.excel.uploadSubtitle': 'or drop XLSX/XLS/CSV file here',
+  'tool.excel.uploadAria': 'Select Excel file',
+  'tool.excel.invalidFile': 'Please select an Excel file (.xlsx, .xls) or CSV',
+  'tool.excel.processingDescription': 'Processing spreadsheets and creating PDF tables.',
+  'tool.excel.successDescription': 'Your Excel spreadsheet has been converted to PDF.',
+  'tool.excel.again': 'Convert Another File',
+  'tool.excel.error': 'Failed to convert Excel to PDF',
+
+  // PowerPoint to PDF
+  'tool.powerpoint.uploadTitle': 'Select a PowerPoint file',
+  'tool.powerpoint.uploadSubtitle': 'or drop PPTX/PPT file here',
+  'tool.powerpoint.uploadAria': 'Select PowerPoint file',
+  'tool.powerpoint.invalidFile': 'Please select a PowerPoint file (.pptx or .ppt)',
+  'tool.powerpoint.processingTitle': 'Converting presentation...',
+  'tool.powerpoint.processingDescription': 'Extracting slides and converting to PDF pages.',
+  'tool.powerpoint.successDescription': 'Your presentation has been converted to PDF.',
+  'tool.powerpoint.successHint': 'Each slide is now a PDF page.',
+  'tool.powerpoint.again': 'Convert Another Presentation',
+  'tool.powerpoint.error': 'Failed to convert PowerPoint to PDF',
+
 } as const;
 
 export type MessageKey = keyof typeof en;

@@ -8,12 +8,14 @@ import { getPageDimensions, htmlToPdf, type HtmlToPdfOrientation } from '../../l
 import { HTML_TO_PDF_OFFSCREEN_LEFT_PX } from '../../constants/htmlToPdf';
 import { logError } from '../../lib/logger';
 import { useToast } from '../../contexts/ToastContext';
+import { useI18n } from '../../i18n/useI18n';
 
 type Step = 'input' | 'processing' | 'download';
 
 export default function HtmlToPdf() {
+  const { t, toolName } = useI18n();
   const [step, setStep] = useState<Step>('input');
-  const [htmlContent, setHtmlContent] = useState<string>('<h1>Hello World</h1><p>This is a sample HTML content to convert to PDF.</p>');
+  const [htmlContent, setHtmlContent] = useState<string>(() => t('tool.html.sample'));
   const [orientation, setOrientation] = useState<HtmlToPdfOrientation>('portrait');
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [resultSize, setResultSize] = useState<string>('');
@@ -28,13 +30,13 @@ export default function HtmlToPdf() {
 
   const handleProcess = async () => {
     if (!hasContent) {
-      showToast({ message: 'Please enter some HTML content.', type: 'warning' });
+      showToast({ message: t('tool.html.empty'), type: 'warning' });
       return;
     }
 
     const captureElement = captureRef.current;
     if (!captureElement) {
-      showToast({ message: 'An error occurred. Please try again.', type: 'error', duration: 5000 });
+      showToast({ message: t('tool.common.error'), type: 'error', duration: 5000 });
       return;
     }
 
@@ -50,7 +52,7 @@ export default function HtmlToPdf() {
     } catch (error) {
       logError('Error converting HTML to PDF:', error);
       showToast({
-        message: 'An error occurred. Please try again.',
+        message: t('tool.common.error'),
         type: 'error',
         duration: 5000,
       });
@@ -76,8 +78,8 @@ export default function HtmlToPdf() {
 
   return (
     <ToolLayout
-      title="HTML to PDF"
-      description="Paste HTML to render it into an A4 PDF. The result is a raster image (text is not selectable), and only the HTML you paste is rendered — external URLs are not fetched."
+      title={toolName('html-to-pdf')}
+      description={t('tool.html.description')}
     >
       {step === 'input' && (
         <div className="w-full max-w-4xl mx-auto">
@@ -85,34 +87,34 @@ export default function HtmlToPdf() {
             <div className="flex border-b border-[var(--border)]">
               <div className="flex-1 py-4 px-6 text-center font-medium flex items-center justify-center gap-2 bg-red-50 text-red-600 border-b-2 border-red-600">
                 <Code size={18} />
-                HTML Code
+                {t('tool.html.codeTab')}
               </div>
             </div>
 
             <div className="p-6">
               <div className="space-y-4">
                 <label className="block text-sm font-medium text-[var(--text-2)]">
-                  Paste your HTML code here
+                  {t('tool.html.pasteLabel')}
                 </label>
                 <textarea
                   value={htmlContent}
                   onChange={(e) => setHtmlContent(e.target.value)}
                   className="w-full h-64 p-4 border border-[var(--border)] rounded-xl font-mono text-sm focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all"
-                  placeholder="<h1>Your HTML here</h1>"
+                  placeholder={t('tool.html.placeholder')}
                 />
 
                 <div>
                   <span className="block text-sm font-medium text-[var(--text-2)] mb-3">
-                    Page orientation
+                    {t('tool.html.orientation')}
                   </span>
-                  <div className="flex gap-3" role="group" aria-label="Page orientation">
+                  <div className="flex gap-3" role="group" aria-label={t('tool.html.orientation')}>
                     <button
                       type="button"
                       onClick={() => setOrientation('portrait')}
                       aria-pressed={orientation === 'portrait'}
                       className={orientationButtonClass('portrait')}
                     >
-                      Portrait
+                      {t('tool.html.portrait')}
                     </button>
                     <button
                       type="button"
@@ -120,16 +122,16 @@ export default function HtmlToPdf() {
                       aria-pressed={orientation === 'landscape'}
                       className={orientationButtonClass('landscape')}
                     >
-                      Landscape
+                      {t('tool.html.landscape')}
                     </button>
                   </div>
                   <p className="text-xs text-[var(--text-3)] mt-2">
-                    Landscape suits wide content. Pages are A4 either way.
+                    {t('tool.html.orientationHint')}
                   </p>
                 </div>
 
                 <div className="mt-8">
-                  <h3 className="text-sm font-medium text-[var(--text-2)] mb-4">Preview</h3>
+                  <h3 className="text-sm font-medium text-[var(--text-2)] mb-4">{t('tool.html.preview')}</h3>
                   <div
                     className="border border-[var(--border)] rounded-xl p-8 bg-[var(--surface)] min-h-[400px] prose max-w-none"
                     dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
@@ -146,7 +148,7 @@ export default function HtmlToPdf() {
               className="bg-red-600 hover:bg-red-700 text-white font-semibold py-4 px-12 rounded-xl text-xl transition-colors shadow-lg flex items-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
             >
               <FileText size={24} />
-              Convert to PDF
+              {t('tool.common.convertToPdf')}
             </button>
           </div>
         </div>
@@ -154,18 +156,18 @@ export default function HtmlToPdf() {
 
       {step === 'processing' && (
         <ProcessingState
-          title="Converting to PDF..."
-          description="Please wait while we render your HTML and paginate it into A4 pages."
+          title={t('tool.common.convertingToPdf')}
+          description={t('tool.html.processingDescription')}
         />
       )}
 
       {step === 'download' && resultUrl && (
         <DownloadState
-          title="PDF generated successfully!"
+          title={t('tool.html.successTitle')}
           description={
             resultPages > 1
-              ? `Your HTML was converted into a ${resultPages}-page A4 PDF.`
-              : 'Your HTML was converted into a single A4 PDF page.'
+              ? t('tool.html.successMany', { pages: resultPages })
+              : t('tool.html.successOne')
           }
           fileName="webpage.pdf"
           fileUrl={resultUrl}

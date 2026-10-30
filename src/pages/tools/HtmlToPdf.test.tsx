@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { useToolsStore } from '../../store/toolsStore';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import HtmlToPdf from './HtmlToPdf';
@@ -66,6 +67,7 @@ describe('HtmlToPdf', () => {
   let user: ReturnType<typeof userEvent.setup>;
 
   beforeEach(() => {
+    useToolsStore.setState({ locale: 'en' });
     user = userEvent.setup();
     vi.clearAllMocks();
     pdfInstances.length = 0;
@@ -181,5 +183,13 @@ describe('HtmlToPdf', () => {
       expect(screen.getByText('An error occurred. Please try again.')).toBeInTheDocument();
     });
     expect(screen.getByPlaceholderText(/Your HTML here/i)).toBeInTheDocument();
+  });
+
+  it('renders the page in Arabic when that locale is active', async () => {
+    useToolsStore.setState({ locale: 'ar' });
+    renderWithProviders(<HtmlToPdf />);
+    expect(screen.getByRole('button', { name: 'تحويل إلى PDF' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'عمودي' })).toBeInTheDocument();
+    expect(screen.getByText(/لا يمكن تحديد النص/)).toBeInTheDocument();
   });
 });

@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { useToolsStore } from '../../store/toolsStore';
 import { act, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import PowerpointToPdf from './PowerpointToPdf';
@@ -17,6 +18,7 @@ describe('PowerpointToPdf', () => {
   let user: ReturnType<typeof userEvent.setup>;
 
   beforeEach(() => {
+    useToolsStore.setState({ locale: 'en' });
     user = userEvent.setup();
     convertPowerpointToPdfMock.mockReset();
     vi.clearAllMocks();
@@ -53,5 +55,11 @@ describe('PowerpointToPdf', () => {
 
     expect(await screen.findByText(/conversion successful!/i)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /download pdf/i })).toBeInTheDocument();
+  });
+
+  it('renders the page in Arabic when that locale is active', async () => {
+    useToolsStore.setState({ locale: 'ar' });
+    renderWithProviders(<PowerpointToPdf />);
+    expect(screen.getByText('اختر ملف PowerPoint')).toBeInTheDocument();
   });
 });
