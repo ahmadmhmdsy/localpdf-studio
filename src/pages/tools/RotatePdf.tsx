@@ -12,7 +12,7 @@ import { useI18n } from '../../i18n/useI18n';
 type Step = 'upload' | 'configure' | 'processing' | 'download';
 
 export default function RotatePdf() {
-  const { t, toolName, toolDescription } = useI18n();
+  const { t, toolName, toolDescription, fileSize } = useI18n();
   const [step, setStep] = useState<Step>('upload');
   const [file, setFile] = useState<File | null>(null);
   const [angle, setAngle] = useState<number>(90);
@@ -38,7 +38,7 @@ export default function RotatePdf() {
       const url = URL.createObjectURL(blob);
       
       setResultUrl(url);
-      setResultSize((blob.size / 1024 / 1024).toFixed(2) + ' MB');
+      setResultSize(fileSize(blob.size));
       setStep('download');
     } catch (error) {
       logError('Error rotating PDF:', error);
@@ -83,7 +83,7 @@ export default function RotatePdf() {
                 </div>
                 <div className="flex flex-col">
                   <span className="font-semibold text-[var(--text)] text-lg">{file.name}</span>
-                  <span className="text-sm text-[var(--text-3)]">{(file.size / 1024 / 1024).toFixed(2)} MB</span>
+                  <span className="text-sm text-[var(--text-3)]">{fileSize(file.size)}</span>
                 </div>
               </div>
               <button 

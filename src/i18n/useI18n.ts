@@ -2,6 +2,7 @@ import { useCallback } from 'react';
 import { useToolsStore } from '../store/toolsStore';
 import { categoryName, toolCopy, toolDescription, toolName, type ToolCopy } from './catalog';
 import { availabilityCopy, privacyNotice, type AvailabilityCopy } from './registryCopy';
+import { BYTES_PER_MB } from '../constants/limits';
 import type { ToolCategoryId } from '../constants/tools';
 import type { ToolId } from '../config/featureRegistry';
 import { directionFor, translate, type Direction, type Locale, type MessageKey } from './index';
@@ -21,6 +22,8 @@ export type I18n = {
   availability: (toolId: ToolId) => AvailabilityCopy;
   /** Registry data-handling sentence in the active locale (B1.4c). */
   privacyNotice: (toolId: ToolId) => string;
+  /** A byte count as a localized megabyte label (B1.5). */
+  fileSize: (bytes: number) => string;
 };
 
 /**
@@ -49,6 +52,11 @@ export function useI18n(): I18n {
     [locale],
   );
   const notice = useCallback((toolId: ToolId) => privacyNotice(locale, toolId), [locale]);
+  const fileSize = useCallback(
+    (bytes: number) =>
+      translate(locale, 'tool.common.fileSizeMb', { size: (bytes / BYTES_PER_MB).toFixed(2) }),
+    [locale],
+  );
 
   return {
     locale,
@@ -61,5 +69,6 @@ export function useI18n(): I18n {
     categoryName: category,
     availability,
     privacyNotice: notice,
+    fileSize,
   };
 }

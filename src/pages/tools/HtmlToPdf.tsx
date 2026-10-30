@@ -13,7 +13,7 @@ import { useI18n } from '../../i18n/useI18n';
 type Step = 'input' | 'processing' | 'download';
 
 export default function HtmlToPdf() {
-  const { t, toolName } = useI18n();
+  const { t, toolName, fileSize } = useI18n();
   const [step, setStep] = useState<Step>('input');
   const [htmlContent, setHtmlContent] = useState<string>(() => t('tool.html.sample'));
   const [orientation, setOrientation] = useState<HtmlToPdfOrientation>('portrait');
@@ -46,7 +46,7 @@ export default function HtmlToPdf() {
 
       const blobUrl = URL.createObjectURL(blob);
       setResultUrl(blobUrl);
-      setResultSize((blob.size / 1024 / 1024).toFixed(2) + ' MB');
+      setResultSize(fileSize(blob.size));
       setResultPages(pageCount);
       setStep('download');
     } catch (error) {

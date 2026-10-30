@@ -27,7 +27,7 @@ export default function OrganizePdf() {
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [resultSize, setResultSize] = useState<string>('');
   const { showToast } = useToast();
-  const { t, toolName, toolDescription } = useI18n();
+  const { t, toolName, toolDescription, fileSize } = useI18n();
 
   const handleFilesSelected = async (newFiles: File[]) => {
     if (newFiles.length > 0) {
@@ -87,7 +87,7 @@ export default function OrganizePdf() {
       const url = URL.createObjectURL(blob);
       
       setResultUrl(url);
-      setResultSize((blob.size / 1024 / 1024).toFixed(2) + ' MB');
+      setResultSize(fileSize(blob.size));
       setStep('download');
     } catch (error) {
       logError('Error organizing PDF:', error);

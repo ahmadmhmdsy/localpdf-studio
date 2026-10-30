@@ -31,7 +31,7 @@ export default function MergePdf() {
   const [resultSize, setResultSize] = useState<string>('');
   const { showToast } = useToast();
   const { create: createObjectUrl, revoke: revokeObjectUrl } = useManagedObjectUrl();
-  const { t, toolName, toolDescription } = useI18n();
+  const { t, toolName, toolDescription, fileSize } = useI18n();
 
   const handleFilesSelected = (newFiles: File[]) => {
     setFiles((prev) => [...prev, ...newFiles]);
@@ -79,7 +79,7 @@ export default function MergePdf() {
       const url = createObjectUrl(blob);
       
       setResultUrl(url);
-      setResultSize((blob.size / 1024 / 1024).toFixed(2) + ' MB');
+      setResultSize(fileSize(blob.size));
       setStep('download');
     } catch (error) {
       logError('Error merging PDFs:', error);
@@ -180,7 +180,7 @@ export default function MergePdf() {
                               </div>
                               <div className="flex flex-col overflow-hidden">
                                 <span className="font-medium text-[var(--text)] truncate">{file.name}</span>
-                                <span className="text-xs text-[var(--text-3)]">{(file.size / 1024 / 1024).toFixed(2)} MB</span>
+                                <span className="text-xs text-[var(--text-3)]">{fileSize(file.size)}</span>
                               </div>
                             </div>
                             <div className="flex items-center gap-2">

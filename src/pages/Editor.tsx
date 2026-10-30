@@ -5,6 +5,7 @@ import { cn } from '../lib/utils';
 import { useShallow } from 'zustand/react/shallow';
 import { useKeyboardShortcuts } from '../hooks/useKeyboardShortcuts';
 import { useToast } from '../contexts/ToastContext';
+import { useI18n } from '../i18n/useI18n';
 
 import KeyboardShortcutsHelp from '../components/editor/KeyboardShortcutsHelp';
 import { EditorEmptyState } from './editor/EditorEmptyState';
@@ -49,6 +50,7 @@ export default function Editor() {
   );
   const [searchParams] = useSearchParams();
   const { showToast } = useToast();
+  const { t } = useI18n();
 
   // Use refs for values that change frequently to avoid re-creating handlers
   const pagesRef = useRef(pages);
@@ -141,7 +143,7 @@ export default function Editor() {
     if (files.length > 1) {
       const ignored = files.length - 1;
       showToast({
-        message: `Editor only opens one file at a time. Loaded "${files[0].name}"; ignored ${ignored} other ${ignored === 1 ? 'file' : 'files'}.`,
+        message: t('editor.load.oneFileOnly', { name: files[0].name, count: ignored }),
         type: 'info',
         duration: 6000,
       });
@@ -151,12 +153,12 @@ export default function Editor() {
       await loadFile(files[0]);
     } catch {
       showToast({
-        message: 'Failed to load PDF. Please try another file.',
+        message: t('editor.load.failed'),
         type: 'error',
         duration: 5000,
       });
     }
-  }, [loadFile, showToast]);
+  }, [loadFile, showToast, t]);
 
   const skin = useToolsStore((s) => s.skin);
   const wrapperHeight = skin === 'bento' ? 'h-screen' : 'h-[calc(100vh-64px)]';
