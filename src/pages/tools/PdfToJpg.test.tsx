@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { useToolsStore } from '../../store/toolsStore';
 import { act, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import PdfToJpg from './PdfToJpg';
@@ -26,6 +27,7 @@ describe('PdfToJpg', () => {
   let user: ReturnType<typeof userEvent.setup>;
 
   beforeEach(() => {
+    useToolsStore.setState({ locale: 'en' });
     user = userEvent.setup();
     pdfToJpgsMock.mockReset();
     pdfToJpgsMock.mockResolvedValue(new Blob(['zip'], { type: 'application/zip' }));
@@ -186,5 +188,11 @@ describe('PdfToJpg', () => {
         expect(screen.getByRole('link', { name: /download/i })).toBeInTheDocument();
       }, { timeout: 3000 });
     });
+  });
+
+  it('renders the page in Arabic when that locale is active', () => {
+    useToolsStore.setState({ locale: 'ar' });
+    renderWithProviders(<PdfToJpg />);
+    expect(screen.getByText('اختر ملف PDF')).toBeInTheDocument();
   });
 });
