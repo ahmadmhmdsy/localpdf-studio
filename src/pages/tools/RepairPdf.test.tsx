@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import RepairPdf from './RepairPdf';
@@ -6,6 +6,7 @@ import { renderWithProviders, createDeferred } from '../../tests/utils';
 import { generateDummyPdf } from '../../tests/fixtures/pdfGenerator';
 import { repairPdf, type RepairResult } from '../../lib/repair';
 import { saveAs } from 'file-saver';
+import { useToolsStore } from '../../store/toolsStore';
 
 vi.mock('../../lib/repair', () => ({
   repairPdf: vi.fn(),
@@ -18,15 +19,12 @@ vi.mock('file-saver', () => ({
 const successResult: RepairResult = {
   success: true,
   data: new Uint8Array([1, 2, 3]),
-  message: 'PDF repaired successfully. Fixed 1 issue(s).',
-  issuesFixed: ['Validated PDF structure'],
+  issuesFixed: [{ code: 'structure-validated' }],
 };
 
 const failureResult: RepairResult = {
   success: false,
   data: null,
-  message:
-    'This PDF is too damaged to repair in the browser. No repaired file was produced; your original file is unchanged.',
   issuesFixed: [],
 };
 
@@ -42,6 +40,10 @@ describe('RepairPdf', () => {
   beforeEach(() => {
     user = userEvent.setup();
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    useToolsStore.setState({ locale: 'en' });
   });
 
   it('renders upload zone on initial load', () => {
@@ -76,7 +78,7 @@ describe('RepairPdf', () => {
     await uploadPdf(user);
 
     expect(await screen.findByText(/repair successful/i)).toBeInTheDocument();
-    expect(screen.getByText(successResult.message)).toBeInTheDocument();
+    expect(screen.getByText(/PDF repaired successfully. Fixed 1 issue/)).toBeInTheDocument();
     expect(screen.getByText('Validated PDF structure')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /download repaired pdf/i })).toBeInTheDocument();
   });
@@ -115,7 +117,6 @@ describe('RepairPdf', () => {
     vi.mocked(repairPdf).mockResolvedValueOnce({
       success: false,
       data: new Uint8Array([9, 9, 9]),
-      message: 'This PDF is too damaged to repair in the browser.',
       issuesFixed: [],
     });
 
@@ -140,6 +141,23 @@ describe('RepairPdf', () => {
     expect(
       screen.queryByRole('button', { name: /download repaired pdf/i }),
     ).not.toBeInTheDocument();
+  });
+
+  it('renders the repair flow in Arabic when that locale is active', async () => {
+    vi.mocked(repairPdf).mockResolvedValueOnce(successResult);
+    useToolsStore.setState({ locale: 'ar' });
+
+    renderWithProviders(<RepairPdf />);
+
+    expect(screen.getByRole('heading', { name: 'إصلاح PDF' })).toBeInTheDocument();
+    expect(screen.getByText('اختر ملف PDF تالفًا')).toBeInTheDocument();
+
+    const pdfFile = await generateDummyPdf(3, 'test.pdf');
+    await user.upload(screen.getByLabelText('اختر ملف PDF'), pdfFile);
+
+    expect(await screen.findByText('تم الإصلاح بنجاح!')).toBeInTheDocument();
+    expect(screen.getByText('تم التحقق من بنية PDF')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'تنزيل ملف PDF المُصلح' })).toBeInTheDocument();
   });
 
   it('returns to the upload zone after a failure', async () => {

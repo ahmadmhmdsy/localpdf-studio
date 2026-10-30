@@ -16,8 +16,22 @@ import { InvalidPageRangeError } from '../../lib/pdf';
 import { logError } from '../../lib/logger';
 import { MAX_OCR_FILE_SIZE_MB, MAX_OCR_PAGES } from '../../constants/limits';
 import { saveAs } from 'file-saver';
+import { useI18n } from '../../i18n/useI18n';
+import type { MessageKey } from '../../i18n';
 
 type Step = 'upload' | 'configure' | 'loading' | 'processing' | 'done' | 'error';
+
+const LANGUAGE_KEYS: Record<OcrLanguage, MessageKey> = {
+  eng: 'tool.ocr.language.eng',
+  ara: 'tool.ocr.language.ara',
+};
+
+const STATUS_KEYS: Record<OcrProgress['status'], MessageKey> = {
+  rendering: 'tool.ocr.status.rendering',
+  recognizing: 'tool.ocr.status.recognizing',
+  embedding: 'tool.ocr.status.embedding',
+  skipped: 'tool.ocr.status.skipped',
+};
 
 export default function OcrPdf() {
   const [step, setStep] = useState<Step>('upload');
@@ -29,6 +43,7 @@ export default function OcrPdf() {
   const [pageRange, setPageRange] = useState('');
   const [pageRangeError, setPageRangeError] = useState<string | null>(null);
   const abortRef = useRef<AbortController | null>(null);
+  const { t, toolName, toolDescription } = useI18n();
 
   // Leaving the page stops a running OCR job and frees its worker.
   useEffect(() => () => abortRef.current?.abort(), []);
@@ -75,10 +90,10 @@ export default function OcrPdf() {
       logError('Error running OCR:', err);
       setError(
         err instanceof OcrLanguageDataMissingError
-          ? `${err.message} Ask the person who deployed this app to add the language file.`
+          ? `${err.message} ${t('tool.ocr.languageDataHint')}`
           : err instanceof Error
             ? err.message
-            : 'Failed to OCR PDF',
+            : t('tool.ocr.error'),
       );
       setStep('error');
     } finally {
@@ -112,44 +127,43 @@ export default function OcrPdf() {
   };
 
   const getProgressDescription = () => {
-    if (!progress) return 'Loading the OCR engine...';
+    if (!progress) return t('tool.ocr.engineLoading');
     const { page, totalPages, pageNumber, status } = progress;
-    const statusText = {
-      rendering: 'Rendering page...',
-      recognizing: 'Recognizing text...',
-      embedding: 'Adding searchable text...',
-      skipped: 'Page already has text, skipping...',
-    }[status];
+    const statusText = t(STATUS_KEYS[status]);
     return page === pageNumber
-      ? `${statusText} (Page ${page} of ${totalPages})`
-      : `${statusText} (Page ${pageNumber}; ${page} of ${totalPages})`;
+      ? t('tool.ocr.progressPage', { status: statusText, page, total: totalPages })
+      : t('tool.ocr.progressPageRange', {
+          status: statusText,
+          pageNumber,
+          page,
+          total: totalPages,
+        });
   };
 
   const summary = () => {
     if (!result) return '';
-    const parts = [`${result.wordsAdded} words added on ${result.pagesRecognized} page(s).`];
+    const parts = [
+      t('tool.ocr.summaryWords', { words: result.wordsAdded, pages: result.pagesRecognized }),
+    ];
     if (result.pagesSkipped > 0) {
-      parts.push(`${result.pagesSkipped} page(s) already had text and were left as they are.`);
+      parts.push(t('tool.ocr.summarySkipped', { pages: result.pagesSkipped }));
     }
     if (result.charactersDropped > 0) {
-      parts.push(`${result.charactersDropped} character(s) could not be stored in the text layer and were left out.`);
+      parts.push(t('tool.ocr.summaryDropped', { count: result.charactersDropped }));
     }
     return parts.join(' ');
   };
 
   return (
-    <ToolLayout
-      title="OCR PDF"
-      description="Make scanned PDFs searchable. Text recognition runs on your device; your file is not uploaded."
-    >
+    <ToolLayout title={toolName('ocr-pdf')} description={toolDescription('ocr-pdf')}>
       {step === 'upload' && (
         <FileUploadZone
-          ariaLabel="Select PDF file"
+          ariaLabel={t('tool.common.selectPdfFile')}
           onFilesSelected={handleFilesSelected}
           accept={{ 'application/pdf': ['.pdf'] }}
           maxFiles={1}
-          title="Select a scanned PDF"
-          subtitle="or drop PDF file here"
+          title={t('tool.ocr.uploadTitle')}
+          subtitle={t('tool.repair.uploadSubtitle')}
         />
       )}
 
@@ -166,14 +180,14 @@ export default function OcrPdf() {
               <button
                 onClick={reset}
                 className="p-2 text-[var(--text-3)] hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                aria-label="Remove file"
+                aria-label={t('tool.common.removeFile')}
               >
                 <X size={20} />
               </button>
             </div>
 
             <label htmlFor="ocr-language" className="block text-[var(--text)] font-medium mb-2">
-              Document language
+              {t('tool.ocr.languageLabel')}
             </label>
             <select
               id="ocr-language"
@@ -183,13 +197,13 @@ export default function OcrPdf() {
             >
               {OCR_LANGUAGES.map((l) => (
                 <option key={l.code} value={l.code}>
-                  {l.label}
+                  {t(LANGUAGE_KEYS[l.code])}
                 </option>
               ))}
             </select>
 
             <label htmlFor="ocr-page-range" className="block text-[var(--text)] font-medium mt-5 mb-2">
-              Pages (optional)
+              {t('tool.ocr.pagesLabel')}
             </label>
             <input
               id="ocr-page-range"
@@ -199,7 +213,7 @@ export default function OcrPdf() {
                 setPageRange(e.target.value);
                 setPageRangeError(null);
               }}
-              placeholder="All pages, or e.g. 1-3, 7"
+              placeholder={t('tool.ocr.pagesPlaceholder')}
               aria-invalid={pageRangeError ? true : undefined}
               aria-describedby={pageRangeError ? 'ocr-page-range-error' : undefined}
               className="w-full p-3 rounded-lg border border-[var(--border)] bg-[var(--surface)] text-[var(--text)]"
@@ -209,13 +223,9 @@ export default function OcrPdf() {
                 {pageRangeError}
               </p>
             )}
-            <p className="text-sm text-[var(--text-3)] mt-3">
-              Pages that already contain text are skipped. The scanned image is kept as it is; an
-              invisible text layer is added on top so you can search, select and copy.
-            </p>
+            <p className="text-sm text-[var(--text-3)] mt-3">{t('tool.ocr.pagesHelp')}</p>
             <p className="text-sm text-[var(--text-3)] mt-2">
-              Limits: up to {MAX_OCR_PAGES} pages and {MAX_OCR_FILE_SIZE_MB} MB per file. For a longer
-              document, choose a page range.
+              {t('tool.ocr.limits', { pages: MAX_OCR_PAGES, size: MAX_OCR_FILE_SIZE_MB })}
             </p>
           </div>
 
@@ -224,7 +234,7 @@ export default function OcrPdf() {
               onClick={handleOcr}
               className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-4 px-12 rounded-xl text-xl transition-colors shadow-lg"
             >
-              Recognize text
+              {t('tool.ocr.submit')}
             </button>
           </div>
         </div>
@@ -233,14 +243,14 @@ export default function OcrPdf() {
       {(step === 'loading' || step === 'processing') && (
         <div className="flex flex-col items-center py-12">
           <ProcessingState
-            title="Processing with OCR..."
+            title={t('tool.ocr.processingTitle')}
             description={getProgressDescription()}
           />
           {progress && (
             <div
               className="mt-6 w-64 bg-[var(--surface-2)] rounded-full h-2"
               role="progressbar"
-              aria-label="OCR progress"
+              aria-label={t('tool.ocr.progressLabel')}
               aria-valuemin={0}
               aria-valuemax={progress.totalPages}
               aria-valuenow={progress.page}
@@ -255,7 +265,7 @@ export default function OcrPdf() {
             onClick={handleCancel}
             className="mt-6 px-6 py-2 rounded-lg border border-[var(--border)] text-[var(--text)] hover:bg-[var(--surface-2)] font-medium transition-colors"
           >
-            Cancel
+            {t('tool.common.cancel')}
           </button>
         </div>
       )}
@@ -266,25 +276,23 @@ export default function OcrPdf() {
             <ScanText className="w-10 h-10 text-green-600" />
           </div>
           <div className="text-center max-w-md">
-            <h3 className="text-xl font-semibold text-[var(--text)]">OCR Complete!</h3>
+            <h3 className="text-xl font-semibold text-[var(--text)]">{t('tool.ocr.doneTitle')}</h3>
             <p className="text-[var(--text-3)] mt-2">{summary()}</p>
             {result.wordsAdded === 0 && (
-              <p className="text-amber-700 mt-2 text-sm">
-                No text was recognized. Check the document language, or try a sharper scan.
-              </p>
+              <p className="text-amber-700 mt-2 text-sm">{t('tool.ocr.noText')}</p>
             )}
           </div>
           <button
             onClick={handleDownload}
             className="px-8 py-4 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors"
           >
-            Download Searchable PDF
+            {t('tool.ocr.download')}
           </button>
           <button
             onClick={reset}
             className="text-blue-600 hover:text-blue-700 font-medium"
           >
-            OCR Another PDF
+            {t('tool.ocr.again')}
           </button>
         </div>
       )}
@@ -295,17 +303,15 @@ export default function OcrPdf() {
             <AlertCircle className="w-10 h-10 text-red-600" />
           </div>
           <div className="text-center max-w-md">
-            <h3 className="text-xl font-semibold text-[var(--text)]">OCR Failed</h3>
+            <h3 className="text-xl font-semibold text-[var(--text)]">{t('tool.ocr.failedTitle')}</h3>
             <p className="text-red-500 mt-2" role="alert">{error}</p>
-            <p className="text-[var(--text-3)] mt-4 text-sm">
-              Note: Large PDFs may cause memory issues. Try splitting the PDF first.
-            </p>
+            <p className="text-[var(--text-3)] mt-4 text-sm">{t('tool.ocr.memoryHint')}</p>
           </div>
           <button
             onClick={reset}
             className="text-blue-600 hover:text-blue-700 font-medium"
           >
-            Try Again
+            {t('tool.common.tryAgain')}
           </button>
         </div>
       )}

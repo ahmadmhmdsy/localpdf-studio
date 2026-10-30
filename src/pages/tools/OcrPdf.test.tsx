@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import OcrPdf from './OcrPdf';
@@ -6,6 +6,7 @@ import { renderWithProviders } from '../../tests/utils';
 import { generateDummyPdf } from '../../tests/fixtures/pdfGenerator';
 import { ocrPdf, OcrCancelledError, OcrLimitError } from '../../lib/ocr';
 import { InvalidPageRangeError } from '../../lib/pdf';
+import { useToolsStore } from '../../store/toolsStore';
 
 vi.mock('../../lib/ocr', async (importOriginal) => {
   const actual = await importOriginal<typeof import('../../lib/ocr')>();
@@ -27,6 +28,10 @@ describe('OcrPdf', () => {
   beforeEach(() => {
     user = userEvent.setup();
     vi.clearAllMocks();
+  });
+
+  afterEach(() => {
+    useToolsStore.setState({ locale: 'en' });
   });
 
   async function uploadPdf() {
@@ -75,6 +80,24 @@ describe('OcrPdf', () => {
     await user.click(await screen.findByRole('button', { name: /recognize text/i }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent(/English OCR language data is not included/);
+  });
+
+  it('renders the OCR flow and its summary in Arabic when that locale is active', async () => {
+    useToolsStore.setState({ locale: 'ar' });
+    renderWithProviders(<OcrPdf />);
+
+    expect(screen.getByRole('heading', { name: 'التعرّف الضوئي OCR PDF' })).toBeInTheDocument();
+    expect(screen.getByText('اختر ملف PDF ممسوحًا ضوئيًا')).toBeInTheDocument();
+
+    const pdfFile = await generateDummyPdf(3, 'scanned.pdf');
+    await user.upload(screen.getByLabelText('اختر ملف PDF'), pdfFile);
+
+    expect(await screen.findByLabelText('لغة المستند')).toBeInTheDocument();
+    await user.click(screen.getByRole('button', { name: 'تعرّف على النص' }));
+
+    expect(await screen.findByText('اكتمل OCR!')).toBeInTheDocument();
+    expect(screen.getByText(/أُضيفت 42 كلمة في 2 صفحة/)).toBeInTheDocument();
+    expect(screen.getByText(/1 صفحة كانت تحتوي نصًا بالفعل/)).toBeInTheDocument();
   });
 
   it('passes the page range to OCR', async () => {

@@ -1,11 +1,20 @@
 import { PDFDocument } from 'pdf-lib';
 import { logWarn } from './logger';
 
+/**
+ * What a repair changed, as a code rather than a sentence: the UI owns the
+ * wording (and its translation), so the library never ships user-visible copy.
+ */
+export type RepairIssue =
+  | { code: 'structure-validated' }
+  | { code: 'title-added' }
+  | { code: 'author-added' }
+  | { code: 'page-size-fixed'; page: number };
+
 export interface RepairResult {
   success: boolean;
   data: Uint8Array | null;
-  message: string;
-  issuesFixed: string[];
+  issuesFixed: RepairIssue[];
 }
 
 /**
@@ -17,7 +26,7 @@ export interface RepairResult {
  * (roadmap A7.9). A failure only ever reports the failure.
  */
 export async function repairPdf(file: File): Promise<RepairResult> {
-  const issuesFixed: string[] = [];
+  const issuesFixed: RepairIssue[] = [];
 
   try {
     // Load and re-save, which rewrites the cross-reference table and fixes
@@ -28,16 +37,16 @@ export async function repairPdf(file: File): Promise<RepairResult> {
       ignoreEncryption: true,
     });
 
-    issuesFixed.push('Validated PDF structure');
+    issuesFixed.push({ code: 'structure-validated' });
 
     // Fix missing metadata
     if (!pdf.getTitle()) {
       pdf.setTitle('Repaired Document');
-      issuesFixed.push('Added missing title metadata');
+      issuesFixed.push({ code: 'title-added' });
     }
     if (!pdf.getAuthor()) {
       pdf.setAuthor('Unknown');
-      issuesFixed.push('Added missing author metadata');
+      issuesFixed.push({ code: 'author-added' });
     }
 
     // Fix page dimensions if needed
@@ -49,7 +58,7 @@ export async function repairPdf(file: File): Promise<RepairResult> {
       // Ensure valid page dimensions
       if (size.width <= 0 || size.height <= 0) {
         page.setSize(612, 792); // Standard Letter size
-        issuesFixed.push(`Fixed invalid page dimensions on page ${i + 1}`);
+        issuesFixed.push({ code: 'page-size-fixed', page: i + 1 });
       }
     }
 
@@ -58,7 +67,6 @@ export async function repairPdf(file: File): Promise<RepairResult> {
     return {
       success: true,
       data: repaired,
-      message: `PDF repaired successfully. Fixed ${issuesFixed.length} issue(s).`,
       issuesFixed,
     };
   } catch (error) {
@@ -66,8 +74,6 @@ export async function repairPdf(file: File): Promise<RepairResult> {
     return {
       success: false,
       data: null,
-      message:
-        'This PDF is too damaged to repair in the browser. No repaired file was produced; your original file is unchanged.',
       issuesFixed: [],
     };
   }

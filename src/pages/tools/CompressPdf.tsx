@@ -14,14 +14,20 @@ import { MAX_COMPRESS_FILE_SIZE_MB } from '../../constants/limits';
 import { logError } from '../../lib/logger';
 import { useToast } from '../../contexts/ToastContext';
 import { useManagedObjectUrl } from '../../hooks/useObjectUrl';
+import { useI18n } from '../../i18n/useI18n';
+import type { MessageKey } from '../../i18n';
 
 type Step = 'upload' | 'configure' | 'processing' | 'download';
 
-const PRESETS: { value: ImageCompression; label: string; hint: string }[] = [
-  { value: 'off', label: 'Lossless', hint: 'Re-pack the file; images stay exactly as they are' },
-  { value: 'light', label: 'Light', hint: 'Up to 200 DPI, high quality' },
-  { value: 'balanced', label: 'Balanced', hint: 'Up to 150 DPI, good for screens' },
-  { value: 'strong', label: 'Strong', hint: 'Up to 96 DPI, smallest file' },
+const PRESETS: { value: ImageCompression; nameKey: MessageKey; hintKey: MessageKey }[] = [
+  { value: 'off', nameKey: 'tool.compress.preset.off.name', hintKey: 'tool.compress.preset.off.hint' },
+  { value: 'light', nameKey: 'tool.compress.preset.light.name', hintKey: 'tool.compress.preset.light.hint' },
+  {
+    value: 'balanced',
+    nameKey: 'tool.compress.preset.balanced.name',
+    hintKey: 'tool.compress.preset.balanced.hint',
+  },
+  { value: 'strong', nameKey: 'tool.compress.preset.strong.name', hintKey: 'tool.compress.preset.strong.hint' },
 ];
 
 export default function CompressPdf() {
@@ -36,6 +42,7 @@ export default function CompressPdf() {
   const abortRef = useRef<AbortController | null>(null);
   const { showToast } = useToast();
   const { create: createObjectUrl, revoke: revokeObjectUrl } = useManagedObjectUrl();
+  const { t, toolName, toolDescription } = useI18n();
 
   useEffect(() => () => abortRef.current?.abort(), []);
 
@@ -73,7 +80,7 @@ export default function CompressPdf() {
       }
       logError('Error compressing PDF:', error);
       showToast({
-        message: error instanceof CompressionLimitError ? error.message : 'An error occurred. Please try again.',
+        message: error instanceof CompressionLimitError ? error.message : t('tool.common.error'),
         type: 'error',
         duration: 5000,
       });
@@ -101,16 +108,13 @@ export default function CompressPdf() {
   };
 
   return (
-    <ToolLayout
-      title="Compress PDF"
-      description="Reduce file size by re-packing PDF streams and, optionally, downsampling embedded images. Image re-encoding is lossy and irreversible."
-    >
+    <ToolLayout title={toolName('compress-pdf')} description={toolDescription('compress-pdf')}>
       {step === 'upload' && (
         <FileUploadZone
 
-          ariaLabel="Select PDF file" onFilesSelected={handleFilesSelected}
-          title="Select PDF file"
-          subtitle="or drop PDF here"
+          ariaLabel={t('tool.common.selectPdfFile')} onFilesSelected={handleFilesSelected}
+          title={t('tool.common.selectPdfFile')}
+          subtitle={t('tool.common.dropPdf')}
           maxFiles={1}
         />
       )}
@@ -131,7 +135,7 @@ export default function CompressPdf() {
               <button
                 onClick={startOver}
                 className="p-2 text-[var(--text-3)] hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                aria-label="Remove file"
+                aria-label={t('tool.common.removeFile')}
               >
                 <X size={20} />
               </button>
@@ -142,17 +146,13 @@ export default function CompressPdf() {
               className="mb-6 flex items-start gap-3 p-3 rounded-lg bg-amber-50 border border-amber-200 text-amber-900 text-sm"
             >
               <AlertTriangle className="w-5 h-5 flex-shrink-0 mt-0.5" aria-hidden="true" />
-              <p>
-                Lossless only shrinks files with unoptimized metadata or object streams. The other
-                levels are irreversible: original pixels are replaced, and CMYK, indexed and 16-bit
-                images are left as they are.
-              </p>
+              <p>{t('tool.compress.losslessWarning')}</p>
             </div>
 
             <fieldset className="space-y-3">
               <legend className="flex items-center gap-2 text-[var(--text)] font-medium mb-3">
                 <Settings size={20} className="text-red-600" aria-hidden="true" />
-                Compression level
+                {t('tool.compress.levelLegend')}
               </legend>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                 {PRESETS.map((option) => (
@@ -172,14 +172,13 @@ export default function CompressPdf() {
                       onChange={() => setPreset(option.value)}
                       className="sr-only"
                     />
-                    <div className="font-semibold text-[var(--text)]">{option.label}</div>
-                    <div className="text-xs text-[var(--text-3)]">{option.hint}</div>
+                    <div className="font-semibold text-[var(--text)]">{t(option.nameKey)}</div>
+                    <div className="text-xs text-[var(--text-3)]">{t(option.hintKey)}</div>
                   </label>
                 ))}
               </div>
               <p className="text-sm text-[var(--text-3)]">
-                Light, Balanced and Strong re-encode images as JPEG. If the result is not smaller, you get
-                the original file back. Limit: {MAX_COMPRESS_FILE_SIZE_MB} MB per file.
+                {t('tool.compress.presetsNote', { limit: MAX_COMPRESS_FILE_SIZE_MB })}
               </p>
             </fieldset>
           </div>
@@ -189,7 +188,7 @@ export default function CompressPdf() {
               onClick={handleProcess}
               className="bg-red-600 hover:bg-red-700 text-white font-semibold py-4 px-12 rounded-xl text-xl transition-colors shadow-lg"
             >
-              Compress PDF
+              {t('tool.compress.submit')}
             </button>
           </div>
         </div>
@@ -198,14 +197,14 @@ export default function CompressPdf() {
       {step === 'processing' && (
         <div className="flex flex-col items-center py-12">
           <ProcessingState
-            title="Compressing PDF..."
-            description="Please wait while we compress your document. This is happening locally in your browser."
+            title={t('tool.compress.processingTitle')}
+            description={t('tool.compress.processingDescription')}
           />
           <button
             onClick={handleCancel}
             className="mt-6 px-6 py-2 rounded-lg border border-[var(--border)] text-[var(--text)] hover:bg-[var(--surface-2)] font-medium transition-colors"
           >
-            Cancel
+            {t('tool.common.cancel')}
           </button>
         </div>
       )}
@@ -213,11 +212,11 @@ export default function CompressPdf() {
       {step === 'download' && resultUrl && (
         <div className="w-full max-w-2xl mx-auto flex flex-col gap-6">
           <DownloadState
-            title="Done"
+            title={t('tool.compress.doneTitle')}
             description={
               keptOriginal
-                ? `The file could not be made smaller, so your original ${originalSize} file is returned unchanged.`
-                : `Compressed from ${originalSize} to ${resultSize}.`
+                ? t('tool.compress.doneKeptOriginal', { size: originalSize })
+                : t('tool.compress.doneCompressed', { from: originalSize, to: resultSize })
             }
             fileName={`compressed_${file?.name || 'document.pdf'}`}
             fileUrl={resultUrl}
@@ -229,7 +228,7 @@ export default function CompressPdf() {
               role="note"
               className="text-left p-4 rounded-xl bg-amber-50 border border-amber-200"
             >
-              <p className="text-sm font-semibold text-amber-900 mb-1">Notes</p>
+              <p className="text-sm font-semibold text-amber-900 mb-1">{t('tool.compress.notes')}</p>
               <ul className="text-sm text-amber-900 list-disc pl-5 space-y-1">
                 {resultNotes.map((n, i) => (
                   <li key={i}>{n}</li>

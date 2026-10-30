@@ -49,7 +49,7 @@ describe('repair.ts', () => {
 
     expect(result.success).toBe(true);
     expect(result.data).toEqual(new Uint8Array([1, 2, 3]));
-    expect(result.issuesFixed).toContain('Validated PDF structure');
+    expect(result.issuesFixed).toContainEqual({ code: 'structure-validated' });
     expect(mockPdfDocument.load).toHaveBeenCalledWith(expect.any(ArrayBuffer), {
       updateMetadata: false,
       ignoreEncryption: true,
@@ -62,7 +62,7 @@ describe('repair.ts', () => {
     expect(mockPdfDoc.setTitle).toHaveBeenCalledWith('Repaired Document');
     expect(mockPdfDoc.setAuthor).toHaveBeenCalledWith('Unknown');
     expect(result.issuesFixed).toEqual(
-      expect.arrayContaining(['Added missing title metadata', 'Added missing author metadata']),
+      expect.arrayContaining([{ code: 'title-added' }, { code: 'author-added' }]),
     );
   });
 
@@ -74,7 +74,7 @@ describe('repair.ts', () => {
 
     expect(mockPdfDoc.setTitle).not.toHaveBeenCalled();
     expect(mockPdfDoc.setAuthor).not.toHaveBeenCalled();
-    expect(result.issuesFixed).not.toContain('Added missing title metadata');
+    expect(result.issuesFixed).not.toContainEqual({ code: 'title-added' });
   });
 
   it('replaces invalid page dimensions', async () => {
@@ -83,7 +83,7 @@ describe('repair.ts', () => {
     const result = await repairPdf(mockFile);
 
     expect(mockPage.setSize).toHaveBeenCalledWith(612, 792);
-    expect(result.issuesFixed).toContain('Fixed invalid page dimensions on page 1');
+    expect(result.issuesFixed).toContainEqual({ code: 'page-size-fixed', page: 1 });
   });
 
   it('returns a failure with no data and no placeholder when the PDF cannot be loaded', async () => {
@@ -94,7 +94,6 @@ describe('repair.ts', () => {
     expect(result.success).toBe(false);
     expect(result.data).toBeNull();
     expect(result.issuesFixed).toEqual([]);
-    expect(result.message).toMatch(/no repaired file was produced/i);
     // Roadmap A7.9: never fabricate a replacement document.
     expect(mockPdfDocument.create).not.toHaveBeenCalled();
   });
