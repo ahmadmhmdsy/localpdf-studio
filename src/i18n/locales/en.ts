@@ -851,6 +851,21 @@ export const en = {
   'editor.zoom.in': 'Zoom In',
   'editor.zoom.fit': 'Fit to Page',
   'editor.annotation.imageAlt': 'Annotation',
+  'tool.common.fileSizeMb': '{size} MB',
+  'editor.load.oneFileOnly': 'Editor only opens one file at a time. Loaded "{name}"; ignored {count} other file(s).',
+  'editor.load.failed': 'Failed to load PDF. Please try another file.',
+  'editor.annotation.cropBox': 'Crop Box',
+  'editor.props.signHint': 'Click the "{tool}" tool to add an image/signature.',
+  'editor.sidebar.empty': 'Upload a document to see pages here.',
+  'editor.sidebar.pages': 'Pages ({count})',
+  'editor.canvas.rendering': 'Rendering...',
+  'editor.canvas.zooming': 'Zooming...',
+  'editor.props.settings': 'Settings',
+  'editor.props.settings.text': 'Text Settings',
+  'editor.props.settings.image': 'Image Settings',
+  'editor.props.settings.crop': 'Crop Settings',
+  'editor.props.settings.draw': 'Drawing Settings',
+  'editor.props.settings.redact': 'Redaction Settings',
 } as const;
 
 export type MessageKey = keyof typeof en;

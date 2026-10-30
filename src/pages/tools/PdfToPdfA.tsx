@@ -17,7 +17,7 @@ const PDFA_LEVELS: { level: PdfALevel; name: string; descriptionKey: MessageKey 
 ];
 
 export default function PdfToPdfA() {
-  const { t, toolName } = useI18n();
+  const { t, toolName, fileSize } = useI18n();
   const [step, setStep] = useState<Step>('upload');
   const [file, setFile] = useState<File | null>(null);
   const [selectedLevel, setSelectedLevel] = useState<PdfALevel>('2b');
@@ -89,7 +89,7 @@ export default function PdfToPdfA() {
             <FileCheck className="w-8 h-8 text-blue-600" />
             <div>
               <p className="font-medium text-[var(--text)]">{file.name}</p>
-              <p className="text-sm text-[var(--text-3)]">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+              <p className="text-sm text-[var(--text-3)]">{fileSize(file.size)}</p>
             </div>
           </div>
 

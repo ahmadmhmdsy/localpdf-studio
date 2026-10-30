@@ -29,7 +29,7 @@ const FIT_OPTIONS: { value: ImageFit; labelKey: MessageKey }[] = [
 ];
 
 export default function JpgToPdf() {
-  const { t, toolName, toolDescription } = useI18n();
+  const { t, toolName, toolDescription, fileSize } = useI18n();
   const [step, setStep] = useState<Step>('upload');
   const [files, setFiles] = useState<File[]>([]);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
@@ -75,7 +75,7 @@ export default function JpgToPdf() {
       const url = URL.createObjectURL(blob);
       
       setResultUrl(url);
-      setResultSize((blob.size / 1024 / 1024).toFixed(2) + ' MB');
+      setResultSize(fileSize(blob.size));
       setStep('download');
     } catch (error) {
       logError('Error converting JPGs to PDF:', error);
@@ -166,7 +166,7 @@ export default function JpgToPdf() {
                               </div>
                               <div className="flex flex-col overflow-hidden">
                                 <span className="font-medium text-[var(--text)] truncate">{file.name}</span>
-                                <span className="text-xs text-[var(--text-3)]">{(file.size / 1024 / 1024).toFixed(2)} MB</span>
+                                <span className="text-xs text-[var(--text-3)]">{fileSize(file.size)}</span>
                               </div>
                             </div>
                             <button 

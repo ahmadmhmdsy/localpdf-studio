@@ -4,9 +4,18 @@ import { useShallow } from 'zustand/react/shallow';
 import { Trash2 } from 'lucide-react';
 import { ANNOTATION_COLORS } from '../../constants/colors';
 import { useI18n } from '../../i18n/useI18n';
+import type { MessageKey } from '../../i18n';
+
+const SETTINGS_HEADINGS: Record<string, MessageKey> = {
+  text: 'editor.props.settings.text',
+  image: 'editor.props.settings.image',
+  crop: 'editor.props.settings.crop',
+  draw: 'editor.props.settings.draw',
+  redact: 'editor.props.settings.redact',
+};
 
 export default function PropertiesPanel() {
-  const { t } = useI18n();
+  const { t, toolName } = useI18n();
   const { activeTool, propertiesPanelVisible } = useToolsStore(
     useShallow((state) => ({
       activeTool: state.activeTool,
@@ -60,7 +69,7 @@ export default function PropertiesPanel() {
         ) : (
           <div className="space-y-6">
             <h4 className="font-medium text-[var(--text)] capitalize border-b border-[var(--border)] pb-2">
-              {selectedAnnotation ? `${selectedAnnotation.type} Settings` : `${activeTool} Settings`}
+              {t(SETTINGS_HEADINGS[selectedAnnotation?.type ?? activeTool ?? ''] ?? 'editor.props.settings')}
             </h4>
 
             {(activeTool === 'text' || (selectedAnnotation && selectedAnnotation.type === 'text')) && (
@@ -119,7 +128,7 @@ export default function PropertiesPanel() {
               <div className="space-y-4">
                 {activeTool === 'image' && !selectedAnnotation && (
                   <p className="text-xs text-[var(--text-3)] bg-[var(--surface-2)] p-3 rounded-lg border border-[var(--border)] mb-4">
-                    Click the "Sign PDF" tool to add an image/signature.
+                    {t('editor.props.signHint', { tool: toolName('sign-pdf') })}
                   </p>
                 )}
 

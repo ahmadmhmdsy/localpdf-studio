@@ -4,7 +4,7 @@ import { Upload, FolderOpen } from 'lucide-react';
 import { cn, sanitizeFilename } from '../../lib/utils';
 import { useToast } from '../../contexts/ToastContext';
 import { PDF_ACCEPT } from '../../types/dropzone';
-import { MAX_FILE_SIZE_BYTES, MAX_FILE_SIZE_MB } from '../../constants/limits';
+import { BYTES_PER_MB, MAX_FILE_SIZE_BYTES, MAX_FILE_SIZE_MB } from '../../constants/limits';
 import { isTauri, pickFilesAsFiles } from '../../lib/native';
 import { useI18n } from '../../i18n/useI18n';
 
@@ -81,7 +81,7 @@ export default function FileUploadZone({
 
     for (const file of acceptedFiles) {
       if (file.size > maxSize) {
-        const sizeMB = (maxSize / 1024 / 1024).toFixed(0);
+        const sizeMB = (maxSize / BYTES_PER_MB).toFixed(0);
         showToast({
           message: t('chrome.upload.tooLarge', { name: file.name, max: sizeMB }),
           type: 'error',

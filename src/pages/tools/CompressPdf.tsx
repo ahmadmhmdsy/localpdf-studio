@@ -42,14 +42,14 @@ export default function CompressPdf() {
   const abortRef = useRef<AbortController | null>(null);
   const { showToast } = useToast();
   const { create: createObjectUrl, revoke: revokeObjectUrl } = useManagedObjectUrl();
-  const { t, toolName, toolDescription } = useI18n();
+  const { t, toolName, toolDescription, fileSize } = useI18n();
 
   useEffect(() => () => abortRef.current?.abort(), []);
 
   const handleFilesSelected = (newFiles: File[]) => {
     if (newFiles.length > 0) {
       setFile(newFiles[0]);
-      setOriginalSize((newFiles[0].size / 1024 / 1024).toFixed(2) + ' MB');
+      setOriginalSize(fileSize(newFiles[0].size));
       setStep('configure');
     }
   };
@@ -69,7 +69,7 @@ export default function CompressPdf() {
       const url = createObjectUrl(blob);
 
       setResultUrl(url);
-      setResultSize((blob.size / 1024 / 1024).toFixed(2) + ' MB');
+      setResultSize(fileSize(blob.size));
       setResultNotes(result.notes);
       setKeptOriginal(result.keptOriginal);
       setStep('download');

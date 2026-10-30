@@ -42,18 +42,12 @@ const SPLIT_MODE_OPTIONS: SplitModeOption[] = [
 /** Chunk size pre-filled for the "Every N pages" mode. */
 const DEFAULT_PAGES_PER_FILE = 10;
 
-const BYTES_PER_MB = 1024 * 1024;
-
 interface SplitResult {
   url: string;
   size: string;
   fileName: string;
   fileCount: number;
   isArchive: boolean;
-}
-
-function formatMegabytes(bytes: number): string {
-  return `${(bytes / BYTES_PER_MB).toFixed(2)} MB`;
 }
 
 export default function SplitPdf() {
@@ -65,7 +59,7 @@ export default function SplitPdf() {
   const [result, setResult] = useState<SplitResult | null>(null);
   const { showToast } = useToast();
   const { create: createObjectUrl, revoke: revokeObjectUrl } = useManagedObjectUrl();
-  const { t, toolName, toolDescription } = useI18n();
+  const { t, toolName, toolDescription, fileSize } = useI18n();
 
   const chunkSize = Number(pagesPerFile);
   const chunkSizeIsValid = Number.isInteger(chunkSize) && chunkSize >= 1;
@@ -118,7 +112,7 @@ export default function SplitPdf() {
       const url = createObjectUrl(blob);
       setResult({
         url,
-        size: formatMegabytes(blob.size),
+        size: fileSize(blob.size),
         fileName,
         fileCount: files.length,
         isArchive,
@@ -172,7 +166,7 @@ export default function SplitPdf() {
                 </div>
                 <div className="flex flex-col">
                   <span className="font-semibold text-[var(--text)] text-lg">{file.name}</span>
-                  <span className="text-sm text-[var(--text-3)]">{(file.size / 1024 / 1024).toFixed(2)} MB</span>
+                  <span className="text-sm text-[var(--text-3)]">{fileSize(file.size)}</span>
                 </div>
               </div>
               <button

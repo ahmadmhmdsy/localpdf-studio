@@ -10,3 +10,6 @@ export const MAX_OCR_PAGES = 200;
 // Compression holds the source, the parsed document and the re-encoded output in memory at once.
 export const MAX_COMPRESS_FILE_SIZE_MB = 100;
 export const MAX_COMPRESS_FILE_SIZE_BYTES = MAX_COMPRESS_FILE_SIZE_MB * 1024 * 1024;
+
+/** Bytes in the megabyte shown beside file sizes. */
+export const BYTES_PER_MB = 1024 * 1024;

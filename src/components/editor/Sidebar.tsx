@@ -2,6 +2,7 @@ import { useRef } from 'react';
 
 import { useDocumentStore } from '../../store/documentStore';
 import { useToolsStore } from '../../store/toolsStore';
+import { useI18n } from '../../i18n/useI18n';
 import {
   DndContext,
   closestCenter,
@@ -19,6 +20,7 @@ import {
 import { SortableThumbnail } from './SortableThumbnail';
 
 export default function Sidebar() {
+  const { t } = useI18n();
   const pdfJsDoc = useDocumentStore((s) => s.pdfJsDoc);
   const pages = useDocumentStore((s) => s.pages);
   const currentPage = useToolsStore((s) => s.currentPage);
@@ -54,7 +56,7 @@ export default function Sidebar() {
   if (!pdfJsDoc) {
     return (
       <div className="w-64 bg-[var(--surface)] border-e border-[var(--border)] flex flex-col items-center justify-center text-sm text-[var(--text-3)] p-4 text-center">
-        Upload a document to see pages here.
+        {t('editor.sidebar.empty')}
       </div>
     );
   }
@@ -62,7 +64,7 @@ export default function Sidebar() {
   return (
     <div className="w-64 bg-[var(--surface-2)] border-e border-[var(--border)] flex flex-col h-full overflow-hidden">
       <div className="p-4 border-b border-[var(--border)] bg-[var(--surface)]">
-        <h3 className="font-semibold text-[var(--text-2)] text-sm uppercase tracking-wider">Pages ({pages.length})</h3>
+        <h3 className="font-semibold text-[var(--text-2)] text-sm uppercase tracking-wider">{t('editor.sidebar.pages', { count: pages.length })}</h3>
       </div>
       
       <div 

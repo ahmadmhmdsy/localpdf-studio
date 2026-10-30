@@ -31,7 +31,7 @@ const POSITION_LABEL_KEYS: Record<PageNumberPosition, MessageKey> = {
 };
 
 export default function AddPageNumbers() {
-  const { t, toolName, toolDescription } = useI18n();
+  const { t, toolName, toolDescription, fileSize } = useI18n();
   const [step, setStep] = useState<Step>('upload');
   const [file, setFile] = useState<File | null>(null);
   const [position, setPosition] = useState<PageNumberPosition>(DEFAULT_PAGE_NUMBER_POSITION);
@@ -58,7 +58,7 @@ export default function AddPageNumbers() {
       const url = createObjectUrl(blob);
       
       setResultUrl(url);
-      setResultSize((blob.size / 1024 / 1024).toFixed(2) + ' MB');
+      setResultSize(fileSize(blob.size));
       setStep('download');
     } catch (error) {
       logError('Error adding page numbers:', error);
@@ -101,7 +101,7 @@ export default function AddPageNumbers() {
                 </div>
                 <div className="flex flex-col">
                   <span className="font-semibold text-[var(--text)] text-lg">{file.name}</span>
-                  <span className="text-sm text-[var(--text-3)]">{(file.size / 1024 / 1024).toFixed(2)} MB</span>
+                  <span className="text-sm text-[var(--text-3)]">{fileSize(file.size)}</span>
                 </div>
               </div>
               <button 

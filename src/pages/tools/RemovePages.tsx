@@ -18,7 +18,7 @@ export default function RemovePages() {
   const [resultUrl, setResultUrl] = useState<string | null>(null);
   const [resultSize, setResultSize] = useState<string>('');
   const { showToast } = useToast();
-  const { t, toolName, toolDescription } = useI18n();
+  const { t, toolName, toolDescription, fileSize } = useI18n();
 
   const handleFilesSelected = (newFiles: File[]) => {
     if (newFiles.length > 0) {
@@ -41,7 +41,7 @@ export default function RemovePages() {
       const url = URL.createObjectURL(blob);
       
       setResultUrl(url);
-      setResultSize((blob.size / 1024 / 1024).toFixed(2) + ' MB');
+      setResultSize(fileSize(blob.size));
       setStep('download');
     } catch (error) {
       const normalizedError = error instanceof Error ? error : new Error(String(error));
@@ -90,7 +90,7 @@ export default function RemovePages() {
                 </div>
                 <div className="flex flex-col">
                   <span className="font-semibold text-[var(--text)] text-lg">{file.name}</span>
-                  <span className="text-sm text-[var(--text-3)]">{(file.size / 1024 / 1024).toFixed(2)} MB</span>
+                  <span className="text-sm text-[var(--text-3)]">{fileSize(file.size)}</span>
                 </div>
               </div>
               <button 

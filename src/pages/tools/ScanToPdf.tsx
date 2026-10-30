@@ -17,7 +17,7 @@ export default function ScanToPdf() {
   const [resultSize, setResultSize] = useState<string>('');
   const [hasCamera, setHasCamera] = useState<boolean>(true);
   const { showToast } = useToast();
-  const { t, toolName } = useI18n();
+  const { t, toolName, fileSize } = useI18n();
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -101,7 +101,7 @@ export default function ScanToPdf() {
       const url = URL.createObjectURL(blob);
       
       setResultUrl(url);
-      setResultSize((blob.size / 1024 / 1024).toFixed(2) + ' MB');
+      setResultSize(fileSize(blob.size));
       setStep('download');
     } catch (error) {
       logError('Error creating PDF:', error);

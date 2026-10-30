@@ -10,7 +10,7 @@ import { useI18n } from '../../i18n/useI18n';
 type Step = 'upload' | 'password' | 'permissions' | 'processing' | 'done' | 'error';
 
 export default function ProtectPdf() {
-  const { t, toolName } = useI18n();
+  const { t, toolName, fileSize } = useI18n();
   const [step, setStep] = useState<Step>('upload');
   const [file, setFile] = useState<File | null>(null);
   const [userPassword, setUserPassword] = useState('');
@@ -109,7 +109,7 @@ export default function ProtectPdf() {
             <FileCheck className="w-8 h-8 text-blue-600" />
             <div>
               <p className="font-medium text-[var(--text)]">{file.name}</p>
-              <p className="text-sm text-[var(--text-3)]">{(file.size / 1024 / 1024).toFixed(2)} MB</p>
+              <p className="text-sm text-[var(--text-3)]">{fileSize(file.size)}</p>
             </div>
           </div>
 

@@ -13,7 +13,7 @@ import { useI18n } from '../../i18n/useI18n';
 type Step = 'upload' | 'loading_thumbnails' | 'configure' | 'processing' | 'download';
 
 export default function BlackoutPdf() {
-  const { t, toolName } = useI18n();
+  const { t, toolName, fileSize } = useI18n();
   const [step, setStep] = useState<Step>('upload');
   const [file, setFile] = useState<File | null>(null);
   const [thumbnails, setThumbnails] = useState<string[]>([]);
@@ -110,7 +110,7 @@ export default function BlackoutPdf() {
       const url = URL.createObjectURL(blob);
 
       setResultUrl(url);
-      setResultSize((blob.size / 1024 / 1024).toFixed(2) + ' MB');
+      setResultSize(fileSize(blob.size));
       setStep('download');
     } catch (error) {
       logError('Error blacking out PDF:', error);

@@ -1,8 +1,10 @@
 import React from 'react';
 import { useEditor, CropAnnotation } from '../../../contexts/EditorContext';
+import { useI18n } from '../../../i18n/useI18n';
 
 const CropAnnotationItem = React.memo(function CropAnnotationItem({ annotation, containerRef }: { annotation: CropAnnotation, containerRef: React.RefObject<HTMLDivElement | null> }) {
   const { updateAnnotation, selectedAnnotationId, setSelectedAnnotationId, activeTool } = useEditor();
+  const { t } = useI18n();
   const isSelected = selectedAnnotationId === annotation.id;
 
   const handlePointerDown = (e: React.PointerEvent) => {
@@ -52,7 +54,7 @@ const CropAnnotationItem = React.memo(function CropAnnotationItem({ annotation, 
       }}
     >
       <div className="absolute -top-6 left-0 bg-emerald-500 text-white text-xs px-2 py-1 rounded-t-md font-medium">
-        Crop Box
+        {t('editor.annotation.cropBox')}
       </div>
       {/* Resize handle */}
       {isSelected && (
