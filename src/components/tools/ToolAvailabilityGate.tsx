@@ -26,7 +26,8 @@ export default function ToolAvailabilityGate({
   children,
 }: ToolAvailabilityGateProps) {
   const availability = getToolAvailability(toolId);
-  const { t } = useI18n();
+  const { t, availability: localizedCopy } = useI18n();
+  const { limitation } = localizedCopy(toolId);
 
   if (availability.releaseState === 'disabled') {
     return (
@@ -49,7 +50,7 @@ export default function ToolAvailabilityGate({
               data-testid="tool-limitation"
               className="text-sm leading-relaxed text-[var(--text-2)]"
             >
-              {availability.limitation}
+              {limitation}
             </p>
           </div>
           <Link
@@ -84,7 +85,7 @@ export default function ToolAvailabilityGate({
             <div>
               <span className="font-semibold uppercase tracking-wider text-xs">{t('gate.limitation')}</span>
               <p className="mt-1 leading-relaxed text-[var(--text-2)]">
-                {availability.limitation}
+                {limitation}
               </p>
             </div>
           </div>
