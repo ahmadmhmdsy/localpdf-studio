@@ -4,10 +4,12 @@ import ToolLayout from '../../components/tools/ToolLayout';
 import FileUploadZone from '../../components/tools/FileUploadZone';
 import ProcessingState from '../../components/tools/ProcessingState';
 import { convertPdfToExcel } from '../../lib/pdf-to-excel';
+import { useI18n } from '../../i18n/useI18n';
 
 type Step = 'upload' | 'processing' | 'done' | 'error';
 
 export default function PdfToExcel() {
+  const { t, toolName, toolDescription } = useI18n();
   const [step, setStep] = useState<Step>('upload');
   const [file, setFile] = useState<File | null>(null);
   const [resultBlob, setResultBlob] = useState<Blob | null>(null);
@@ -29,7 +31,7 @@ export default function PdfToExcel() {
       setResultBlob(blob);
       setStep('done');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to convert PDF to Excel');
+      setError(err instanceof Error ? err.message : t('tool.pdfExcel.error'));
       setStep('error');
     }
   };
@@ -55,25 +57,22 @@ export default function PdfToExcel() {
   };
 
   return (
-    <ToolLayout
-      title="PDF to EXCEL"
-      description="Extract tables from PDF and convert to Excel format."
-    >
+    <ToolLayout title={toolName('pdf-to-excel')} description={toolDescription('pdf-to-excel')}>
       {step === 'upload' && (
         <FileUploadZone
           
-          ariaLabel="Select PDF file" onFilesSelected={handleFilesSelected}
+          ariaLabel={t('tool.common.selectPdfFile')} onFilesSelected={handleFilesSelected}
           accept={{ 'application/pdf': ['.pdf'] }}
           maxFiles={1}
-          title="Select a PDF file"
-          subtitle="or drop PDF here"
+          title={t('tool.common.selectAPdfFile')}
+          subtitle={t('tool.common.dropPdf')}
         />
       )}
 
       {step === 'processing' && (
         <ProcessingState
-          title="Extracting tables..."
-          description="Analyzing PDF structure and extracting data."
+          title={t('tool.pdfExcel.processingTitle')}
+          description={t('tool.pdfExcel.processingDescription')}
         />
       )}
 
@@ -83,21 +82,21 @@ export default function PdfToExcel() {
             <FileSpreadsheet className="w-10 h-10 text-green-600" />
           </div>
           <div className="text-center">
-            <h3 className="text-xl font-semibold text-[var(--text)]">Extraction Complete!</h3>
-            <p className="text-[var(--text-3)] mt-2">PDF data has been extracted to Excel format.</p>
-            <p className="text-sm text-[var(--text-3)] mt-1">Note: Table detection is heuristic-based and may require manual adjustment.</p>
+            <h3 className="text-xl font-semibold text-[var(--text)]">{t('tool.pdfExcel.successTitle')}</h3>
+            <p className="text-[var(--text-3)] mt-2">{t('tool.pdfExcel.successDescription')}</p>
+            <p className="text-sm text-[var(--text-3)] mt-1">{t('tool.pdfExcel.successHint')}</p>
           </div>
           <button
             onClick={handleDownload}
             className="px-8 py-4 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors"
           >
-            Download XLSX
+            {t('tool.pdfExcel.download')}
           </button>
           <button
             onClick={reset}
             className="text-blue-600 hover:text-blue-700 font-medium"
           >
-            Extract Another PDF
+            {t('tool.pdfExcel.again')}
           </button>
         </div>
       )}
@@ -108,14 +107,14 @@ export default function PdfToExcel() {
             <AlertCircle className="w-10 h-10 text-red-600" />
           </div>
           <div className="text-center max-w-md">
-            <h3 className="text-xl font-semibold text-[var(--text)]">Extraction Failed</h3>
+            <h3 className="text-xl font-semibold text-[var(--text)]">{t('tool.pdfExcel.failedTitle')}</h3>
             <p className="text-red-500 mt-2">{error}</p>
           </div>
           <button
             onClick={reset}
             className="text-blue-600 hover:text-blue-700 font-medium"
           >
-            Try Again
+            {t('tool.common.tryAgain')}
           </button>
         </div>
       )}

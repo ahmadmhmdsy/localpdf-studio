@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { useToolsStore } from '../../store/toolsStore';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import PdfToPdfA from './PdfToPdfA';
@@ -15,6 +16,7 @@ describe('PdfToPdfA', () => {
   let user: ReturnType<typeof userEvent.setup>;
 
   beforeEach(() => {
+    useToolsStore.setState({ locale: 'en' });
     user = userEvent.setup();
     vi.clearAllMocks();
   });
@@ -40,5 +42,11 @@ describe('PdfToPdfA', () => {
     await waitFor(() => {
       expect(screen.getByText(/Select the PDF\/A level to target/i)).toBeInTheDocument();
     });
+  });
+
+  it('renders the page in Arabic when that locale is active', () => {
+    useToolsStore.setState({ locale: 'ar' });
+    renderWithProviders(<PdfToPdfA />);
+    expect(screen.getByText(/لم يُتحقق من توافق الناتج/)).toBeInTheDocument();
   });
 });

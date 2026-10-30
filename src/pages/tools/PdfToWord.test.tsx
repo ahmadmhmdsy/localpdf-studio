@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { useToolsStore } from '../../store/toolsStore';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import PdfToWord from './PdfToWord';
@@ -17,6 +18,7 @@ describe('PdfToWord', () => {
   let user: ReturnType<typeof userEvent.setup>;
 
   beforeEach(() => {
+    useToolsStore.setState({ locale: 'en' });
     user = userEvent.setup();
     vi.clearAllMocks();
   });
@@ -32,7 +34,7 @@ describe('PdfToWord', () => {
       renderWithProviders(<PdfToWord />);
       
       expect(screen.getByRole('heading', { name: /PDF to WORD/i })).toBeInTheDocument();
-      expect(screen.getByText(/convert PDF files to editable Word/i)).toBeInTheDocument();
+      expect(screen.getByText(/editable Word document/i)).toBeInTheDocument();
     });
   });
 
@@ -135,5 +137,11 @@ describe('PdfToWord', () => {
         expect(screen.getByRole('button', { name: /start over/i })).toBeInTheDocument();
       }, { timeout: 3000 });
     });
+  });
+
+  it('renders the page in Arabic when that locale is active', () => {
+    useToolsStore.setState({ locale: 'ar' });
+    renderWithProviders(<PdfToWord />);
+    expect(screen.getByText('اختر ملف PDF')).toBeInTheDocument();
   });
 });

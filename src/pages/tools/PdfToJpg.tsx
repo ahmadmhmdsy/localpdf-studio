@@ -7,10 +7,12 @@ import DownloadState from '../../components/tools/DownloadState';
 import { pdfToJpgs } from '../../lib/image';
 import { logError } from '../../lib/logger';
 import { useToast } from '../../contexts/ToastContext';
+import { useI18n } from '../../i18n/useI18n';
 
 type Step = 'upload' | 'configure' | 'processing' | 'download';
 
 export default function PdfToJpg() {
+  const { t, toolName, toolDescription } = useI18n();
   const [step, setStep] = useState<Step>('upload');
   const [file, setFile] = useState<File | null>(null);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
@@ -39,7 +41,7 @@ export default function PdfToJpg() {
       const normalizedError = error instanceof Error ? error : new Error(String(error));
       logError('Error converting PDF to JPG:', normalizedError);
       showToast({
-        message: normalizedError.message || 'An error occurred while converting. Please try again.',
+        message: normalizedError.message || t('tool.pdfJpg.error'),
         type: 'error',
         duration: 5000,
       });
@@ -57,16 +59,13 @@ export default function PdfToJpg() {
   };
 
   return (
-    <ToolLayout 
-      title="PDF to JPG" 
-      description="Render every PDF page as a JPG image and download them in a ZIP file."
-    >
+    <ToolLayout title={toolName('pdf-to-jpg')} description={toolDescription('pdf-to-jpg')}>
       {step === 'upload' && (
         <FileUploadZone 
           
-          ariaLabel="Select PDF file" onFilesSelected={handleFilesSelected} 
-          title="Select PDF file"
-          subtitle="or drop PDF here"
+          ariaLabel={t('tool.common.selectPdfFile')} onFilesSelected={handleFilesSelected} 
+          title={t('tool.common.selectPdfFile')}
+          subtitle={t('tool.common.dropPdf')}
           maxFiles={1}
         />
       )}
@@ -87,14 +86,14 @@ export default function PdfToJpg() {
               <button 
                 onClick={startOver}
                 className="p-2 text-[var(--text-3)] hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                aria-label="Remove file"
+                aria-label={t('tool.common.removeFile')}
               >
                 <X size={24} />
               </button>
             </div>
             <div className="mt-6 p-4 bg-yellow-50 rounded-xl border border-yellow-100">
               <p className="text-sm text-yellow-800">
-                Each page of this PDF will be converted into a JPG image. The images will be downloaded as a ZIP file.
+                {t('tool.pdfJpg.hint')}
               </p>
             </div>
           </div>
@@ -104,7 +103,7 @@ export default function PdfToJpg() {
               onClick={handleConvert}
               className="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-4 px-12 rounded-xl text-xl transition-colors shadow-lg"
             >
-              Convert to JPG
+              {t('tool.pdfJpg.convert')}
             </button>
           </div>
         </div>
@@ -112,15 +111,15 @@ export default function PdfToJpg() {
 
       {step === 'processing' && (
         <ProcessingState 
-          title="Converting PDF to JPG..." 
-          description="Please wait while we render each page. This is happening locally in your browser."
+          title={t('tool.pdfJpg.processingTitle')}
+          description={t('tool.pdfJpg.processingDescription')}
         />
       )}
 
       {step === 'download' && resultUrl && (
         <DownloadState 
-          title="PDF converted successfully!"
-          description="Your JPG images have been packaged into a ZIP file."
+          title={t('tool.pdfJpg.successTitle')}
+          description={t('tool.pdfJpg.successDescription')}
           fileName={`${file?.name.replace('.pdf', '') || 'images'}_jpgs.zip`}
           fileUrl={resultUrl}
           fileSize={resultSize}

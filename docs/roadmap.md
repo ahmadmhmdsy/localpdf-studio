@@ -179,7 +179,8 @@ Goal: every catalog tool delivers what its name promises, locally, or stays `dis
 | B1.3a | Tool pages, organize group: `ToolLayout` title/description resolve through the catalogs, and every literal on Merge PDF, Split PDF, Remove pages, Extract pages and Organize PDF (upload zone, steps, buttons, aria labels, toasts, processing and download copy) moves to the locale catalogs. Shared step, upload and file-action copy lives under `tool.common.*`. | DONE, [PR #11](https://github.com/ahmadmhmdsy/localpdf-studio/pull/11) merged |
 | B1.3b | Tool pages, optimize group: Compress PDF (preset names and hints from the catalogs), Repair PDF (issue codes from `src/lib/repair.ts` are worded and translated by the page) and OCR PDF (progress, status and summary templates with interpolation), plus Scan to PDF to finish the organize group. | DONE, [PR #12](https://github.com/ahmadmhmdsy/localpdf-studio/pull/12) |
 | B1.3c | Tool pages, convert-to group (JPG, HTML, Word, Excel and PowerPoint to PDF): the same treatment. | IN REVIEW |
-| B1.3d | Tool pages, remaining groups (convert-from, edit, security, intelligence), one group per PR. | READY, after B1.3c |
+| B1.3d1 | Tool pages, convert-from group (PDF to JPG, Word, Excel, PowerPoint and PDF/A). | IN REVIEW |
+| B1.3d2 | Tool pages, remaining groups (edit, security, intelligence), one group per PR. | READY, after B1.3d1 |
 | B1.4 | Remaining surfaces: editor, onboarding tour, toasts, settings, error boundaries, Limitations, NotFound. | READY, after B1.2b and B1.3 |
 | B1.5 | Feedback loop: a test or lint guard that fails on new user-visible literals in migrated areas, and an Arabic copy review by the owner (native speaker) before release. | READY, after B1.4 |
 
