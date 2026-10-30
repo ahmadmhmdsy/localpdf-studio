@@ -11,7 +11,7 @@ import { useI18n } from '../i18n/useI18n';
  * and cannot do.
  */
 export default function Limitations() {
-  const { toolName, toolDescription } = useI18n();
+  const { t, toolName, toolDescription } = useI18n();
 
   // Get all tools with their release state; display copy comes from the active locale.
   const toolsWithState = TOOL_CATEGORIES.flatMap((category) =>
@@ -34,12 +34,10 @@ export default function Limitations() {
     <div className="min-h-screen bg-[var(--bg)] py-12 px-4">
       <div className="max-w-4xl mx-auto">
         <h1 className="text-3xl font-bold text-[var(--text)] mb-4">
-          Known Limitations
+          {t('limitations.title')}
         </h1>
         <p className="text-[var(--text-3)] mb-8">
-          LocalPDF Studio is actively under development. Some tools have limitations
-          or are temporarily unavailable. This page explains the current status
-          of each tool.
+          {t('limitations.intro')}
         </p>
 
         {/* Disabled Tools */}
@@ -47,7 +45,7 @@ export default function Limitations() {
           <section className="mb-12">
             <h2 className="text-xl font-semibold text-[var(--text)] mb-4 flex items-center gap-2">
               <span className="w-3 h-3 rounded-full bg-red-500"></span>
-              Unavailable Tools
+              {t('limitations.unavailable')}
             </h2>
             <div className="space-y-4">
               {disabledTools.map((tool) => (
@@ -57,7 +55,7 @@ export default function Limitations() {
                 >
                   <h3 className="font-semibold text-[var(--text)]">{tool.name}</h3>
                   <p className="text-sm text-[var(--text-3)] mt-1">
-                    {tool.support || tool.limitation || 'This tool is currently unavailable.'}
+                    {tool.support || tool.limitation || t('limitations.unavailableFallback')}
                   </p>
                 </div>
               ))}
@@ -70,7 +68,7 @@ export default function Limitations() {
           <section className="mb-12">
             <h2 className="text-xl font-semibold text-[var(--text)] mb-4 flex items-center gap-2">
               <span className="w-3 h-3 rounded-full bg-yellow-500"></span>
-              Tools with Limitations
+              {t('limitations.limited')}
             </h2>
             <div className="space-y-4">
               {limitedTools.map((tool) => (
@@ -81,12 +79,12 @@ export default function Limitations() {
                   <h3 className="font-semibold text-[var(--text)]">{tool.name}</h3>
                   {tool.support && (
                     <p className="text-sm text-[var(--text-2)] mt-1">
-                      <strong>What works:</strong> {tool.support}
+                      <strong>{t('limitations.whatWorks')}</strong> {tool.support}
                     </p>
                   )}
                   {tool.limitation && (
                     <p className="text-sm text-[var(--text-3)] mt-1">
-                      <strong>Limitations:</strong> {tool.limitation}
+                      <strong>{t('limitations.limitationsLabel')}</strong> {tool.limitation}
                     </p>
                   )}
                 </div>
@@ -100,7 +98,7 @@ export default function Limitations() {
           <section className="mb-12">
             <h2 className="text-xl font-semibold text-[var(--text)] mb-4 flex items-center gap-2">
               <span className="w-3 h-3 rounded-full bg-green-500"></span>
-              Fully Available Tools
+              {t('limitations.stable')}
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {stableTools.map((tool) => (
@@ -118,12 +116,12 @@ export default function Limitations() {
 
         {/* General Notes */}
         <section className="bg-[var(--surface)] border border-[var(--border)] rounded-xl p-6">
-          <h2 className="text-lg font-semibold text-[var(--text)] mb-3">General Notes</h2>
+          <h2 className="text-lg font-semibold text-[var(--text)] mb-3">{t('limitations.notes')}</h2>
           <ul className="space-y-2 text-sm text-[var(--text-3)]">
-            <li>• All PDF processing happens locally in your browser — your files never leave your device.</li>
-            <li>• AI tools (Summarize, Translate) require a Gemini API key and are only available in the desktop build.</li>
-            <li>• PDF encryption/decryption is not supported due to pdf-lib limitations.</li>
-            <li>• Redaction tools are not available and should not be used as a confidentiality boundary.</li>
+            <li>• {t('limitations.note.processing')}</li>
+            <li>• {t('limitations.note.ai')}</li>
+            <li>• {t('limitations.note.encryption')}</li>
+            <li>• {t('limitations.note.redaction')}</li>
           </ul>
         </section>
       </div>

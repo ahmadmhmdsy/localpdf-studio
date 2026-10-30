@@ -1,5 +1,6 @@
 import { AlertTriangle, X } from 'lucide-react';
 import { useFocusTrap } from '../../hooks/useFocusTrap';
+import { useI18n } from '../../i18n/useI18n';
 
 interface ConfirmModalProps {
   isOpen: boolean;
@@ -16,13 +17,14 @@ export default function ConfirmModal({
   isOpen,
   title,
   message,
-  confirmLabel = 'Proceed',
-  cancelLabel = 'Cancel',
+  confirmLabel,
+  cancelLabel,
   variant = 'danger',
   onConfirm,
   onCancel,
 }: ConfirmModalProps) {
   const dialogRef = useFocusTrap<HTMLDivElement>(isOpen);
+  const { t } = useI18n();
 
   // Enter on the focused element calls its handler (Confirm/Cancel buttons handle their own clicks).
   // Escape is handled here at the dialog level so it works regardless of focus position.
@@ -61,7 +63,7 @@ export default function ConfirmModal({
             <button
               onClick={onCancel}
               className="flex-shrink-0 p-1 text-[var(--text-3)] hover:text-[var(--text-2)] rounded-full hover:bg-[var(--surface-2)] transition-colors"
-              aria-label="Close"
+              aria-label={t('confirm.close')}
             >
               <X size={20} />
             </button>
@@ -72,13 +74,13 @@ export default function ConfirmModal({
             onClick={onCancel}
             className="px-4 py-2 text-sm font-medium text-[var(--text-2)] bg-[var(--surface)] border border-[var(--border)] rounded-lg hover:bg-[var(--surface-2)] transition-colors"
           >
-            {cancelLabel}
+            {cancelLabel ?? t('confirm.cancel')}
           </button>
           <button
             onClick={onConfirm}
             className={`px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors ${accentClass}`}
           >
-            {confirmLabel}
+            {confirmLabel ?? t('confirm.proceed')}
           </button>
         </div>
       </div>

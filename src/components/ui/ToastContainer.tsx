@@ -1,5 +1,6 @@
 import { useToast, ToastType } from '../../contexts/ToastContext';
 import { X, CheckCircle, AlertCircle, Info, AlertTriangle } from 'lucide-react';
+import { useI18n } from '../../i18n/useI18n';
 
 const toastStyles: Record<ToastType, { container: string; icon: typeof Info }> = {
   info: { container: 'bg-[var(--surface)] border-[var(--border)]', icon: Info },
@@ -17,14 +18,15 @@ const iconColors: Record<ToastType, string> = {
 
 export default function ToastContainer() {
   const { toasts, dismissToast } = useToast();
+  const { t } = useI18n();
 
   if (toasts.length === 0) return null;
 
   return (
     <div
-      className="fixed inset-x-4 bottom-4 sm:inset-x-auto sm:bottom-6 sm:right-6 z-50 flex flex-col gap-2 sm:max-w-md pointer-events-none"
+      className="fixed inset-x-4 bottom-4 sm:inset-x-auto sm:bottom-6 sm:end-6 z-50 flex flex-col gap-2 sm:max-w-md pointer-events-none"
       role="region"
-      aria-label="Notifications"
+      aria-label={t('toast.region')}
       aria-live="polite"
     >
       {toasts.map((toast) => {
@@ -44,7 +46,7 @@ export default function ToastContainer() {
               onClick={() => dismissToast(toast.id)}
               className="transition-colors"
               style={{ color: 'var(--text-3)' }}
-              aria-label="Dismiss notification"
+              aria-label={t('toast.dismiss')}
             >
               <X className="w-4 h-4" />
             </button>

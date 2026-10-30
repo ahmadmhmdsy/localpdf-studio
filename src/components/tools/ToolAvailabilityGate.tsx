@@ -4,6 +4,7 @@ import type { ToolId } from '../../config/featureRegistry';
 import { getToolAvailability } from '../../config/featureRegistry';
 import ToolLayout from './ToolLayout';
 import DataEgressNotice from '../privacy/DataEgressNotice';
+import { useI18n } from '../../i18n/useI18n';
 
 interface ToolAvailabilityGateProps {
   toolId: ToolId;
@@ -25,23 +26,24 @@ export default function ToolAvailabilityGate({
   children,
 }: ToolAvailabilityGateProps) {
   const availability = getToolAvailability(toolId);
+  const { t } = useI18n();
 
   if (availability.releaseState === 'disabled') {
     return (
       <ToolLayout
         kicker={toolName}
-        title="This tool is unavailable"
-        description="This tool is temporarily unavailable while known defects are being remedied. See the production inventory for the current remediation status."
+        title={t('gate.title')}
+        description={t('gate.description')}
       >
         <DataEgressNotice toolId={toolId} />
         <div className="w-full max-w-xl" role="alert">
           <div className="rounded-lg border border-[var(--text-3)]/20 bg-[var(--surface)] p-6 pb-8 shadow-md">
             <p className="flex items-center gap-2 mb-4 text-sm font-semibold text-[var(--text-3)] uppercase tracking-wider">
               <CircleSlash size={18} aria-hidden="true" />
-              Unavailable
+              {t('gate.badge')}
             </p>
             <h2 className="mb-2 text-lg font-bold text-[var(--text)]">
-              {toolName} is not available right now
+              {t('gate.notAvailable', { name: toolName })}
             </h2>
             <p
               data-testid="tool-limitation"
@@ -55,7 +57,7 @@ export default function ToolAvailabilityGate({
             className="mt-6 inline-flex items-center gap-2 rounded-[var(--radius-md,6px)] bg-[var(--accent-solid)] px-4 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-85"
           >
             <Home size={16} aria-hidden="true" />
-            Home
+            {t('gate.home')}
           </Link>
         </div>
       </ToolLayout>
@@ -80,7 +82,7 @@ export default function ToolAvailabilityGate({
           >
             <AlertTriangle size={18} className="mt-0.5 shrink-0 text-amber-500" aria-hidden="true" />
             <div>
-              <span className="font-semibold uppercase tracking-wider text-xs">Limitation</span>
+              <span className="font-semibold uppercase tracking-wider text-xs">{t('gate.limitation')}</span>
               <p className="mt-1 leading-relaxed text-[var(--text-2)]">
                 {availability.limitation}
               </p>

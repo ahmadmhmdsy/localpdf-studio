@@ -1,38 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
 import { ChevronLeft, ChevronRight, X, Check } from 'lucide-react';
+import type { MessageKey } from '../../i18n';
+import { useI18n } from '../../i18n/useI18n';
 
 const STORAGE_KEY = 'pdf_studio_onboarded';
 const TOTAL_STEPS = 4;
 
-export interface TourStep {
-  title: string;
-  description: string;
-}
-
-const STEPS: TourStep[] = [
-  {
-    title: 'Welcome to LocalPDF Studio',
-    description:
-      'A privacy-first PDF toolkit that processes most tools in your browser. ' +
-      'Each tool shows how it handles your file before you start.',
-  },
-  {
-    title: 'Pick a tool',
-    description:
-      'Open the Home page to browse PDF tools, including merge, split, convert, and sign. ' +
-      'Each card shows its current availability before you choose a tool.',
-  },
-  {
-    title: 'Upload and process',
-    description:
-      'Drop a PDF into the upload zone. Files are read locally and processed in your browser using pdf-lib and pdfjs.',
-  },
-  {
-    title: 'Use the Editor for full control',
-    description:
-      'Open /editor for the visual workspace: reorder pages, annotate, sign, and export. ' +
-      'Press ? at any time to see all keyboard shortcuts.',
-  },
+const STEPS: { title: MessageKey; description: MessageKey }[] = [
+  { title: 'tour.step1.title', description: 'tour.step1.body' },
+  { title: 'tour.step2.title', description: 'tour.step2.body' },
+  { title: 'tour.step3.title', description: 'tour.step3.body' },
+  { title: 'tour.step4.title', description: 'tour.step4.body' },
 ];
 
 interface OnboardingTourProps {
@@ -41,6 +19,7 @@ interface OnboardingTourProps {
 }
 
 export default function OnboardingTour({ forceShow = false }: OnboardingTourProps) {
+  const { t } = useI18n();
   const [isOpen, setIsOpen] = useState(false);
   const [step, setStep] = useState(0);
   const dialogRef = useRef<HTMLDivElement>(null);
@@ -139,14 +118,14 @@ export default function OnboardingTour({ forceShow = false }: OnboardingTourProp
               aria-live="polite"
               aria-atomic="true"
             >
-              Step {step + 1} of {TOTAL_STEPS}
+              {t('tour.stepOf', { step: step + 1, total: TOTAL_STEPS })}
             </span>
           </div>
           <button
             ref={closeButtonRef}
             onClick={handleComplete}
             className="p-1 text-[var(--text-3)] hover:text-[var(--text-2)] rounded-full hover:bg-[var(--surface-2)] transition-colors"
-            aria-label="Skip tour"
+            aria-label={t('tour.skip')}
           >
             <X size={20} />
           </button>
@@ -154,10 +133,10 @@ export default function OnboardingTour({ forceShow = false }: OnboardingTourProp
 
         <div className="p-6 space-y-3">
           <h2 id="onboarding-title" className="text-xl font-semibold text-[var(--text)]">
-            {current.title}
+            {t(current.title)}
           </h2>
           <p id="onboarding-description" className="text-sm text-[var(--text-2)] leading-relaxed">
-            {current.description}
+            {t(current.description)}
           </p>
         </div>
 
@@ -178,35 +157,35 @@ export default function OnboardingTour({ forceShow = false }: OnboardingTourProp
           <button
             onClick={handleComplete}
             className="text-sm font-medium text-[var(--text-3)] hover:text-[var(--text-2)] transition-colors"
-            aria-label="Skip tour"
+            aria-label={t('tour.skip')}
           >
-            Skip tour
+            {t('tour.skip')}
           </button>
           <div className="flex items-center gap-2">
             <button
               onClick={prev}
               disabled={step === 0}
               className="flex items-center gap-1 px-3 py-2 text-sm font-medium text-[var(--text-2)] hover:bg-[var(--surface-2)] disabled:opacity-30 disabled:cursor-not-allowed rounded-lg transition-colors"
-              aria-label="Previous step"
+              aria-label={t('tour.previous')}
             >
-              <ChevronLeft size={16} />
-              Back
+              <ChevronLeft size={16} className="rtl:rotate-180" />
+              {t('tour.back')}
             </button>
             <button
               onClick={next}
               className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-colors"
-              aria-label={step + 1 >= TOTAL_STEPS ? 'Finish tour' : 'Next step'}
+              aria-label={step + 1 >= TOTAL_STEPS ? t('tour.finishLabel') : t('tour.next')}
               data-tour-primary
             >
               {step + 1 >= TOTAL_STEPS ? (
                 <>
                   <Check size={16} />
-                  Finish
+                  {t('tour.finish')}
                 </>
               ) : (
                 <>
-                  Next
-                  <ChevronRight size={16} />
+                  {t('tour.nextShort')}
+                  <ChevronRight size={16} className="rtl:rotate-180" />
                 </>
               )}
             </button>
