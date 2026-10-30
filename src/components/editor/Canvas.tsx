@@ -3,6 +3,7 @@ import { useEditor } from '../../contexts/EditorContext';
 import { pdfjsLib } from '../../lib/pdfjs';
 import { logError } from '../../lib/logger';
 import AnnotationLayer from './AnnotationLayer';
+import { useI18n } from '../../i18n/useI18n';
 
 // Debounce utility for delaying canvas re-render during zoom
 function useDebouncedCallback<TArgs extends unknown[]>(
@@ -22,6 +23,7 @@ function useDebouncedCallback<TArgs extends unknown[]>(
 }
 
 export default function Canvas() {
+  const { t } = useI18n();
   const { pdfJsDoc, pages, currentPage, zoom, setZoom, darkMode, activeTool } = useEditor();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -218,7 +220,7 @@ export default function Canvas() {
   if (!pdfJsDoc || pages.length === 0) {
     return (
       <div className="flex-1 flex items-center justify-center bg-[var(--surface-2)]">
-        <p className="text-[var(--text-3)]">No document loaded.</p>
+        <p className="text-[var(--text-3)]">{t('editor.canvas.empty')}</p>
       </div>
     );
   }

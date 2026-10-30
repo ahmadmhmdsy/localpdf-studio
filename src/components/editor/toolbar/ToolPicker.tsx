@@ -1,4 +1,5 @@
 import { MousePointer2, Hand, Type, PenTool, Image as ImageIcon, Edit3, Crop } from 'lucide-react';
+import { useI18n } from '../../../i18n/useI18n';
 
 interface ToolPickerProps {
   activeTool: string | null;
@@ -8,6 +9,7 @@ interface ToolPickerProps {
 }
 
 export function ToolPicker({ activeTool, onSelect, onOpenSignature, onPickImage }: ToolPickerProps) {
+  const { t } = useI18n();
   const toolButtonClass = (isActive: boolean, color: 'red' | 'emerald' = 'red') =>
     `p-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md transition-colors ${
       isActive
@@ -18,60 +20,60 @@ export function ToolPicker({ activeTool, onSelect, onOpenSignature, onPickImage 
     }`;
 
   return (
-    <div className="flex items-center gap-2 border-r border-[var(--border)] pr-4">
+    <div className="flex items-center gap-2 border-e border-[var(--border)] pe-4">
       <button
         onClick={() => onSelect('select')}
         className={toolButtonClass(activeTool === 'select' || !activeTool)}
-        title="Select Tool"
-        aria-label="Select Tool"
+        title={t('editor.tool.select')}
+        aria-label={t('editor.tool.select')}
       >
         <MousePointer2 size={18} />
       </button>
       <button
         onClick={() => onSelect('pan')}
         className={toolButtonClass(activeTool === 'pan')}
-        title="Pan Tool"
-        aria-label="Pan Tool"
+        title={t('editor.tool.pan')}
+        aria-label={t('editor.tool.pan')}
       >
         <Hand size={18} />
       </button>
       <button
         onClick={() => onSelect('text')}
         className={toolButtonClass(activeTool === 'text')}
-        title="Add Text"
-        aria-label="Add Text"
+        title={t('editor.tool.text')}
+        aria-label={t('editor.tool.text')}
       >
         <Type size={18} />
       </button>
       <button
         onClick={() => onSelect('draw')}
         className={toolButtonClass(activeTool === 'draw')}
-        title="Freehand Draw"
-        aria-label="Freehand Draw"
+        title={t('editor.tool.draw')}
+        aria-label={t('editor.tool.draw')}
       >
         <PenTool size={18} />
       </button>
       <button
         onClick={onOpenSignature}
         className="p-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md transition-colors text-[var(--text-2)] hover:bg-[var(--surface-2)]"
-        title="Add Signature"
-        aria-label="Add Signature"
+        title={t('editor.tool.signature')}
+        aria-label={t('editor.tool.signature')}
       >
         <Edit3 size={18} />
       </button>
       <button
         onClick={onPickImage}
         className="p-3 min-w-[44px] min-h-[44px] flex items-center justify-center rounded-md transition-colors text-[var(--text-2)] hover:bg-[var(--surface-2)]"
-        title="Add Image/Watermark"
-        aria-label="Add Image/Watermark"
+        title={t('editor.tool.image')}
+        aria-label={t('editor.tool.image')}
       >
         <ImageIcon size={18} />
       </button>
       <button
         onClick={() => onSelect('crop')}
         className={toolButtonClass(activeTool === 'crop', 'emerald')}
-        title="Crop Page"
-        aria-label="Crop Page"
+        title={t('editor.tool.crop')}
+        aria-label={t('editor.tool.crop')}
       >
         <Crop size={18} />
       </button>

@@ -10,12 +10,14 @@ import { ToolPicker } from './toolbar/ToolPicker';
 import { HistoryControls } from './toolbar/HistoryControls';
 import { ZoomControls } from './toolbar/ZoomControls';
 import { ExportButtons } from './toolbar/ExportButtons';
+import { useI18n } from '../../i18n/useI18n';
 
 export default function Toolbar() {
   const { zoom, setZoom, activeTool, setActiveTool, currentPage, darkMode, toggleDarkMode } = useToolsStore();
   const { file, clearFile, pdfLibDoc, pages, setPages } = useDocumentStore();
   const { annotations, addAnnotation, undo, redo } = useAnnotationsStore();
   const { showToast } = useToast();
+  const { t } = useI18n();
   const [isExporting, setIsExporting] = useState(false);
   const [isSignatureModalOpen, setIsSignatureModalOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -151,7 +153,7 @@ export default function Toolbar() {
       URL.revokeObjectURL(url);
     } catch (error) {
       if (import.meta.env.DEV) console.error("Error exporting PDF:", error);
-      showToast({ message: "Failed to export PDF. Please try again.", type: 'error', duration: 5000 });
+      showToast({ message: t('editor.toolbar.exportFailed'), type: 'error', duration: 5000 });
     } finally {
       setIsExporting(false);
     }
@@ -189,7 +191,7 @@ export default function Toolbar() {
       URL.revokeObjectURL(url);
     } catch (error) {
       if (import.meta.env.DEV) console.error("Error exporting current page:", error);
-      showToast({ message: "Failed to export current page. Please try again.", type: 'error', duration: 5000 });
+      showToast({ message: t('editor.toolbar.exportPageFailed'), type: 'error', duration: 5000 });
     } finally {
       setIsExporting(false);
     }
@@ -229,8 +231,8 @@ export default function Toolbar() {
         <button
           onClick={toggleDarkMode}
           className={`p-2 min-w-[44px] min-h-[44px] rounded-md transition-colors ${darkMode ? 'bg-[var(--surface)] text-yellow-400' : 'text-[var(--text-2)] hover:bg-[var(--surface-2)]'}`}
-          title={darkMode ? "Light Mode" : "Dark Mode"}
-          aria-label={darkMode ? "Light Mode" : "Dark Mode"}
+          title={darkMode ? t('editor.toolbar.lightMode') : t('editor.toolbar.darkMode')}
+          aria-label={darkMode ? t('editor.toolbar.lightMode') : t('editor.toolbar.darkMode')}
         >
           {darkMode ? <Sun size={18} /> : <Moon size={18} />}
         </button>
@@ -241,8 +243,8 @@ export default function Toolbar() {
         <button
           onClick={clearFile}
           className="p-2 min-w-[44px] min-h-[44px] text-[var(--text-3)] hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
-          title="Close File"
-          aria-label="Close File"
+          title={t('editor.toolbar.closeFile')}
+          aria-label={t('editor.toolbar.closeFile')}
         >
           <Trash2 size={18} />
         </button>

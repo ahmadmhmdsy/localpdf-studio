@@ -1,8 +1,10 @@
 import React, { useRef, useEffect } from 'react';
 import { useEditor, ImageAnnotation } from '../../../contexts/EditorContext';
+import { useI18n } from '../../../i18n/useI18n';
 
 const ImageAnnotationItem = React.memo(function ImageAnnotationItem({ annotation, containerRef }: { annotation: ImageAnnotation, containerRef: React.RefObject<HTMLDivElement | null> }) {
   const { updateAnnotation, selectedAnnotationId, setSelectedAnnotationId, activeTool } = useEditor();
+  const { t } = useI18n();
   const isSelected = selectedAnnotationId === annotation.id;
   const cleanupRef = useRef<(() => void)[]>([]);
 
@@ -68,7 +70,7 @@ const ImageAnnotationItem = React.memo(function ImageAnnotationItem({ annotation
     >
       <img 
         src={annotation.dataUrl} 
-        alt="Annotation" 
+        alt={t('editor.annotation.imageAlt')} 
         className="w-full h-full object-contain pointer-events-none"
         draggable={false}
       />

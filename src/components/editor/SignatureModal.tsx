@@ -1,5 +1,6 @@
 import React, { useRef, useState, useEffect, useCallback } from 'react';
 import { X, Check, RotateCcw, Type, PenTool } from 'lucide-react';
+import { useI18n } from '../../i18n/useI18n';
 
 interface SignatureModalProps {
   isOpen: boolean;
@@ -10,6 +11,7 @@ interface SignatureModalProps {
 type SignatureMode = 'draw' | 'type';
 
 export default function SignatureModal({ isOpen, onClose, onSave }: SignatureModalProps) {
+  const { t } = useI18n();
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const modalRef = useRef<HTMLDivElement>(null);
   const typeInputRef = useRef<HTMLInputElement>(null);
@@ -189,22 +191,22 @@ export default function SignatureModal({ isOpen, onClose, onSave }: SignatureMod
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm"
       role="dialog"
       aria-modal="true"
-      aria-label="Signature creation dialog"
+      aria-label={t('editor.signature.dialog')}
     >
       <div ref={modalRef} className="bg-[var(--surface)] rounded-xl shadow-2xl w-full max-w-md overflow-hidden flex flex-col">
         <div className="flex items-center justify-between p-4 border-b border-[var(--border)]">
-          <h3 className="font-semibold text-[var(--text)]">Create Signature</h3>
+          <h3 className="font-semibold text-[var(--text)]">{t('editor.signature.title')}</h3>
           <button
             onClick={onClose}
             className="p-1 text-[var(--text-3)] hover:text-[var(--text-2)] rounded-full hover:bg-[var(--surface-2)] transition-colors"
-            aria-label="Close signature dialog"
+            aria-label={t('editor.signature.close')}
           >
             <X size={20} />
           </button>
         </div>
 
         {/* Mode selector */}
-        <div className="flex border-b border-[var(--border)]" role="tablist" aria-label="Signature input method">
+        <div className="flex border-b border-[var(--border)]" role="tablist" aria-label={t('editor.signature.method')}>
           <button
             onClick={() => setMode('draw')}
             className={`flex-1 flex items-center justify-center gap-2 py-3 text-sm font-medium transition-colors ${
@@ -214,10 +216,10 @@ export default function SignatureModal({ isOpen, onClose, onSave }: SignatureMod
             }`}
             role="tab"
             aria-selected={mode === 'draw'}
-            aria-label="Draw signature"
+            aria-label={t('editor.signature.drawLabel')}
           >
             <PenTool size={16} />
-            Draw
+            {t('editor.signature.draw')}
           </button>
           <button
             onClick={() => { setMode('type'); requestAnimationFrame(() => typeInputRef.current?.focus()); }}
@@ -228,10 +230,10 @@ export default function SignatureModal({ isOpen, onClose, onSave }: SignatureMod
             }`}
             role="tab"
             aria-selected={mode === 'type'}
-            aria-label="Type signature"
+            aria-label={t('editor.signature.typeLabel')}
           >
             <Type size={16} />
-            Type
+            {t('editor.signature.type')}
           </button>
         </div>
 
@@ -243,7 +245,7 @@ export default function SignatureModal({ isOpen, onClose, onSave }: SignatureMod
                 width={400}
                 height={192}
                 className="w-full h-full cursor-crosshair touch-none"
-                aria-label="Signature drawing canvas"
+                aria-label={t('editor.signature.canvas')}
                 role="img"
                 onMouseDown={startDrawing}
                 onMouseUp={stopDrawing}
@@ -255,7 +257,7 @@ export default function SignatureModal({ isOpen, onClose, onSave }: SignatureMod
               />
               {isEmpty && (
                 <div className="absolute inset-0 flex items-center justify-center pointer-events-none text-[var(--text-3)] font-medium">
-                  Draw your signature here
+                  {t('editor.signature.drawHere')}
                 </div>
               )}
             </div>
@@ -263,7 +265,7 @@ export default function SignatureModal({ isOpen, onClose, onSave }: SignatureMod
         ) : (
           <div className="p-6 bg-[var(--surface-2)] flex-1 flex flex-col items-center justify-center gap-4">
             <label htmlFor="signature-type-input" className="text-sm text-[var(--text-2)] font-medium">
-              Type your signature
+              {t('editor.signature.typeHere')}
             </label>
             <input
               ref={typeInputRef}
@@ -271,12 +273,12 @@ export default function SignatureModal({ isOpen, onClose, onSave }: SignatureMod
               type="text"
               value={typedSignature}
               onChange={(e) => { setTypedSignature(e.target.value); setIsEmpty(!e.target.value.trim()); }}
-              placeholder="John Doe"
+              placeholder={t('editor.signature.placeholder')}
               className="w-full max-w-xs px-4 py-3 text-2xl text-center border-2 border-dashed border-[var(--border)] rounded-lg bg-[var(--surface)] shadow-sm focus:border-red-400 focus:outline-none focus:ring-2 focus:ring-red-100"
               style={{ fontFamily: '"Brush Script MT", cursive, "Segoe Script", serif' }}
-              aria-label="Type your signature text"
+              aria-label={t('editor.signature.typeInput')}
             />
-            <p className="text-xs text-[var(--text-3)]">This will be rendered in a cursive font</p>
+            <p className="text-xs text-[var(--text-3)]">{t('editor.signature.cursiveHint')}</p>
           </div>
         )}
 
@@ -285,37 +287,37 @@ export default function SignatureModal({ isOpen, onClose, onSave }: SignatureMod
             <button
               onClick={clearCanvas}
               className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[var(--text-2)] hover:text-[var(--text)] hover:bg-[var(--surface-2)] rounded-lg transition-colors"
-              aria-label="Clear signature canvas"
+              aria-label={t('editor.signature.clearCanvas')}
             >
               <RotateCcw size={16} />
-              Clear
+              {t('editor.signature.clear')}
             </button>
           ) : (
             <button
               onClick={() => { setTypedSignature(''); setIsEmpty(true); typeInputRef.current?.focus(); }}
               className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[var(--text-2)] hover:text-[var(--text)] hover:bg-[var(--surface-2)] rounded-lg transition-colors"
-              aria-label="Clear typed signature"
+              aria-label={t('editor.signature.clearTyped')}
             >
               <RotateCcw size={16} />
-              Clear
+              {t('editor.signature.clear')}
             </button>
           )}
           <div className="flex gap-2">
             <button
               onClick={onClose}
               className="px-4 py-2 text-sm font-medium text-[var(--text-2)] hover:bg-[var(--surface-2)] rounded-lg transition-colors"
-              aria-label="Cancel signature"
+              aria-label={t('editor.signature.cancelLabel')}
             >
-              Cancel
+              {t('confirm.cancel')}
             </button>
             <button
               onClick={handleSave}
               disabled={isEmpty}
               className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed rounded-lg transition-colors"
-              aria-label="Save and add signature to document"
+              aria-label={t('editor.signature.saveLabel')}
             >
               <Check size={16} />
-              Save & Add
+              {t('editor.signature.save')}
             </button>
           </div>
         </div>

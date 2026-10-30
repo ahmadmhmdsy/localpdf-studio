@@ -1,4 +1,5 @@
 import { Download } from 'lucide-react';
+import { useI18n } from '../../../i18n/useI18n';
 
 interface ExportButtonsProps {
   isExporting: boolean;
@@ -13,6 +14,7 @@ export function ExportButtons({
   onExportCurrentPage,
   onExportAll,
 }: ExportButtonsProps) {
+  const { t } = useI18n();
   return (
     <>
       <button
@@ -25,7 +27,7 @@ export function ExportButtons({
         ) : (
           <Download size={16} />
         )}
-        Export Page
+        {t('editor.toolbar.exportPage')}
       </button>
       <button
         onClick={onExportAll}
@@ -37,7 +39,7 @@ export function ExportButtons({
         ) : (
           <Download size={16} />
         )}
-        {isExporting ? 'Exporting...' : 'Export All'}
+        {isExporting ? t('editor.toolbar.exporting') : t('editor.toolbar.exportAll')}
       </button>
     </>
   );

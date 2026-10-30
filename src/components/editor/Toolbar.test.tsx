@@ -39,6 +39,13 @@ vi.mock('pdf-lib', () => ({
 
 const mockFile = new File(['dummy'], 'test.pdf', { type: 'application/pdf' });
 
+// Stand-in for the zustand hook: useI18n reads the store through a selector.
+const toolsState = (state: any) =>
+  ((selector?: (s: any) => unknown) => {
+    const full = { locale: 'en', setLocale: vi.fn(), ...state };
+    return selector ? selector(full) : full;
+  }) as any;
+
 describe('Toolbar', () => {
   let user: ReturnType<typeof userEvent.setup>;
 
@@ -46,7 +53,7 @@ describe('Toolbar', () => {
     user = userEvent.setup();
     vi.clearAllMocks();
 
-    vi.spyOn(ToolsStoreModule, 'useToolsStore').mockReturnValue({
+    vi.spyOn(ToolsStoreModule, 'useToolsStore').mockImplementation(toolsState({
       zoom: 1,
       setZoom: vi.fn(),
       activeTool: 'select',
@@ -55,7 +62,7 @@ describe('Toolbar', () => {
       darkMode: false,
       toggleDarkMode: vi.fn(),
       setCurrentPage: vi.fn(),
-    } as any);
+    }));
 
     vi.spyOn(DocumentStoreModule, 'useDocumentStore').mockReturnValue({
       file: mockFile,
@@ -185,10 +192,10 @@ describe('Toolbar', () => {
 
   it('calls setActiveTool when tool button clicked', async () => {
     const setActiveTool = vi.fn();
-    vi.spyOn(ToolsStoreModule, 'useToolsStore').mockReturnValue({
+    vi.spyOn(ToolsStoreModule, 'useToolsStore').mockImplementation(toolsState({
       zoom: 1, setZoom: vi.fn(), activeTool: 'select', setActiveTool,
       currentPage: 1, darkMode: false, toggleDarkMode: vi.fn(), setCurrentPage: vi.fn(),
-    } as any);
+    }));
     render(<Toolbar />);
     await user.click(screen.getByLabelText('Add Text'));
     expect(setActiveTool).toHaveBeenCalledWith('text');
@@ -196,10 +203,10 @@ describe('Toolbar', () => {
 
   it('calls setZoom when zoom buttons clicked', async () => {
     const setZoom = vi.fn();
-    vi.spyOn(ToolsStoreModule, 'useToolsStore').mockReturnValue({
+    vi.spyOn(ToolsStoreModule, 'useToolsStore').mockImplementation(toolsState({
       zoom: 1, setZoom, activeTool: 'select', setActiveTool: vi.fn(),
       currentPage: 1, darkMode: false, toggleDarkMode: vi.fn(), setCurrentPage: vi.fn(),
-    } as any);
+    }));
     render(<Toolbar />);
     await user.click(screen.getByLabelText('Zoom In'));
     expect(setZoom).toHaveBeenCalledWith(1.25);
@@ -217,30 +224,30 @@ describe('Toolbar', () => {
 
   it('calls toggleDarkMode when dark mode button clicked', async () => {
     const toggleDarkMode = vi.fn();
-    vi.spyOn(ToolsStoreModule, 'useToolsStore').mockReturnValue({
+    vi.spyOn(ToolsStoreModule, 'useToolsStore').mockImplementation(toolsState({
       zoom: 1, setZoom: vi.fn(), activeTool: 'select', setActiveTool: vi.fn(),
       currentPage: 1, darkMode: false, toggleDarkMode, setCurrentPage: vi.fn(),
-    } as any);
+    }));
     render(<Toolbar />);
     await user.click(screen.getByLabelText('Dark Mode'));
     expect(toggleDarkMode).toHaveBeenCalledTimes(1);
   });
 
   it('shows active state for selected tool', () => {
-    vi.spyOn(ToolsStoreModule, 'useToolsStore').mockReturnValue({
+    vi.spyOn(ToolsStoreModule, 'useToolsStore').mockImplementation(toolsState({
       zoom: 1, setZoom: vi.fn(), activeTool: 'text', setActiveTool: vi.fn(),
       currentPage: 1, darkMode: false, toggleDarkMode: vi.fn(), setCurrentPage: vi.fn(),
-    } as any);
+    }));
     render(<Toolbar />);
     const textBtn = screen.getByLabelText('Add Text');
     expect(textBtn).toHaveClass('bg-red-50');
   });
 
   it('shows dark mode icon when dark mode is active', () => {
-    vi.spyOn(ToolsStoreModule, 'useToolsStore').mockReturnValue({
+    vi.spyOn(ToolsStoreModule, 'useToolsStore').mockImplementation(toolsState({
       zoom: 1, setZoom: vi.fn(), activeTool: 'select', setActiveTool: vi.fn(),
       currentPage: 1, darkMode: true, toggleDarkMode: vi.fn(), setCurrentPage: vi.fn(),
-    } as any);
+    }));
     render(<Toolbar />);
     expect(screen.getByLabelText('Light Mode')).toBeInTheDocument();
   });
