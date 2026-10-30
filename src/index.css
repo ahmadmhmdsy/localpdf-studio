@@ -1,5 +1,8 @@
 /* ── DESIGN TOKENS ── */
 :root {
+  /* Space the fixed glass header takes at the top of the page, margin included. */
+  --glass-header-offset: 7rem;
+
   /* Dark theme (default) */
   --bg: #080809;
   --surface: #111215;

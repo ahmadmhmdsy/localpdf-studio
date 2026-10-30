@@ -68,7 +68,7 @@ export default function Home() {
                       to={tool.isMVP ? targetPath : '#'}
                       aria-disabled={unavailable ? true : undefined}
                       className={cn(
-                        "group relative rounded-[28px] border border-white/5 bg-[var(--surface)]/5 p-1.5 transition-all hover:bg-[var(--surface)]/10",
+                        "group relative block rounded-[28px] border border-white/5 bg-[var(--surface)]/5 p-1.5 transition-all hover:bg-[var(--surface)]/10",
                         isDimmed && "cursor-not-allowed hover:bg-[var(--surface)]/5"
                       )}
                       onClick={(e) => {
@@ -120,7 +120,7 @@ function StatusBadge({ releaseState }: { releaseState: ReleaseState }) {
   return (
     <span
       className={cn(
-        'absolute right-3 top-3 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide',
+        'absolute end-3 top-3 rounded-full px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide',
         isUnavailable
           ? 'bg-red-500/15 text-red-700 dark:text-red-300'
           : 'bg-amber-500/15 text-amber-800 dark:text-amber-300'

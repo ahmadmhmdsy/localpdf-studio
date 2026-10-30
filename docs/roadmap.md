@@ -167,7 +167,7 @@ Goal: every catalog tool delivers what its name promises, locally, or stays `dis
 | B5 | **Richer options:** per-page rotate in Organize; page-number formats ("Page 1 of N", a start number, ranges); watermark position and page range | A7.5, A7.6 | Unit and UI tests |
 | B6 | **Command palette** (Ctrl+K), built from the feature registry, not a second list | None | Keyboard only; screen-reader labels |
 | B7 | **One result screen** for every tool: download, continue with another tool, start over | B4 | The same component on every tool page |
-| B8 | **Skin and visual fixes found during the README work:** the glass skin's header overlaps content at 1440 px; the editor's "Export Page" button is clipped in Bento; the "UNAVAILABLE" badge is misplaced in the glass skin; in editor dark mode the PDF page renders inverted | None | Screenshot tests per skin (Playwright) |
+| B8 | **Skin and visual fixes found during the README work:** the glass skin's header overlaps content at 1440 px; the editor's "Export Page" button is clipped in Bento; the "UNAVAILABLE" badge is misplaced in the glass skin; in editor dark mode the PDF page renders inverted | None | Geometry tests per skin in `e2e/skins.spec.ts` (Playwright). Measured positions replace screenshot baselines, which differ between operating systems. IN REVIEW |
 
 **B1 slices:**
 
@@ -186,7 +186,7 @@ Goal: every catalog tool delivers what its name promises, locally, or stays `dis
 | B1.4a | App chrome: availability gate, NotFound, error boundaries, toasts, confirm modal, data-handling label, editor empty state, tour, API key settings, Limitations. | DONE, merged in [PR #20](https://github.com/ahmadmhmdsy/localpdf-studio/pull/20) |
 | B1.4b | Editor workspace: toolbar, tool picker, properties panel, canvas, thumbnails, signature modal, shortcuts help. | DONE, merged in [PR #21](https://github.com/ahmadmhmdsy/localpdf-studio/pull/21) |
 | B1.4c | Registry support, limitation and privacy sentences (`src/config/featureRegistry.ts`). | DONE, merged in [PR #22](https://github.com/ahmadmhmdsy/localpdf-studio/pull/22) |
-| B1.5 | Feedback loop: a test or lint guard that fails on new user-visible literals in migrated areas, and an Arabic copy review by the owner (native speaker) before release. | Guard IN REVIEW (`src/i18n/literals.test.ts`); Arabic copy review WAITING FOR OWNER |
+| B1.5 | Feedback loop: a test or lint guard that fails on new user-visible literals in migrated areas, and an Arabic copy review by the owner (native speaker) before release. | Guard DONE, merged in [PR #23](https://github.com/ahmadmhmdsy/localpdf-studio/pull/23); Arabic copy review WAITING FOR OWNER |
 
 ---
 
@@ -230,10 +230,10 @@ Each new tool is added through the feature registry and the catalog, with its li
 
 | # | Issue | Area | Milestone |
 |---|---|---|---|
-| 1 | The glass skin header overlaps content at 1440 px | UI | B8 |
-| 2 | The editor's "Export Page" button is clipped in the Bento skin | UI | B8 |
-| 3 | The "UNAVAILABLE" badge is misplaced in the glass skin | UI | B8 |
-| 4 | Editor dark mode renders the PDF page inverted | UI | B8 |
+| 1 | The glass skin header overlaps content at 1440 px | UI | Fixed in B8 |
+| 2 | The editor's "Export Page" button is clipped in the Bento skin | UI | Fixed in B8 |
+| 3 | The "UNAVAILABLE" badge is misplaced in the glass skin | UI | Fixed in B8 |
+| 4 | Editor dark mode renders the PDF page inverted | UI | Fixed in B8 |
 | 5 | The whole UI is English only, and copy is spread across components | i18n | B1 |
 | 6 | Catalog descriptions copy iLovePDF wording | Copy | A7.10: DONE, descriptions and the 7 duplicated page intros rewritten |
 | 7 | add-page-numbers: the copy promises 9 positions, the UI has 6 | Copy | A7.5: DONE, the 3 middle positions are implemented |
@@ -321,26 +321,22 @@ The rule allows: protocol constants that are fixed by a specification (for examp
 ## 9. Suggested order
 
 1. ~~Merge PR #2 and PR #3.~~ Done. A1.3 is done (merged in PR #6); A1.4 and A2.2 need real scans from the owner; A1.5 follows them; then the compression flip (owner approval).
-2. B1 (i18n and RTL) is under way: B1.1 (the no-dependency foundation plus the shared shell and tool chrome) merged as PR #8, B1.2a (catalog names, descriptions and category headings in the locale files, with an Arabic catalog) merged as PR #9, and B1.2b (home-page chrome) merged as PR #10; B1.3a (organize tool pages) merged as [PR #11](https://github.com/ahmadmhmdsy/localpdf-studio/pull/11); B1.3b (optimize group plus Scan to PDF) merged as [PR #12](https://github.com/ahmadmhmdsy/localpdf-studio/pull/12), B1.3c (convert-to group) merged as [PR #15](https://github.com/ahmadmhmdsy/localpdf-studio/pull/15), B1.3d1 (convert-from group) merged as [PR #16](https://github.com/ahmadmhmdsy/localpdf-studio/pull/16), B1.3d2 (edit group) merged as [PR #17](https://github.com/ahmadmhmdsy/localpdf-studio/pull/17), B1.3d3 (security group) merged as [PR #18](https://github.com/ahmadmhmdsy/localpdf-studio/pull/18), B1.3d4 (intelligence group) merged as [PR #19](https://github.com/ahmadmhmdsy/localpdf-studio/pull/19), B1.4a (app chrome) merged as [PR #20](https://github.com/ahmadmhmdsy/localpdf-studio/pull/20), B1.4b (editor workspace) merged as [PR #21](https://github.com/ahmadmhmdsy/localpdf-studio/pull/21), B1.4c (registry sentences) merged as [PR #22](https://github.com/ahmadmhmdsy/localpdf-studio/pull/22), and the B1.5 guard is in review. The A7 shallow-tool work merged as PRs #6 (A1.3, A7.1, A7.2, A7.5, A7.7, A7.9, A7.10, backlog #15) and #7 (A7.3, A7.4, A7.6, A6.3); only A7.8 (sign-pdf wording) is ONGOING.
+2. B1 (i18n and RTL) is under way: B1.1 (the no-dependency foundation plus the shared shell and tool chrome) merged as PR #8, B1.2a (catalog names, descriptions and category headings in the locale files, with an Arabic catalog) merged as PR #9, and B1.2b (home-page chrome) merged as PR #10; B1.3a (organize tool pages) merged as [PR #11](https://github.com/ahmadmhmdsy/localpdf-studio/pull/11); B1.3b (optimize group plus Scan to PDF) merged as [PR #12](https://github.com/ahmadmhmdsy/localpdf-studio/pull/12), B1.3c (convert-to group) merged as [PR #15](https://github.com/ahmadmhmdsy/localpdf-studio/pull/15), B1.3d1 (convert-from group) merged as [PR #16](https://github.com/ahmadmhmdsy/localpdf-studio/pull/16), B1.3d2 (edit group) merged as [PR #17](https://github.com/ahmadmhmdsy/localpdf-studio/pull/17), B1.3d3 (security group) merged as [PR #18](https://github.com/ahmadmhmdsy/localpdf-studio/pull/18), B1.3d4 (intelligence group) merged as [PR #19](https://github.com/ahmadmhmdsy/localpdf-studio/pull/19), B1.4a (app chrome) merged as [PR #20](https://github.com/ahmadmhmdsy/localpdf-studio/pull/20), B1.4b (editor workspace) merged as [PR #21](https://github.com/ahmadmhmdsy/localpdf-studio/pull/21), B1.4c (registry sentences) merged as [PR #22](https://github.com/ahmadmhmdsy/localpdf-studio/pull/22), and the B1.5 guard merged as [PR #23](https://github.com/ahmadmhmdsy/localpdf-studio/pull/23). The A7 shallow-tool work merged as PRs #6 (A1.3, A7.1, A7.2, A7.5, A7.7, A7.9, A7.10, backlog #15) and #7 (A7.3, A7.4, A7.6, A6.3); only A7.8 (sign-pdf wording) is ONGOING.
 3. Decide on qpdf → A3. Decide on the redaction engine → A4.
-4. A5.1, A6.1, and B8 (skin fixes).
+4. A5.1 and A6.1. B8 (skin fixes) is in review.
 5. B2–B7, then Phases C, D and E in order.
 
 ## 10. Things you may have missed
 
 Items found during the Phase A work that are easy to lose track of. Each one points to the milestone or decision that owns it.
 
-1. **All Phase A slices so far are merged** (PRs #2, #3, #4, #6 and #7). The open milestone slice is the B1.5 guard. A stacked PR gets CI only when its base is `main` (backlog #23).
+1. **All Phase A slices so far are merged** (PRs #2, #3, #4, #6 and #7). The open milestone slice is B8. A stacked PR gets CI only when its base is `main` (backlog #23).
 2. **Compression is not switched on.** It passed on generated files in the production build (§6.2). The real UI has not been checked with real scans, in Firefox, or on mobile (A2.2). The flip to `limited` needs the owner's OK.
 3. **OCR's release checklist is incomplete.** The e2e test merged in PR #6 (A1.3); A1.4 (real scans) and A1.5 (CSP/data-flow audit) still need the owner's scans.
 4. **Decisions are waiting on the owner** (§8): qpdf, the redaction engine (PDFium vs AGPL MuPDF), the camera policy, the owner-password-only unlock policy, and the AI route.
 5. **The UI is still mostly English.** B1.1 (merged) adds the catalogs, the store-backed locale, the header switcher, `dir="rtl"` and the translated shell and tool chrome; B1.2a (merged) moves the tool names, descriptions and category headings into the catalogs, B1.2b (merged) moves the home-page chrome, B1.3a (merged) moves the organize tool pages, and B1.3b (merged) moves the optimize pages and Scan to PDF, B1.3c–B1.3d4 (merged) move the remaining tool pages, B1.4a (merged) moves the app chrome, B1.4b (merged) moves the editor workspace, B1.4c (merged) moves the registry sentences, and the B1.5 guard fails on new literals. Every new screen must use the catalogs.
 6. **Tool descriptions no longer copy competitor wording.** A7.10 is done and merged in PR #6.
-7. **Known visual bugs** (B8):
-   - the glass skin's header overlaps page content;
-   - the editor's "Export Page" button is clipped in the Bento skin;
-   - the status badge is misplaced in the glass skin;
-   - editor dark mode inverts the PDF page itself.
+7. **Known visual bugs** (B8): the four found during the README work are fixed and covered by `e2e/skins.spec.ts`. The dark-theme contrast review (backlog #30) stays open.
 8. **Stale local branches.** `master`, `feat/tauri-desktop` and the merged phase branches are still here. Nothing has been deleted (§8, item 9; backlog #13).
 9. **The dev server binds `0.0.0.0`.** It is reachable from other devices on the LAN. Bind to `localhost` by default and make LAN access opt-in through config.
 10. **123 lint warnings remain.** They are warnings, not errors, so CI passes. Pay them down in small PRs; don't mix them into feature PRs.

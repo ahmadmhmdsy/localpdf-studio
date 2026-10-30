@@ -161,7 +161,7 @@ export default function Editor() {
   }, [loadFile, showToast, t]);
 
   const skin = useToolsStore((s) => s.skin);
-  const wrapperHeight = skin === 'bento' ? 'h-screen' : 'h-[calc(100vh-64px)]';
+  const wrapperHeight = skin === 'bento' ? 'h-screen' : 'h-[calc(100vh-var(--glass-header-offset))]';
 
   return (
     <div className={cn('flex flex-col bg-[var(--bg)] overflow-hidden', wrapperHeight)}>

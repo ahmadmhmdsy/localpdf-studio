@@ -252,7 +252,6 @@ export default function Canvas() {
           ref={canvasRef} 
           className="block" 
           style={{ 
-            filter: darkMode ? 'invert(1) hue-rotate(180deg)' : 'none',
             // Visual size matches the render scale
             width: '100%',
             height: 'auto',
