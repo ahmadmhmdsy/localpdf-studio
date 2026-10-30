@@ -13,10 +13,25 @@ import {
 import { logError } from '../../lib/logger';
 import { useToast } from '../../contexts/ToastContext';
 import { useManagedObjectUrl } from '../../hooks/useObjectUrl';
+import { useI18n } from '../../i18n/useI18n';
+import type { MessageKey } from '../../i18n';
 
 type Step = 'upload' | 'configure' | 'processing' | 'download';
 
+const POSITION_LABEL_KEYS: Record<PageNumberPosition, MessageKey> = {
+  'top-left': 'tool.pageNumbers.position.topLeft',
+  'top-center': 'tool.pageNumbers.position.topCenter',
+  'top-right': 'tool.pageNumbers.position.topRight',
+  'middle-left': 'tool.pageNumbers.position.middleLeft',
+  'middle-center': 'tool.pageNumbers.position.middleCenter',
+  'middle-right': 'tool.pageNumbers.position.middleRight',
+  'bottom-left': 'tool.pageNumbers.position.bottomLeft',
+  'bottom-center': 'tool.pageNumbers.position.bottomCenter',
+  'bottom-right': 'tool.pageNumbers.position.bottomRight',
+};
+
 export default function AddPageNumbers() {
+  const { t, toolName, toolDescription } = useI18n();
   const [step, setStep] = useState<Step>('upload');
   const [file, setFile] = useState<File | null>(null);
   const [position, setPosition] = useState<PageNumberPosition>(DEFAULT_PAGE_NUMBER_POSITION);
@@ -48,7 +63,7 @@ export default function AddPageNumbers() {
     } catch (error) {
       logError('Error adding page numbers:', error);
       showToast({
-        message: 'An error occurred. Please try again.',
+        message: t('tool.common.error'),
         type: 'error',
         duration: 5000,
       });
@@ -65,16 +80,13 @@ export default function AddPageNumbers() {
   };
 
   return (
-    <ToolLayout 
-      title="Add Page Numbers" 
-      description="Add page numbers to every page of your PDF. Choose from 9 positions (corners, edges, center)."
-    >
+    <ToolLayout title={toolName('add-page-numbers')} description={toolDescription('add-page-numbers')}>
       {step === 'upload' && (
         <FileUploadZone 
           
-          ariaLabel="Select PDF file" onFilesSelected={handleFilesSelected} 
-          title="Select PDF file"
-          subtitle="or drop PDF here"
+          ariaLabel={t('tool.common.selectPdfFile')} onFilesSelected={handleFilesSelected} 
+          title={t('tool.common.selectPdfFile')}
+          subtitle={t('tool.common.dropPdf')}
           maxFiles={1}
         />
       )}
@@ -95,7 +107,7 @@ export default function AddPageNumbers() {
               <button 
                 onClick={startOver}
                 className="p-2 text-[var(--text-3)] hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                aria-label="Remove file"
+                aria-label={t('tool.common.removeFile')}
               >
                 <X size={24} />
               </button>
@@ -103,7 +115,7 @@ export default function AddPageNumbers() {
 
             <div className="space-y-4">
               <label className="block text-sm font-medium text-[var(--text-2)]">
-                Position
+                {t('tool.pageNumbers.position')}
               </label>
               <div className="grid grid-cols-3 gap-4 max-w-md">
                 {PAGE_NUMBER_POSITIONS.map((pos) => (
@@ -112,7 +124,7 @@ export default function AddPageNumbers() {
                     onClick={() => setPosition(pos)}
                     className={`p-4 rounded-xl border font-medium transition-colors flex items-center justify-center text-sm ${position === pos ? 'bg-purple-50 border-purple-500 text-purple-700' : 'border-[var(--border)] text-[var(--text-2)] hover:bg-[var(--surface-2)]'}`}
                   >
-                    {pos.split('-').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ')}
+                    {t(POSITION_LABEL_KEYS[pos])}
                   </button>
                 ))}
               </div>
@@ -124,7 +136,7 @@ export default function AddPageNumbers() {
               onClick={handleProcess}
               className="bg-purple-600 hover:bg-purple-700 text-white font-semibold py-4 px-12 rounded-xl text-xl transition-colors shadow-lg"
             >
-              Add Page Numbers
+              {t('tool.pageNumbers.submit')}
             </button>
           </div>
         </div>
@@ -132,15 +144,15 @@ export default function AddPageNumbers() {
 
       {step === 'processing' && (
         <ProcessingState 
-          title="Adding page numbers..." 
-          description="Please wait while we process your document. This is happening locally in your browser."
+          title={t('tool.pageNumbers.processingTitle')}
+          description={t('tool.pageNumbers.processingDescription')}
         />
       )}
 
       {step === 'download' && resultUrl && (
         <DownloadState 
-          title="Page numbers added successfully!"
-          description="Your document has been updated."
+          title={t('tool.pageNumbers.successTitle')}
+          description={t('tool.pageNumbers.successDescription')}
           fileName={`numbered_${file?.name || 'document.pdf'}`}
           fileUrl={resultUrl}
           fileSize={resultSize}

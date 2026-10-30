@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { useToolsStore } from '../../store/toolsStore';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import AddWatermark from './AddWatermark';
@@ -19,6 +20,7 @@ describe('AddWatermark', () => {
   let user: ReturnType<typeof userEvent.setup>;
 
   beforeEach(() => {
+    useToolsStore.setState({ locale: 'en' });
     user = userEvent.setup();
     vi.clearAllMocks();
     addWatermarkMock.mockReset();
@@ -218,5 +220,11 @@ describe('AddWatermark', () => {
     expect(screen.getByLabelText(/select PDF file/i)).toHaveAttribute('type', 'file');
     await uploadPdf();
     expect(screen.getByRole('button', { name: /remove file/i })).toBeInTheDocument();
+  });
+
+  it('renders the page in Arabic when that locale is active', () => {
+    useToolsStore.setState({ locale: 'ar' });
+    renderWithProviders(<AddWatermark />);
+    expect(screen.getByText('اختر ملف PDF')).toBeInTheDocument();
   });
 });

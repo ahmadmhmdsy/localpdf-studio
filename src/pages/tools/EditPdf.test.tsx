@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { useToolsStore } from '../../store/toolsStore';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import EditPdf from './EditPdf';
@@ -19,6 +20,7 @@ describe('EditPdf', () => {
   let user: ReturnType<typeof userEvent.setup>;
 
   beforeEach(() => {
+    useToolsStore.setState({ locale: 'en' });
     user = userEvent.setup();
     vi.clearAllMocks();
   });
@@ -63,5 +65,11 @@ describe('EditPdf', () => {
       const hasSave = screen.queryByRole('button', { name: /save/i });
       expect(hasLoading || hasPages || hasSave).toBeInTheDocument();
     });
+  });
+
+  it('renders the page in Arabic when that locale is active', () => {
+    useToolsStore.setState({ locale: 'ar' });
+    renderWithProviders(<EditPdf />);
+    expect(screen.getByText('أضف تعليقات نصية إلى مستند PDF. انقر في أي مكان على الصفحة لوضع النص.')).toBeInTheDocument();
   });
 });

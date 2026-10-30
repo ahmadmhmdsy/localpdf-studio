@@ -179,8 +179,10 @@ Goal: every catalog tool delivers what its name promises, locally, or stays `dis
 | B1.3a | Tool pages, organize group: `ToolLayout` title/description resolve through the catalogs, and every literal on Merge PDF, Split PDF, Remove pages, Extract pages and Organize PDF (upload zone, steps, buttons, aria labels, toasts, processing and download copy) moves to the locale catalogs. Shared step, upload and file-action copy lives under `tool.common.*`. | DONE, [PR #11](https://github.com/ahmadmhmdsy/localpdf-studio/pull/11) merged |
 | B1.3b | Tool pages, optimize group: Compress PDF (preset names and hints from the catalogs), Repair PDF (issue codes from `src/lib/repair.ts` are worded and translated by the page) and OCR PDF (progress, status and summary templates with interpolation), plus Scan to PDF to finish the organize group. | DONE, [PR #12](https://github.com/ahmadmhmdsy/localpdf-studio/pull/12) |
 | B1.3c | Tool pages, convert-to group (JPG, HTML, Word, Excel and PowerPoint to PDF): the same treatment. | DONE, [PR #15](https://github.com/ahmadmhmdsy/localpdf-studio/pull/15) |
-| B1.3d1 | Tool pages, convert-from group (PDF to JPG, Word, Excel, PowerPoint and PDF/A). | IN REVIEW |
-| B1.3d2 | Tool pages, remaining groups (edit, security, intelligence), one group per PR. | READY, after B1.3d1 |
+| B1.3d1 | Tool pages, convert-from group (PDF to JPG, Word, Excel, PowerPoint and PDF/A). | DONE, [PR #16](https://github.com/ahmadmhmdsy/localpdf-studio/pull/16) |
+| B1.3d2 | Tool pages, edit group (Rotate PDF, Add page numbers, Add watermark, Crop PDF, Edit PDF). | IN REVIEW |
+| B1.3d3 | Tool pages, security group (Sign, Blackout, Compare, Decrypt, Protect). | READY, after B1.3d2 |
+| B1.3d4 | Tool pages, intelligence group (AI Summarizer, Translate PDF). | READY, after B1.3d3 |
 | B1.4 | Remaining surfaces: editor, onboarding tour, toasts, settings, error boundaries, Limitations, NotFound. | READY, after B1.2b and B1.3 |
 | B1.5 | Feedback loop: a test or lint guard that fails on new user-visible literals in migrated areas, and an Arabic copy review by the owner (native speaker) before release. | READY, after B1.4 |
 
@@ -313,7 +315,7 @@ The rule allows: protocol constants that are fixed by a specification (for examp
 ## 9. Suggested order
 
 1. ~~Merge PR #2 and PR #3.~~ Done. A1.3 is done (merged in PR #6); A1.4 and A2.2 need real scans from the owner; A1.5 follows them; then the compression flip (owner approval).
-2. B1 (i18n and RTL) is under way: B1.1 (the no-dependency foundation plus the shared shell and tool chrome) merged as PR #8, B1.2a (catalog names, descriptions and category headings in the locale files, with an Arabic catalog) merged as PR #9, and B1.2b (home-page chrome) merged as PR #10; B1.3a (organize tool pages) merged as [PR #11](https://github.com/ahmadmhmdsy/localpdf-studio/pull/11); B1.3b (optimize group plus Scan to PDF) merged as [PR #12](https://github.com/ahmadmhmdsy/localpdf-studio/pull/12), and the convert-to and remaining groups (B1.3c, B1.3d) follow. The A7 shallow-tool work merged as PRs #6 (A1.3, A7.1, A7.2, A7.5, A7.7, A7.9, A7.10, backlog #15) and #7 (A7.3, A7.4, A7.6, A6.3); only A7.8 (sign-pdf wording) is ONGOING.
+2. B1 (i18n and RTL) is under way: B1.1 (the no-dependency foundation plus the shared shell and tool chrome) merged as PR #8, B1.2a (catalog names, descriptions and category headings in the locale files, with an Arabic catalog) merged as PR #9, and B1.2b (home-page chrome) merged as PR #10; B1.3a (organize tool pages) merged as [PR #11](https://github.com/ahmadmhmdsy/localpdf-studio/pull/11); B1.3b (optimize group plus Scan to PDF) merged as [PR #12](https://github.com/ahmadmhmdsy/localpdf-studio/pull/12), B1.3c (convert-to group) merged as [PR #15](https://github.com/ahmadmhmdsy/localpdf-studio/pull/15), B1.3d1 (convert-from group) merged as [PR #16](https://github.com/ahmadmhmdsy/localpdf-studio/pull/16), B1.3d2 (edit group) is in review, and the security and intelligence groups (B1.3d3, B1.3d4) follow. The A7 shallow-tool work merged as PRs #6 (A1.3, A7.1, A7.2, A7.5, A7.7, A7.9, A7.10, backlog #15) and #7 (A7.3, A7.4, A7.6, A6.3); only A7.8 (sign-pdf wording) is ONGOING.
 3. Decide on qpdf → A3. Decide on the redaction engine → A4.
 4. A5.1, A6.1, and B8 (skin fixes).
 5. B2–B7, then Phases C, D and E in order.

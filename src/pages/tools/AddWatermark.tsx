@@ -22,6 +22,8 @@ import {
 import { logError } from '../../lib/logger';
 import { useToast } from '../../contexts/ToastContext';
 import { useManagedObjectUrl } from '../../hooks/useObjectUrl';
+import { useI18n } from '../../i18n/useI18n';
+import type { MessageKey } from '../../i18n';
 
 type Step = 'upload' | 'configure' | 'processing' | 'download';
 
@@ -30,20 +32,20 @@ type WatermarkKind = 'text' | 'image';
 
 interface WatermarkKindOption {
   id: WatermarkKind;
-  name: string;
-  description: string;
+  nameKey: MessageKey;
+  descriptionKey: MessageKey;
 }
 
 const WATERMARK_KIND_OPTIONS: WatermarkKindOption[] = [
   {
     id: 'text',
-    name: 'Text',
-    description: 'Latin (WinAnsi) characters only, drawn with a built-in PDF font.',
+    nameKey: 'tool.watermark.kind.text',
+    descriptionKey: 'tool.watermark.kind.textDescription',
   },
   {
     id: 'image',
-    name: 'Image',
-    description: 'A PNG or JPEG logo, scaled to half the page width and centred.',
+    nameKey: 'tool.watermark.kind.image',
+    descriptionKey: 'tool.watermark.kind.imageDescription',
   },
 ];
 
@@ -60,18 +62,15 @@ const BYTES_PER_KB = 1024;
  */
 const PAGE_RANGE_SYNTAX_CHECK_PAGES = 100_000;
 
-const PAGE_RANGE_ERROR = 'Enter page numbers or ranges separated by commas, like 1-3, 5.';
-const FONT_SIZE_ERROR = `Enter a font size from ${WATERMARK_FONT_SIZE_MIN} to ${WATERMARK_FONT_SIZE_MAX} points.`;
-
-function validatePageRange(value: string): string | null {
+function isPageRangeSyntaxValid(value: string): boolean {
   if (value.trim().length === 0) {
-    return null;
+    return true;
   }
   try {
     parsePageRanges(value, PAGE_RANGE_SYNTAX_CHECK_PAGES);
-    return null;
+    return true;
   } catch {
-    return PAGE_RANGE_ERROR;
+    return false;
   }
 }
 
@@ -91,6 +90,7 @@ function formatKilobytes(bytes: number): string {
 }
 
 export default function AddWatermark() {
+  const { t, toolName, toolDescription } = useI18n();
   const [step, setStep] = useState<Step>('upload');
   const [file, setFile] = useState<File | null>(null);
   const [kind, setKind] = useState<WatermarkKind>('text');
@@ -110,10 +110,10 @@ export default function AddWatermark() {
     Number.isFinite(fontSizeValue) &&
     fontSizeValue >= WATERMARK_FONT_SIZE_MIN &&
     fontSizeValue <= WATERMARK_FONT_SIZE_MAX;
-  const pageRangeError = validatePageRange(pageRange);
+  const pageRangeIsValid = isPageRangeSyntaxValid(pageRange);
   const hasText = watermarkText.trim().length > 0;
   const kindIsReady = kind === 'text' ? hasText && fontSizeIsValid : imageFile !== null;
-  const canSubmit = kindIsReady && pageRangeError === null;
+  const canSubmit = kindIsReady && pageRangeIsValid;
 
   const handleFilesSelected = (newFiles: File[]) => {
     if (newFiles.length > 0) {
@@ -125,7 +125,7 @@ export default function AddWatermark() {
   const handleImageSelected = (event: ChangeEvent<HTMLInputElement>) => {
     const selected = event.target.files?.[0] ?? null;
     if (selected && !isWatermarkImageFile(selected)) {
-      showToast({ message: 'Choose a PNG or JPEG image.', type: 'warning' });
+      showToast({ message: t('tool.watermark.imageTypeError'), type: 'warning' });
       event.target.value = '';
       return;
     }
@@ -134,7 +134,7 @@ export default function AddWatermark() {
 
   const handleProcess = async () => {
     if (!file || !canSubmit) {
-      showToast({ message: 'Check the watermark settings and try again.', type: 'warning' });
+      showToast({ message: t('tool.watermark.settingsError'), type: 'warning' });
       return;
     }
 
@@ -168,7 +168,7 @@ export default function AddWatermark() {
       const normalizedError = error instanceof Error ? error : new Error(String(error));
       logError('Error adding watermark:', normalizedError);
       showToast({
-        message: normalizedError.message || 'An error occurred. Please try again.',
+        message: normalizedError.message || t('tool.common.error'),
         type: 'error',
         duration: 5000,
       });
@@ -191,16 +191,13 @@ export default function AddWatermark() {
   };
 
   return (
-    <ToolLayout
-      title="Add Watermark"
-      description="Stamp text or a PNG/JPEG image over your PDF, with your chosen size, opacity, rotation and page range."
-    >
+    <ToolLayout title={toolName('add-watermark')} description={toolDescription('add-watermark')}>
       {step === 'upload' && (
         <FileUploadZone
 
-          ariaLabel="Select PDF file" onFilesSelected={handleFilesSelected}
-          title="Select PDF file"
-          subtitle="or drop PDF here"
+          ariaLabel={t('tool.common.selectPdfFile')} onFilesSelected={handleFilesSelected}
+          title={t('tool.common.selectPdfFile')}
+          subtitle={t('tool.common.dropPdf')}
           maxFiles={1}
         />
       )}
@@ -221,7 +218,7 @@ export default function AddWatermark() {
               <button
                 onClick={startOver}
                 className="p-2 text-[var(--text-3)] hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                aria-label="Remove file"
+                aria-label={t('tool.common.removeFile')}
               >
                 <X size={24} />
               </button>
@@ -229,7 +226,7 @@ export default function AddWatermark() {
 
             <fieldset className="mb-8">
               <legend className="block text-sm font-medium text-[var(--text-2)] mb-3">
-                Watermark type
+                {t('tool.watermark.type')}
               </legend>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 {WATERMARK_KIND_OPTIONS.map((option) => (
@@ -256,8 +253,8 @@ export default function AddWatermark() {
                       aria-hidden="true"
                     />
                     <span className="flex flex-col">
-                      <span className="font-semibold text-[var(--text)]">{option.name}</span>
-                      <span className="text-sm text-[var(--text-3)]">{option.description}</span>
+                      <span className="font-semibold text-[var(--text)]">{t(option.nameKey)}</span>
+                      <span className="text-sm text-[var(--text-3)]">{t(option.descriptionKey)}</span>
                     </span>
                   </label>
                 ))}
@@ -268,27 +265,25 @@ export default function AddWatermark() {
               <div className="space-y-4">
                 <div className="space-y-2">
                   <label htmlFor="watermarkText" className="block text-sm font-medium text-[var(--text-2)]">
-                    Watermark text
+                    {t('tool.watermark.text')}
                   </label>
                   <input
                     type="text"
                     id="watermarkText"
                     value={watermarkText}
                     onChange={(e) => setWatermarkText(e.target.value)}
-                    placeholder="e.g., CONFIDENTIAL"
+                    placeholder={t('tool.watermark.textPlaceholder')}
                     aria-describedby="watermark-text-hint"
                     className="w-full px-4 py-3 rounded-xl border border-[var(--border)] focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all"
                   />
                   <p id="watermark-text-hint" className="text-sm text-[var(--text-3)]">
-                    Built-in PDF fonts cover Latin (WinAnsi) characters only, so non-Latin text such
-                    as Arabic or Chinese is rejected rather than dropped silently. Use an image
-                    watermark for those scripts.
+                    {t('tool.watermark.textHint')}
                   </p>
                 </div>
 
                 <div className="space-y-2 max-w-xs">
                   <label htmlFor="watermarkFontSize" className="block text-sm font-medium text-[var(--text-2)]">
-                    Font size (pt)
+                    {t('tool.watermark.fontSize')}
                   </label>
                   <input
                     type="number"
@@ -305,7 +300,7 @@ export default function AddWatermark() {
                   />
                   {!fontSizeIsValid && (
                     <p id="watermark-font-size-error" role="alert" className="text-sm text-red-600">
-                      {FONT_SIZE_ERROR}
+                      {t('tool.watermark.fontSizeError', { min: WATERMARK_FONT_SIZE_MIN, max: WATERMARK_FONT_SIZE_MAX })}
                     </p>
                   )}
                 </div>
@@ -316,7 +311,7 @@ export default function AddWatermark() {
               <div className="space-y-4">
                 <div className="space-y-2">
                   <label htmlFor="watermarkImage" className="block text-sm font-medium text-[var(--text-2)]">
-                    Watermark image
+                    {t('tool.watermark.image')}
                   </label>
                   <input
                     type="file"
@@ -324,11 +319,10 @@ export default function AddWatermark() {
                     accept={WATERMARK_IMAGE_ACCEPT}
                     onChange={handleImageSelected}
                     aria-describedby="watermark-image-hint"
-                    className="block w-full text-sm text-[var(--text-2)] file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
+                    className="block w-full text-sm text-[var(--text-2)] file:me-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-purple-50 file:text-purple-700 hover:file:bg-purple-100"
                   />
                   <p id="watermark-image-hint" className="text-sm text-[var(--text-3)]">
-                    PNG or JPEG only. The image is scaled to {Math.round(WATERMARK_IMAGE_SCALE * 100)}% of
-                    each page&apos;s width and centred.
+                    {t('tool.watermark.imageHint', { percent: Math.round(WATERMARK_IMAGE_SCALE * 100) })}
                   </p>
                 </div>
 
@@ -344,7 +338,7 @@ export default function AddWatermark() {
                     <button
                       onClick={() => setImageFile(null)}
                       className="p-2 text-[var(--text-3)] hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors flex-shrink-0"
-                      aria-label="Remove watermark image"
+                      aria-label={t('tool.watermark.removeImage')}
                     >
                       <X size={18} />
                     </button>
@@ -357,7 +351,7 @@ export default function AddWatermark() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <label htmlFor="watermarkOpacity" className="block text-sm font-medium text-[var(--text-2)]">
-                    Opacity
+                    {t('tool.watermark.opacity')}
                   </label>
                   <output htmlFor="watermarkOpacity" className="text-sm font-medium text-[var(--text-2)]">
                     {Math.round(opacity * 100)}%
@@ -378,7 +372,7 @@ export default function AddWatermark() {
               <div className="space-y-2">
                 <div className="flex items-center justify-between">
                   <label htmlFor="watermarkRotation" className="block text-sm font-medium text-[var(--text-2)]">
-                    Rotation
+                    {t('tool.watermark.rotation')}
                   </label>
                   <output htmlFor="watermarkRotation" className="text-sm font-medium text-[var(--text-2)]">
                     {rotation}°
@@ -399,25 +393,25 @@ export default function AddWatermark() {
 
             <div className="space-y-2 mt-8">
               <label htmlFor="watermarkPageRange" className="block text-sm font-medium text-[var(--text-2)]">
-                Pages
+                {t('tool.watermark.pages')}
               </label>
               <input
                 type="text"
                 id="watermarkPageRange"
                 value={pageRange}
                 onChange={(e) => setPageRange(e.target.value)}
-                placeholder="All pages"
-                aria-invalid={pageRangeError !== null}
-                aria-describedby={pageRangeError ? 'watermark-page-range-error' : 'watermark-page-range-hint'}
+                placeholder={t('tool.watermark.pagesPlaceholder')}
+                aria-invalid={!pageRangeIsValid}
+                aria-describedby={pageRangeIsValid ? 'watermark-page-range-hint' : 'watermark-page-range-error'}
                 className="w-full px-4 py-3 rounded-xl border border-[var(--border)] focus:ring-2 focus:ring-purple-500 focus:border-purple-500 outline-none transition-all"
               />
-              {pageRangeError ? (
+              {!pageRangeIsValid ? (
                 <p id="watermark-page-range-error" role="alert" className="text-sm text-red-600">
-                  {pageRangeError}
+                  {t('tool.watermark.pagesError')}
                 </p>
               ) : (
                 <p id="watermark-page-range-hint" className="text-sm text-[var(--text-3)]">
-                  Leave empty to stamp every page, or enter page numbers and ranges like 1-3, 5.
+                  {t('tool.watermark.pagesHint')}
                 </p>
               )}
             </div>
@@ -429,7 +423,7 @@ export default function AddWatermark() {
               disabled={!canSubmit}
               className="bg-purple-600 hover:bg-purple-700 disabled:bg-[var(--surface-2)] disabled:cursor-not-allowed text-white font-semibold py-4 px-12 rounded-xl text-xl transition-colors shadow-lg"
             >
-              Add Watermark
+              {t('tool.watermark.submit')}
             </button>
           </div>
         </div>
@@ -437,15 +431,15 @@ export default function AddWatermark() {
 
       {step === 'processing' && (
         <ProcessingState
-          title="Adding Watermark..."
-          description="Please wait while we stamp your document. This is happening locally in your browser."
+          title={t('tool.watermark.processingTitle')}
+          description={t('tool.watermark.processingDescription')}
         />
       )}
 
       {step === 'download' && resultUrl && (
         <DownloadState
-          title="Watermark added successfully!"
-          description="Your document has been stamped with the watermark."
+          title={t('tool.watermark.successTitle')}
+          description={t('tool.watermark.successDescription')}
           fileName={`watermarked_${file?.name || 'document.pdf'}`}
           fileUrl={resultUrl}
           fileSize={resultSize}
