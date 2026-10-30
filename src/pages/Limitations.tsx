@@ -11,7 +11,7 @@ import { useI18n } from '../i18n/useI18n';
  * and cannot do.
  */
 export default function Limitations() {
-  const { t, toolName, toolDescription } = useI18n();
+  const { t, toolName, toolDescription, availability } = useI18n();
 
   // Get all tools with their release state; display copy comes from the active locale.
   const toolsWithState = TOOL_CATEGORIES.flatMap((category) =>
@@ -20,8 +20,7 @@ export default function Limitations() {
       name: toolName(tool.id),
       description: toolDescription(tool.id),
       releaseState: TOOL_RELEASE_REGISTRY[tool.id as ToolId]?.releaseState ?? 'stable',
-      support: TOOL_RELEASE_REGISTRY[tool.id as ToolId]?.support,
-      limitation: TOOL_RELEASE_REGISTRY[tool.id as ToolId]?.limitation,
+      ...availability(tool.id as ToolId),
     }))
   );
 

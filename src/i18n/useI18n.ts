@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 import { useToolsStore } from '../store/toolsStore';
 import { categoryName, toolCopy, toolDescription, toolName, type ToolCopy } from './catalog';
+import { availabilityCopy, privacyNotice, type AvailabilityCopy } from './registryCopy';
 import type { ToolCategoryId } from '../constants/tools';
 import type { ToolId } from '../config/featureRegistry';
 import { directionFor, translate, type Direction, type Locale, type MessageKey } from './index';
@@ -16,6 +17,10 @@ export type I18n = {
   toolDescription: (toolId: ToolId) => string;
   /** Category heading from the locale-bound catalog copy (B1.2). */
   categoryName: (categoryId: ToolCategoryId) => string;
+  /** Registry support and limitation sentences in the active locale (B1.4c). */
+  availability: (toolId: ToolId) => AvailabilityCopy;
+  /** Registry data-handling sentence in the active locale (B1.4c). */
+  privacyNotice: (toolId: ToolId) => string;
 };
 
 /**
@@ -39,6 +44,12 @@ export function useI18n(): I18n {
     [locale],
   );
 
+  const availability = useCallback(
+    (toolId: ToolId) => availabilityCopy(locale, toolId),
+    [locale],
+  );
+  const notice = useCallback((toolId: ToolId) => privacyNotice(locale, toolId), [locale]);
+
   return {
     locale,
     dir: directionFor(locale),
@@ -48,5 +59,7 @@ export function useI18n(): I18n {
     toolName: name,
     toolDescription: description,
     categoryName: category,
+    availability,
+    privacyNotice: notice,
   };
 }
