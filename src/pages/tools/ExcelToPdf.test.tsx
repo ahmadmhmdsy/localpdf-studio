@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { useToolsStore } from '../../store/toolsStore';
 import { screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import ExcelToPdf from './ExcelToPdf';
@@ -22,6 +23,7 @@ describe('ExcelToPdf', () => {
   let user: ReturnType<typeof userEvent.setup>;
 
   beforeEach(() => {
+    useToolsStore.setState({ locale: 'en' });
     user = userEvent.setup();
     convertExcelToPdfMock.mockReset();
     convertExcelToPdfMock.mockResolvedValue(new Uint8Array([1, 2, 3, 4, 5]));
@@ -53,5 +55,11 @@ describe('ExcelToPdf', () => {
     await user.click(screen.getByRole('button', { name: /download pdf/i }));
 
     expect(saveAsMock).toHaveBeenCalledWith(expect.any(Blob), 'data.pdf');
+  });
+
+  it('renders the page in Arabic when that locale is active', async () => {
+    useToolsStore.setState({ locale: 'ar' });
+    renderWithProviders(<ExcelToPdf />);
+    expect(screen.getByText('اختر ملف Excel')).toBeInTheDocument();
   });
 });

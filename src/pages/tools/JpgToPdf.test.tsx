@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { useToolsStore } from '../../store/toolsStore';
 import { act, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import JpgToPdf from './JpgToPdf';
@@ -18,6 +19,7 @@ describe('JpgToPdf', () => {
   let user: ReturnType<typeof userEvent.setup>;
 
   beforeEach(() => {
+    useToolsStore.setState({ locale: 'en' });
     user = userEvent.setup();
     convertImagesToPdfMock.mockReset();
     convertImagesToPdfMock.mockResolvedValue({
@@ -269,5 +271,12 @@ describe('JpgToPdf', () => {
         expect(screen.queryByText('test-image-2.jpg')).not.toBeInTheDocument();
       });
     });
+  });
+
+  it('renders the page in Arabic when that locale is active', async () => {
+    useToolsStore.setState({ locale: 'ar' });
+    renderWithProviders(<JpgToPdf />);
+    expect(screen.getByRole('heading', { name: 'JPG إلى PDF' })).toBeInTheDocument();
+    expect(screen.getByText('اختر صور JPG')).toBeInTheDocument();
   });
 });

@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { useToolsStore } from '../../store/toolsStore';
 import { act, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import WordToPdf from './WordToPdf';
@@ -17,6 +18,7 @@ describe('WordToPdf', () => {
   let user: ReturnType<typeof userEvent.setup>;
 
   beforeEach(() => {
+    useToolsStore.setState({ locale: 'en' });
     user = userEvent.setup();
     convertWordToPdfMock.mockReset();
     convertWordToPdfMock.mockResolvedValue(new Uint8Array([1, 2, 3, 4, 5]));
@@ -178,5 +180,11 @@ describe('WordToPdf', () => {
         expect(screen.getByText(/select a Word document/i)).toBeInTheDocument();
       });
     });
+  });
+
+  it('renders the page in Arabic when that locale is active', async () => {
+    useToolsStore.setState({ locale: 'ar' });
+    renderWithProviders(<WordToPdf />);
+    expect(screen.getByText('اختر مستند Word')).toBeInTheDocument();
   });
 });

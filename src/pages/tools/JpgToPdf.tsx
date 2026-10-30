@@ -12,21 +12,24 @@ import { useDropzone } from 'react-dropzone';
 import { cn } from '../../lib/utils';
 import { useToast } from '../../contexts/ToastContext';
 import { IMAGE_ACCEPT } from '../../types/dropzone';
+import type { MessageKey } from '../../i18n';
+import { useI18n } from '../../i18n/useI18n';
 
 type Step = 'upload' | 'configure' | 'processing' | 'download';
 
-const PAGE_SIZE_OPTIONS: { value: ImagePageSize; label: string }[] = [
-  { value: 'image', label: 'Image size' },
-  { value: 'a4', label: 'A4' },
-  { value: 'letter', label: 'Letter' },
+const PAGE_SIZE_OPTIONS: { value: ImagePageSize; labelKey: MessageKey }[] = [
+  { value: 'image', labelKey: 'tool.jpg.pageSize.image' },
+  { value: 'a4', labelKey: 'tool.jpg.pageSize.a4' },
+  { value: 'letter', labelKey: 'tool.jpg.pageSize.letter' },
 ];
 
-const FIT_OPTIONS: { value: ImageFit; label: string }[] = [
-  { value: 'contain', label: 'Contain - keep the whole image, add margins' },
-  { value: 'fill', label: 'Fill - stretch the image to the page' },
+const FIT_OPTIONS: { value: ImageFit; labelKey: MessageKey }[] = [
+  { value: 'contain', labelKey: 'tool.jpg.fit.contain' },
+  { value: 'fill', labelKey: 'tool.jpg.fit.fill' },
 ];
 
 export default function JpgToPdf() {
+  const { t, toolName, toolDescription } = useI18n();
   const [step, setStep] = useState<Step>('upload');
   const [files, setFiles] = useState<File[]>([]);
   const [resultUrl, setResultUrl] = useState<string | null>(null);
@@ -80,7 +83,7 @@ export default function JpgToPdf() {
         message:
           error instanceof Error && error.message
             ? error.message
-            : 'An error occurred while converting. Please try again.',
+            : t('tool.jpg.error'),
         type: 'error',
         duration: 5000,
       });
@@ -104,16 +107,13 @@ export default function JpgToPdf() {
   });
 
   return (
-    <ToolLayout 
-      title="JPG to PDF" 
-      description="Turn JPG images into a PDF with one image per page."
-    >
+    <ToolLayout title={toolName('jpg-to-pdf')} description={toolDescription('jpg-to-pdf')}>
       {step === 'upload' && (
         <FileUploadZone
 
-          ariaLabel="Select JPG images" onFilesSelected={handleFilesSelected}
-          title="Select JPG images"
-          subtitle="or drop JPG images here"
+          ariaLabel={t('tool.jpg.uploadTitle')} onFilesSelected={handleFilesSelected}
+          title={t('tool.jpg.uploadTitle')}
+          subtitle={t('tool.jpg.uploadSubtitle')}
           accept={IMAGE_ACCEPT}
         />
       )}
@@ -122,7 +122,7 @@ export default function JpgToPdf() {
         <div className="w-full max-w-4xl">
           <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-sm p-6 mb-8">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-lg font-semibold text-[var(--text)]">Drag and drop to reorder images</h3>
+              <h3 className="text-lg font-semibold text-[var(--text)]">{t('tool.jpg.reorder')}</h3>
               <div 
                 {...getRootProps()} 
                 className={cn(
@@ -132,7 +132,7 @@ export default function JpgToPdf() {
               >
                 <input {...getInputProps()} />
                 <Plus size={18} />
-                <span className="text-sm font-medium">Add more images</span>
+                <span className="text-sm font-medium">{t('tool.jpg.addMore')}</span>
               </div>
             </div>
 
@@ -172,7 +172,7 @@ export default function JpgToPdf() {
                             <button 
                               onClick={() => removeFile(index)}
                               className="p-2 text-[var(--text-3)] hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-                              aria-label={`Remove ${file.name}`}
+                              aria-label={t('tool.jpg.removeImage', { name: file.name })}
                             >
                               <X size={20} />
                             </button>
@@ -189,11 +189,11 @@ export default function JpgToPdf() {
           </div>
 
           <div className="bg-[var(--surface)] rounded-2xl border border-[var(--border)] shadow-sm p-6 mb-8">
-            <h3 className="text-lg font-semibold text-[var(--text)] mb-4">Page layout</h3>
+            <h3 className="text-lg font-semibold text-[var(--text)] mb-4">{t('tool.jpg.pageLayout')}</h3>
             <div className="grid gap-4 sm:grid-cols-2">
               <div>
                 <label htmlFor="page-size" className="block text-sm font-medium text-[var(--text-2)] mb-2">
-                  Page size
+                  {t('tool.jpg.pageSize')}
                 </label>
                 <select
                   id="page-size"
@@ -203,7 +203,7 @@ export default function JpgToPdf() {
                 >
                   {PAGE_SIZE_OPTIONS.map((option) => (
                     <option key={option.value} value={option.value}>
-                      {option.label}
+                      {t(option.labelKey)}
                     </option>
                   ))}
                 </select>
@@ -212,7 +212,7 @@ export default function JpgToPdf() {
               {pageSize !== 'image' && (
                 <div>
                   <label htmlFor="image-fit" className="block text-sm font-medium text-[var(--text-2)] mb-2">
-                    Image fit
+                    {t('tool.jpg.imageFit')}
                   </label>
                   <select
                     id="image-fit"
@@ -222,7 +222,7 @@ export default function JpgToPdf() {
                   >
                     {FIT_OPTIONS.map((option) => (
                       <option key={option.value} value={option.value}>
-                        {option.label}
+                        {t(option.labelKey)}
                       </option>
                     ))}
                   </select>
@@ -230,9 +230,7 @@ export default function JpgToPdf() {
               )}
             </div>
             <p className="text-sm text-[var(--text-3)] mt-3">
-              Image size keeps every page at the image&apos;s own dimensions, using the DPI stored in
-              the image ({DEFAULT_IMAGE_DPI} DPI when none is stored). A4 and Letter place every
-              image on the same standard page.
+              {t('tool.jpg.pageSizeHint', { dpi: DEFAULT_IMAGE_DPI })}
             </p>
           </div>
 
@@ -241,7 +239,7 @@ export default function JpgToPdf() {
               onClick={handleConvert}
               className="bg-yellow-500 hover:bg-yellow-600 text-white font-semibold py-4 px-12 rounded-xl text-xl transition-colors shadow-lg"
             >
-              Convert to PDF
+              {t('tool.common.convertToPdf')}
             </button>
           </div>
         </div>
@@ -249,30 +247,29 @@ export default function JpgToPdf() {
 
       {step === 'processing' && (
         <ProcessingState 
-          title="Converting to PDF..." 
-          description="Please wait while we embed your images into a PDF document. This is happening locally in your browser."
+          title={t('tool.common.convertingToPdf')}
+          description={t('tool.jpg.processingDescription')}
         />
       )}
 
       {step === 'download' && resultUrl && (
         <div className="w-full max-w-[680px]">
           <DownloadState 
-            title="PDF created successfully!"
-            description="Your images have been combined into a single PDF file."
+            title={t('tool.jpg.successTitle')}
+            description={t('tool.jpg.successDescription')}
             fileName="images.pdf"
             fileUrl={resultUrl}
             fileSize={resultSize}
             onStartOver={startOver}
           />
           {skippedFiles.length > 0 && (
-            <div role="status" className="mt-6 rounded-xl border border-yellow-300 bg-yellow-50 p-4 text-left">
+            <div role="status" className="mt-6 rounded-xl border border-yellow-300 bg-yellow-50 p-4 text-start">
               <div className="flex items-start gap-3">
                 <AlertTriangle size={20} className="mt-0.5 flex-shrink-0 text-yellow-600" aria-hidden="true" />
                 <div>
-                  <h3 className="font-semibold text-yellow-800">Some images were skipped</h3>
+                  <h3 className="font-semibold text-yellow-800">{t('tool.jpg.skippedTitle')}</h3>
                   <p className="text-sm text-yellow-700 mt-1">
-                    These files could not be read as JPEG or PNG images, so they are not in the PDF:{' '}
-                    {skippedFiles.join(', ')}.
+                    {t('tool.jpg.skippedBody', { files: skippedFiles.join(', ') })}
                   </p>
                 </div>
               </div>

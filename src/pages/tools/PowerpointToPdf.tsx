@@ -5,10 +5,12 @@ import FileUploadZone from '../../components/tools/FileUploadZone';
 import ProcessingState from '../../components/tools/ProcessingState';
 import { convertPowerpointToPdf } from '../../lib/office-pptx';
 import { saveAs } from 'file-saver';
+import { useI18n } from '../../i18n/useI18n';
 
 type Step = 'upload' | 'processing' | 'done' | 'error';
 
 export default function PowerpointToPdf() {
+  const { t, toolName, toolDescription } = useI18n();
   const [step, setStep] = useState<Step>('upload');
   const [file, setFile] = useState<File | null>(null);
   const [resultData, setResultData] = useState<Uint8Array | null>(null);
@@ -18,7 +20,7 @@ export default function PowerpointToPdf() {
     if (files.length === 1) {
       const selectedFile = files[0];
       if (!selectedFile.name.match(/\.(pptx|ppt)$/i)) {
-        setError('Please select a PowerPoint file (.pptx or .ppt)');
+        setError(t('tool.powerpoint.invalidFile'));
         setStep('error');
         return;
       }
@@ -36,7 +38,7 @@ export default function PowerpointToPdf() {
       setResultData(result);
       setStep('done');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to convert PowerPoint to PDF');
+      setError(err instanceof Error ? err.message : t('tool.powerpoint.error'));
       setStep('error');
     }
   };
@@ -57,28 +59,25 @@ export default function PowerpointToPdf() {
   };
 
   return (
-    <ToolLayout
-      title="POWERPOINT to PDF"
-      description="Convert PPTX slides to PDF with approximate layout."
-    >
+    <ToolLayout title={toolName('powerpoint-to-pdf')} description={toolDescription('powerpoint-to-pdf')}>
       {step === 'upload' && (
         <FileUploadZone
           
-          ariaLabel="Select PowerPoint file" onFilesSelected={handleFilesSelected}
+          ariaLabel={t('tool.powerpoint.uploadAria')} onFilesSelected={handleFilesSelected}
           accept={{
             'application/vnd.openxmlformats-officedocument.presentationml.presentation': ['.pptx'],
             'application/vnd.ms-powerpoint': ['.ppt'],
           }}
           maxFiles={1}
-          title="Select a PowerPoint file"
-          subtitle="or drop PPTX/PPT file here"
+          title={t('tool.powerpoint.uploadTitle')}
+          subtitle={t('tool.powerpoint.uploadSubtitle')}
         />
       )}
 
       {step === 'processing' && (
         <ProcessingState
-          title="Converting presentation..."
-          description="Extracting slides and converting to PDF pages."
+          title={t('tool.powerpoint.processingTitle')}
+          description={t('tool.powerpoint.processingDescription')}
         />
       )}
 
@@ -88,21 +87,21 @@ export default function PowerpointToPdf() {
             <Presentation className="w-10 h-10 text-green-600" />
           </div>
           <div className="text-center">
-            <h3 className="text-xl font-semibold text-[var(--text)]">Conversion Successful!</h3>
-            <p className="text-[var(--text-3)] mt-2">Your presentation has been converted to PDF.</p>
-            <p className="text-sm text-[var(--text-3)] mt-1">Each slide is now a PDF page.</p>
+            <h3 className="text-xl font-semibold text-[var(--text)]">{t('tool.common.conversionSuccess')}</h3>
+            <p className="text-[var(--text-3)] mt-2">{t('tool.powerpoint.successDescription')}</p>
+            <p className="text-sm text-[var(--text-3)] mt-1">{t('tool.powerpoint.successHint')}</p>
           </div>
           <button
             onClick={handleDownload}
             className="px-8 py-4 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors"
           >
-            Download PDF
+            {t('tool.common.downloadPdf')}
           </button>
           <button
             onClick={reset}
             className="text-blue-600 hover:text-blue-700 font-medium"
           >
-            Convert Another Presentation
+            {t('tool.powerpoint.again')}
           </button>
         </div>
       )}
@@ -113,14 +112,14 @@ export default function PowerpointToPdf() {
             <AlertCircle className="w-10 h-10 text-red-600" />
           </div>
           <div className="text-center max-w-md">
-            <h3 className="text-xl font-semibold text-[var(--text)]">Conversion Failed</h3>
+            <h3 className="text-xl font-semibold text-[var(--text)]">{t('tool.common.conversionFailed')}</h3>
             <p className="text-red-500 mt-2">{error}</p>
           </div>
           <button
             onClick={reset}
             className="text-blue-600 hover:text-blue-700 font-medium"
           >
-            Try Again
+            {t('tool.common.tryAgain')}
           </button>
         </div>
       )}

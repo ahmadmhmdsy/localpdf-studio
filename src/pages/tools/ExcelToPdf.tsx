@@ -5,10 +5,12 @@ import FileUploadZone from '../../components/tools/FileUploadZone';
 import ProcessingState from '../../components/tools/ProcessingState';
 import { convertExcelToPdf } from '../../lib/office-excel';
 import { saveAs } from 'file-saver';
+import { useI18n } from '../../i18n/useI18n';
 
 type Step = 'upload' | 'processing' | 'done' | 'error';
 
 export default function ExcelToPdf() {
+  const { t, toolName, toolDescription } = useI18n();
   const [step, setStep] = useState<Step>('upload');
   const [file, setFile] = useState<File | null>(null);
   const [resultData, setResultData] = useState<Uint8Array | null>(null);
@@ -18,7 +20,7 @@ export default function ExcelToPdf() {
     if (files.length === 1) {
       const selectedFile = files[0];
       if (!selectedFile.name.match(/\.(xlsx|xls|csv)$/i)) {
-        setError('Please select an Excel file (.xlsx, .xls) or CSV');
+        setError(t('tool.excel.invalidFile'));
         setStep('error');
         return;
       }
@@ -36,7 +38,7 @@ export default function ExcelToPdf() {
       setResultData(result);
       setStep('done');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to convert Excel to PDF');
+      setError(err instanceof Error ? err.message : t('tool.excel.error'));
       setStep('error');
     }
   };
@@ -57,29 +59,26 @@ export default function ExcelToPdf() {
   };
 
   return (
-    <ToolLayout
-      title="EXCEL to PDF"
-      description="Convert XLSX spreadsheets to PDF with basic table layout."
-    >
+    <ToolLayout title={toolName('excel-to-pdf')} description={toolDescription('excel-to-pdf')}>
       {step === 'upload' && (
         <FileUploadZone
           
-          ariaLabel="Select Excel file" onFilesSelected={handleFilesSelected}
+          ariaLabel={t('tool.excel.uploadAria')} onFilesSelected={handleFilesSelected}
           accept={{
             'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet': ['.xlsx'],
             'application/vnd.ms-excel': ['.xls'],
             'text/csv': ['.csv'],
           }}
           maxFiles={1}
-          title="Select an Excel file"
-          subtitle="or drop XLSX/XLS/CSV file here"
+          title={t('tool.excel.uploadTitle')}
+          subtitle={t('tool.excel.uploadSubtitle')}
         />
       )}
 
       {step === 'processing' && (
         <ProcessingState
-          title="Converting to PDF..."
-          description="Processing spreadsheets and creating PDF tables."
+          title={t('tool.common.convertingToPdf')}
+          description={t('tool.excel.processingDescription')}
         />
       )}
 
@@ -89,20 +88,20 @@ export default function ExcelToPdf() {
             <FileSpreadsheet className="w-10 h-10 text-green-600" />
           </div>
           <div className="text-center">
-            <h3 className="text-xl font-semibold text-[var(--text)]">Conversion Successful!</h3>
-            <p className="text-[var(--text-3)] mt-2">Your Excel spreadsheet has been converted to PDF.</p>
+            <h3 className="text-xl font-semibold text-[var(--text)]">{t('tool.common.conversionSuccess')}</h3>
+            <p className="text-[var(--text-3)] mt-2">{t('tool.excel.successDescription')}</p>
           </div>
           <button
             onClick={handleDownload}
             className="px-8 py-4 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors"
           >
-            Download PDF
+            {t('tool.common.downloadPdf')}
           </button>
           <button
             onClick={reset}
             className="text-blue-600 hover:text-blue-700 font-medium"
           >
-            Convert Another File
+            {t('tool.excel.again')}
           </button>
         </div>
       )}
@@ -113,14 +112,14 @@ export default function ExcelToPdf() {
             <AlertCircle className="w-10 h-10 text-red-600" />
           </div>
           <div className="text-center max-w-md">
-            <h3 className="text-xl font-semibold text-[var(--text)]">Conversion Failed</h3>
+            <h3 className="text-xl font-semibold text-[var(--text)]">{t('tool.common.conversionFailed')}</h3>
             <p className="text-red-500 mt-2">{error}</p>
           </div>
           <button
             onClick={reset}
             className="text-blue-600 hover:text-blue-700 font-medium"
           >
-            Try Again
+            {t('tool.common.tryAgain')}
           </button>
         </div>
       )}
