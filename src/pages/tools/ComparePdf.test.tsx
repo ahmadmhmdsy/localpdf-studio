@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { useToolsStore } from '../../store/toolsStore';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import ComparePdf from './ComparePdf';
@@ -19,6 +20,7 @@ describe('ComparePdf', () => {
   let user: ReturnType<typeof userEvent.setup>;
 
   beforeEach(() => {
+    useToolsStore.setState({ locale: 'en' });
     user = userEvent.setup();
     vi.clearAllMocks();
   });
@@ -45,5 +47,11 @@ describe('ComparePdf', () => {
     await waitFor(() => {
       expect(screen.getByText(/side-by-side comparison/i)).toBeInTheDocument();
     });
+  });
+
+  it('renders the page in Arabic when that locale is active', () => {
+    useToolsStore.setState({ locale: 'ar' });
+    renderWithProviders(<ComparePdf />);
+    expect(screen.getByText('اختر ملفي PDF')).toBeInTheDocument();
   });
 });

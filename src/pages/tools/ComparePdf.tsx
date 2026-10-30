@@ -6,10 +6,12 @@ import ProcessingState from '../../components/tools/ProcessingState';
 import { getPdfPageThumbnails } from '../../lib/image';
 import { logError } from '../../lib/logger';
 import { useToast } from '../../contexts/ToastContext';
+import { useI18n } from '../../i18n/useI18n';
 
 type Step = 'upload' | 'loading_thumbnails' | 'compare';
 
 export default function ComparePdf() {
+  const { t, toolName, toolDescription } = useI18n();
   const [step, setStep] = useState<Step>('upload');
   const [file1, setFile1] = useState<File | null>(null);
   const [file2, setFile2] = useState<File | null>(null);
@@ -42,14 +44,14 @@ export default function ComparePdf() {
       } catch (error) {
         logError("Error loading thumbnails:", error);
         showToast({
-          message: "Failed to load PDF previews. Please try other files.",
+          message: t('tool.compare.previewFailed'),
           type: 'error',
           duration: 5000,
         });
         setStep('upload');
       }
     } else {
-      showToast({ message: "Please select exactly 2 PDF files to compare.", type: 'warning' });
+      showToast({ message: t('tool.compare.selectTwo'), type: 'warning' });
     }
   };
 
@@ -78,24 +80,21 @@ export default function ComparePdf() {
   };
 
   return (
-    <ToolLayout 
-      title="Compare PDF" 
-      description="Show a side-by-side document comparison and easily spot changes."
-    >
+    <ToolLayout title={toolName('compare-pdf')} description={toolDescription('compare-pdf')}>
       {step === 'upload' && (
         <FileUploadZone 
           
-          ariaLabel="Select PDF files" onFilesSelected={handleFilesSelected} 
-          title="Select 2 PDF files"
-          subtitle="or drop PDFs here"
+          ariaLabel={t('tool.common.selectPdfFiles')} onFilesSelected={handleFilesSelected} 
+          title={t('tool.compare.uploadTitle')}
+          subtitle={t('tool.common.dropPdfs')}
           maxFiles={2}
         />
       )}
 
       {step === 'loading_thumbnails' && (
         <ProcessingState 
-          title="Loading pages..." 
-          description="Please wait while we generate previews of your documents."
+          title={t('tool.common.loadingPages')} 
+          description={t('tool.compare.loadingDescription')}
         />
       )}
 
@@ -107,8 +106,8 @@ export default function ComparePdf() {
                 <GitCompare size={20} className="text-blue-600" />
               </div>
               <div>
-                <h3 className="font-semibold text-[var(--text)]">Side-by-Side Comparison</h3>
-                <p className="text-xs text-[var(--text-3)]">Comparing {file1.name} and {file2.name}</p>
+                <h3 className="font-semibold text-[var(--text)]">{t('tool.compare.heading')}</h3>
+                <p className="text-xs text-[var(--text-3)]">{t('tool.compare.comparing', { first: file1.name, second: file2.name })}</p>
               </div>
             </div>
             
@@ -120,7 +119,7 @@ export default function ComparePdf() {
                   onChange={(e) => setSyncScroll(e.target.checked)}
                   className="w-4 h-4 text-blue-600 rounded border-[var(--border)] focus:ring-blue-500"
                 />
-                <span className="text-sm font-medium text-[var(--text-2)]">Sync Pages</span>
+                <span className="text-sm font-medium text-[var(--text-2)]">{t('tool.compare.syncPages')}</span>
               </label>
               
               <button 
@@ -128,7 +127,7 @@ export default function ComparePdf() {
                 className="text-sm font-medium text-[var(--text-3)] hover:text-red-500 transition-colors flex items-center gap-1"
               >
                 <X size={16} />
-                Close Comparison
+                {t('tool.compare.close')}
               </button>
             </div>
           </div>
@@ -145,9 +144,9 @@ export default function ComparePdf() {
                     onClick={() => handlePageChange1(Math.max(0, currentPage1 - 1))}
                     disabled={currentPage1 === 0}
                     className="p-1 text-[var(--text-2)] hover:text-blue-600 disabled:text-[var(--text-3)] transition-colors"
-                    aria-label="Previous page document 1"
+                    aria-label={t('tool.compare.previousPage', { doc: 1 })}
                   >
-                    <ChevronLeft size={18} />
+                    <ChevronLeft size={18} className="rtl:rotate-180" />
                   </button>
                   <span className="text-xs font-medium text-[var(--text-3)] w-16 text-center">
                     {currentPage1 + 1} / {thumbnails1.length}
@@ -156,16 +155,16 @@ export default function ComparePdf() {
                     onClick={() => handlePageChange1(Math.min(thumbnails1.length - 1, currentPage1 + 1))}
                     disabled={currentPage1 === thumbnails1.length - 1}
                     className="p-1 text-[var(--text-2)] hover:text-blue-600 disabled:text-[var(--text-3)] transition-colors"
-                    aria-label="Next page document 1"
+                    aria-label={t('tool.compare.nextPage', { doc: 1 })}
                   >
-                    <ChevronRight size={18} />
+                    <ChevronRight size={18} className="rtl:rotate-180" />
                   </button>
                 </div>
               </div>
               <div className="flex-1 overflow-auto p-4 bg-[var(--surface-2)] flex justify-center">
                 <img 
                   src={thumbnails1[currentPage1]} 
-                  alt={`Doc 1 Page ${currentPage1 + 1}`} 
+                  alt={t('tool.compare.pageAlt', { doc: 1, page: currentPage1 + 1 })} 
                   className="max-w-full h-auto object-contain shadow-md bg-[var(--surface)]"
                 />
               </div>
@@ -182,9 +181,9 @@ export default function ComparePdf() {
                     onClick={() => handlePageChange2(Math.max(0, currentPage2 - 1))}
                     disabled={currentPage2 === 0}
                     className="p-1 text-[var(--text-2)] hover:text-blue-600 disabled:text-[var(--text-3)] transition-colors"
-                    aria-label="Previous page document 2"
+                    aria-label={t('tool.compare.previousPage', { doc: 2 })}
                   >
-                    <ChevronLeft size={18} />
+                    <ChevronLeft size={18} className="rtl:rotate-180" />
                   </button>
                   <span className="text-xs font-medium text-[var(--text-3)] w-16 text-center">
                     {currentPage2 + 1} / {thumbnails2.length}
@@ -193,16 +192,16 @@ export default function ComparePdf() {
                     onClick={() => handlePageChange2(Math.min(thumbnails2.length - 1, currentPage2 + 1))}
                     disabled={currentPage2 === thumbnails2.length - 1}
                     className="p-1 text-[var(--text-2)] hover:text-blue-600 disabled:text-[var(--text-3)] transition-colors"
-                    aria-label="Next page document 2"
+                    aria-label={t('tool.compare.nextPage', { doc: 2 })}
                   >
-                    <ChevronRight size={18} />
+                    <ChevronRight size={18} className="rtl:rotate-180" />
                   </button>
                 </div>
               </div>
               <div className="flex-1 overflow-auto p-4 bg-[var(--surface-2)] flex justify-center">
                 <img 
                   src={thumbnails2[currentPage2]} 
-                  alt={`Doc 2 Page ${currentPage2 + 1}`} 
+                  alt={t('tool.compare.pageAlt', { doc: 2, page: currentPage2 + 1 })} 
                   className="max-w-full h-auto object-contain shadow-md bg-[var(--surface)]"
                 />
               </div>

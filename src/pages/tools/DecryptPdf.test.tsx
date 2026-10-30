@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { useToolsStore } from '../../store/toolsStore';
 import { screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import DecryptPdf from './DecryptPdf';
@@ -13,6 +14,7 @@ describe('DecryptPdf', () => {
   let user: ReturnType<typeof userEvent.setup>;
 
   beforeEach(() => {
+    useToolsStore.setState({ locale: 'en' });
     user = userEvent.setup();
     vi.clearAllMocks();
   });
@@ -55,5 +57,11 @@ describe('DecryptPdf', () => {
     const passwordInput = screen.getByPlaceholderText(/enter password/i);
     await user.type(passwordInput, 'secret123');
     expect(passwordInput).toHaveValue('secret123');
+  });
+
+  it('renders the page in Arabic when that locale is active', () => {
+    useToolsStore.setState({ locale: 'ar' });
+    renderWithProviders(<DecryptPdf />);
+    expect(screen.getByText('اختر ملف PDF مشفرًا')).toBeInTheDocument();
   });
 });

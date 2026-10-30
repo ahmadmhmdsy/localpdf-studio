@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { useToolsStore } from '../../store/toolsStore';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import ProtectPdf from './ProtectPdf';
@@ -15,6 +16,7 @@ describe('ProtectPdf', () => {
   let user: ReturnType<typeof userEvent.setup>;
 
   beforeEach(() => {
+    useToolsStore.setState({ locale: 'en' });
     user = userEvent.setup();
     vi.clearAllMocks();
   });
@@ -53,5 +55,11 @@ describe('ProtectPdf', () => {
     await waitFor(() => {
       expect(screen.getByText(/permissions/i)).toBeInTheDocument();
     });
+  });
+
+  it('renders the page in Arabic when that locale is active', () => {
+    useToolsStore.setState({ locale: 'ar' });
+    renderWithProviders(<ProtectPdf />);
+    expect(screen.getByText('اختر ملف PDF لحمايته')).toBeInTheDocument();
   });
 });

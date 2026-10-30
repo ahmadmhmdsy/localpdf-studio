@@ -5,10 +5,12 @@ import FileUploadZone from '../../components/tools/FileUploadZone';
 import ProcessingState from '../../components/tools/ProcessingState';
 import { unlockPdf } from '../../lib/encryption';
 import { saveAs } from 'file-saver';
+import { useI18n } from '../../i18n/useI18n';
 
 type Step = 'upload' | 'password' | 'processing' | 'done' | 'error';
 
 export default function DecryptPdf() {
+  const { t, toolName } = useI18n();
   const [step, setStep] = useState<Step>('upload');
   const [file, setFile] = useState<File | null>(null);
   const [password, setPassword] = useState('');
@@ -34,7 +36,7 @@ export default function DecryptPdf() {
       setResultData(result);
       setStep('done');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to decrypt PDF');
+      setError(err instanceof Error ? err.message : t('tool.decrypt.failedFallback'));
       setStep('error');
     }
   };
@@ -56,18 +58,15 @@ export default function DecryptPdf() {
   };
 
   return (
-    <ToolLayout
-      title="Decrypt PDF"
-      description="Remove the user/owner password from a PDF, leaving the file unprotected. You must already know the password."
-    >
+    <ToolLayout title={toolName('decrypt-pdf')} description={t('tool.decrypt.description')}>
       {step === 'upload' && (
         <FileUploadZone
 
-          ariaLabel="Select encrypted PDF" onFilesSelected={handleFilesSelected}
+          ariaLabel={t('tool.decrypt.uploadAria')} onFilesSelected={handleFilesSelected}
           accept={{ 'application/pdf': ['.pdf'] }}
           maxFiles={1}
-          title="Select an encrypted PDF"
-          subtitle="or drop PDF file here"
+          title={t('tool.decrypt.uploadTitle')}
+          subtitle={t('tool.common.dropPdfFile')}
         />
       )}
 
@@ -83,18 +82,18 @@ export default function DecryptPdf() {
 
           <div className="w-full max-w-md">
             <label className="block text-sm font-medium text-[var(--text-2)] mb-2">
-              Enter PDF Password
+              {t('tool.decrypt.passwordLabel')}
             </label>
             <div className="relative">
               <input
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter password..."
+                placeholder={t('tool.decrypt.passwordPlaceholder')}
                 className="w-full px-4 py-3 border border-[var(--border)] rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none"
                 onKeyDown={(e) => e.key === 'Enter' && handleDecrypt()}
               />
-              <Eye className="absolute right-3 top-3.5 w-5 h-5 text-[var(--text-3)]" />
+              <Eye className="absolute end-3 top-3.5 w-5 h-5 text-[var(--text-3)]" />
             </div>
           </div>
 
@@ -103,7 +102,7 @@ export default function DecryptPdf() {
               onClick={reset}
               className="px-6 py-3 text-[var(--text-2)] hover:text-[var(--text)] font-medium"
             >
-              Cancel
+              {t('tool.common.cancel')}
             </button>
             <button
               onClick={handleDecrypt}
@@ -111,7 +110,7 @@ export default function DecryptPdf() {
               className="flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
             >
               <KeyRound className="w-5 h-5" />
-              Decrypt PDF
+              {t('tool.decrypt.submit')}
             </button>
           </div>
         </div>
@@ -119,8 +118,8 @@ export default function DecryptPdf() {
 
       {step === 'processing' && (
         <ProcessingState
-          title="Decrypting PDF..."
-          description="Removing the password from your file."
+          title={t('tool.decrypt.processingTitle')}
+          description={t('tool.decrypt.processingDescription')}
         />
       )}
 
@@ -132,14 +131,14 @@ export default function DecryptPdf() {
                 <KeyRound className="w-10 h-10 text-green-600" />
               </div>
               <div className="text-center">
-                <h3 className="text-xl font-semibold text-[var(--text)]">PDF decrypted</h3>
-                <p className="text-[var(--text-3)] mt-2">Your PDF is no longer password-protected.</p>
+                <h3 className="text-xl font-semibold text-[var(--text)]">{t('tool.decrypt.successTitle')}</h3>
+                <p className="text-[var(--text-3)] mt-2">{t('tool.decrypt.successDescription')}</p>
               </div>
               <button
                 onClick={handleDownload}
                 className="px-8 py-4 bg-blue-600 text-white rounded-xl font-medium hover:bg-blue-700 transition-colors"
               >
-                Download Decrypted PDF
+                {t('tool.decrypt.download')}
               </button>
             </>
           ) : (
@@ -148,7 +147,7 @@ export default function DecryptPdf() {
                 <KeyRound className="w-10 h-10 text-red-600" />
               </div>
               <div className="text-center">
-                <h3 className="text-xl font-semibold text-[var(--text)]">Decryption Failed</h3>
+                <h3 className="text-xl font-semibold text-[var(--text)]">{t('tool.decrypt.failedTitle')}</h3>
                 <p className="text-red-500 mt-2">{error}</p>
               </div>
             </>
@@ -157,7 +156,7 @@ export default function DecryptPdf() {
             onClick={reset}
             className="text-blue-600 hover:text-blue-700 font-medium"
           >
-            Decrypt Another PDF
+            {t('tool.decrypt.another')}
           </button>
         </div>
       )}

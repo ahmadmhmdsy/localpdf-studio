@@ -1,4 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { useToolsStore } from '../../store/toolsStore';
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import SignPdf from './SignPdf';
@@ -30,6 +31,7 @@ describe('SignPdf', () => {
   let user: ReturnType<typeof userEvent.setup>;
 
   beforeEach(() => {
+    useToolsStore.setState({ locale: 'en' });
     user = userEvent.setup();
     vi.clearAllMocks();
   });
@@ -74,5 +76,11 @@ describe('SignPdf', () => {
       ).toBeInTheDocument();
       expect(screen.getByText(/create signature/i)).toBeInTheDocument();
     });
+  });
+
+  it('renders the page in Arabic when that locale is active', () => {
+    useToolsStore.setState({ locale: 'ar' });
+    renderWithProviders(<SignPdf />);
+    expect(screen.getByText('اختر ملف PDF')).toBeInTheDocument();
   });
 });
