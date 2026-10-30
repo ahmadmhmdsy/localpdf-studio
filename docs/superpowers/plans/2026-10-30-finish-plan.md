@@ -41,7 +41,7 @@ v1 is ready when every line below is PASS. Phases C, D and E come after v1 unles
 | 6 | B8: skin and visual bugs | Geometry tests per skin pass (`e2e/skins.spec.ts`) |
 | 7 | Dev dependency upgrades (backlog #28), without adding direct packages | `npm audit` count drops from 32 to 15, all checks pass |
 | 8 | A6.1: pdf-to-pptx theme part and package test | Unit test passes; the tool stays `disabled` |
-| 9 | Verification pass on generated files | Table below filled in |
+| 9 | Verification pass on generated files | Table below filled in: done, 23 of 23 enabled tools pass on generated files |
 
 ### Stage 2: waits on the owner
 
@@ -77,6 +77,32 @@ B2–B7, then Phases C, D and E, in roadmap order.
 
 Filled in during stage 1, order 9, and again on real files in stage 3.
 
+Generated-file run: production build of `eeb5036` in Playwright Chromium, driving each tool through upload, action and download, then opening the output and checking it. It proves the flows work in a real browser. It is not real-file evidence, so it closes no release criterion. Local Node was 24.18, not the pinned 22.14.
+
+During the long runs Chromium reported "Page crashed" twice (add-page-numbers, pdf-to-excel). Neither repeated on rerun, both tools then passed, and the cause is unknown: backlog #36.
+
 | Tool | Generated file | Real file | Notes |
 |---|---|---|---|
-| — | — | — | Not started |
+| merge-pdf | PASS | NOT VERIFIED | 5 pages, order and text kept |
+| split-pdf | PASS | NOT VERIFIED | Range 1-2 gives 2 pages |
+| remove-pages | PASS | NOT VERIFIED | Page 2 gone |
+| extract-pages | PASS | NOT VERIFIED | Chosen pages extracted |
+| organize-pdf | PASS | NOT VERIFIED | First page removed |
+| repair-pdf | PASS | NOT VERIFIED | Healthy input only: it round-trips; a damaged file was not tried |
+| ocr-pdf | PASS | NOT VERIFIED | Text-layer input: 3 searchable pages. Image-only input with no text layer: found "Photo fixture". One line of clean rendered text, not a scan, so accuracy is not proven |
+| jpg-to-pdf | PASS | NOT VERIFIED | 1 page |
+| html-to-pdf | PASS | NOT VERIFIED | 1 page, no text layer: raster, as its limitation says |
+| word-to-pdf | PASS | NOT VERIFIED | Text carried |
+| excel-to-pdf | PASS | NOT VERIFIED | Cells carried |
+| powerpoint-to-pdf | PASS | NOT VERIFIED | Slide text carried |
+| pdf-to-jpg | PASS | NOT VERIFIED | Zip of 3 JPEGs |
+| pdf-to-pdfa | PASS | NOT VERIFIED | 3 pages with the pdfaid marker; not conformant, as its limitation says |
+| pdf-to-word | PASS | NOT VERIFIED | The .docx carries the text; not opened in Word |
+| pdf-to-excel | PASS | NOT VERIFIED | The .xlsx carries the text; not opened in Excel |
+| rotate-pdf | PASS | NOT VERIFIED | Rotation is 90 |
+| add-page-numbers | PASS | NOT VERIFIED | Numbers added |
+| add-watermark | PASS | NOT VERIFIED | Watermark text on the page |
+| crop-pdf | PASS | NOT VERIFIED | Crop box 489.6 x 633.6, media box 612 x 792 |
+| edit-pdf | PASS | NOT VERIFIED | Added text on the page |
+| sign-pdf | PASS | NOT VERIFIED | 3 pages. Output grew from 1652 to 3202 bytes, so the signature is inferred from size, not inspected |
+| compare-pdf | PASS | NOT VERIFIED | 2 rendered views; it writes no output file |
