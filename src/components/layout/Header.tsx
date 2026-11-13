@@ -45,13 +45,13 @@ export default function Header() {
 
   return (
     <>
-      <header className="fixed top-4 left-1/2 -translate-x-1/2 z-50 mt-6 mx-auto w-max max-w-[calc(100vw-2rem)] rounded-full backdrop-blur-xl bg-[var(--surface)]/10 border border-white/20 shadow-2xl">
+      <header className="site-header fixed top-4 left-1/2 -translate-x-1/2 z-50 mt-6 mx-auto w-max max-w-[calc(100vw-2rem)] rounded-full backdrop-blur-xl bg-[var(--surface)]/10 border border-white/20 shadow-2xl">
         <nav className="flex items-center gap-5 px-6 py-3">
           <Link to="/" className="flex items-center gap-2.5">
             <div className="flex h-9 w-9 items-center justify-center rounded-lg" style={{ background: 'var(--accent)' }}>
               <FileText size={18} className="text-white" />
             </div>
-            <span className="text-lg font-bold tracking-tight hidden sm:inline" style={{ color: 'var(--text)', fontFamily: 'sans-serif' }}>
+            <span className="text-lg font-bold tracking-tight hidden sm:inline" style={{ color: 'var(--text)', fontFamily: 'var(--font-display, sans-serif)' }}>
               {t('shell.brand')}
             </span>
           </Link>
@@ -119,7 +119,7 @@ export default function Header() {
           aria-label={t('shell.nav.site')}
         >
           <div className="flex items-center justify-between px-6 py-4 border-b" style={{ borderColor: 'var(--border)' }}>
-            <span className="text-base font-bold tracking-tight" style={{ fontFamily: 'sans-serif' }}>
+            <span className="text-base font-bold tracking-tight" style={{ fontFamily: 'var(--font-display, sans-serif)' }}>
               {t('shell.brand')}
             </span>
             <button

@@ -1,7 +1,7 @@
 import { expect, test, type Locator, type Page } from '@playwright/test';
 import { PDFDocument, rgb } from 'pdf-lib';
 
-const SKINS = ['glass', 'bento'] as const;
+const SKINS = ['studio', 'glass', 'bento'] as const;
 type Skin = (typeof SKINS)[number];
 
 const DESKTOP = { width: 1440, height: 900 };
@@ -81,6 +81,27 @@ test('the glass editor toolbar sits below the header', async ({ page }) => {
   await seedPreferences(page, 'glass');
   await openEditor(page, 'glass');
 
+  const header = await box(page.locator('header').first());
+  const toolbar = await box(page.getByRole('button', { name: 'Export Page' }));
+  expect(toolbar.y).toBeGreaterThanOrEqual(header.y + header.height);
+  const footer = await box(page.locator('footer').first());
+  expect(footer.y).toBeLessThanOrEqual(DESKTOP.height);
+});
+
+test('the studio top bar sits above the page content and the editor fits', async ({ page }) => {
+  await page.setViewportSize(DESKTOP);
+  await seedPreferences(page, 'studio');
+
+  for (const path of ['/', '/tools/merge-pdf', '/limitations']) {
+    await open(page, path, 'studio');
+    const header = await box(page.locator('header').first());
+    expect(header.x, path).toBe(0);
+    expect(header.width, path).toBe(DESKTOP.width);
+    const heading = await box(page.locator('main h1').first());
+    expect(heading.y, path).toBeGreaterThanOrEqual(header.y + header.height);
+  }
+
+  await openEditor(page, 'studio');
   const header = await box(page.locator('header').first());
   const toolbar = await box(page.getByRole('button', { name: 'Export Page' }));
   expect(toolbar.y).toBeGreaterThanOrEqual(header.y + header.height);

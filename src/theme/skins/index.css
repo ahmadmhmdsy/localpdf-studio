@@ -1,4 +1,5 @@
 /* Theme barrel — imported once from src/index.css.
    Add a new entry here when adding a new skin. */
+@import "./studio.css";
 @import "./bento.css";
 @import "./picker.css";

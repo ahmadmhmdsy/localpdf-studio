@@ -7,6 +7,28 @@ import type { SkinDefinition, SkinId } from './types';
  */
 export const SKINS: readonly SkinDefinition[] = [
   {
+    id: 'studio',
+    label: 'Studio',
+    hint: 'Flat top bar · mint and forest · default',
+    description:
+      'The round-3 hybrid design (docs/design/round3.md): a flat sticky top bar, mint paper and forest green surfaces with a vermilion signal colour, Bricolage Grotesque and IBM Plex Sans Arabic, self-hosted.',
+    order: 5,
+    defaultTheme: 'light',
+    layout: 'top-bar',
+    ambientEffects: false,
+    accent: {
+      primary: '#c2361b',
+      secondary: '#113a32',
+      tertiary: '#bfe3d2',
+    },
+    radii: {
+      sm: '6px',
+      md: '10px',
+      lg: '14px',
+      xl: '18px',
+    },
+  },
+  {
     id: 'glass',
     label: 'Glassmorphism',
     hint: 'Floating pill · dark mode by default',
@@ -51,6 +73,9 @@ export const SKINS: readonly SkinDefinition[] = [
     },
   },
 ];
+
+/** Skin for new visitors and for unknown persisted values. */
+export const DEFAULT_SKIN: SkinId = 'studio';
 
 const SKINS_BY_ID: Record<SkinId, SkinDefinition> = SKINS.reduce(
   (acc, s) => {

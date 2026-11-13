@@ -15,14 +15,14 @@
  * `useSkin` hook (or `SKINS` registry) — never hardcode labels or hints.
  */
 
-export type SkinId = 'glass' | 'bento';
+export type SkinId = 'studio' | 'glass' | 'bento';
 
 /**
  * Layout strategy — controls which chrome the app renders around the route
  * outlet. Adding a new value means you also need to teach `Layout.tsx` how
  * to render it.
  */
-export type SkinLayout = 'floating-header' | 'sidebar';
+export type SkinLayout = 'top-bar' | 'floating-header' | 'sidebar';
 
 export interface SkinAccent {
   /** Primary accent (button color, link color, focus ring). */

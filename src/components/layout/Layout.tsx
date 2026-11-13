@@ -23,10 +23,30 @@ export default function Layout() {
   }, [darkMode]);
 
   useEffect(() => {
-    // Default skin is 'glass'; on first render before hydration we still set
+    // Default skin is DEFAULT_SKIN; on first render before hydration we still set
     // the attribute so the CSS rules in [data-skin] can engage.
     document.documentElement.setAttribute('data-skin', skin);
   }, [skin]);
+
+  // Studio skin: a flat sticky top bar, no ambient layer, content flows
+  // directly under the bar (no fixed-header offset to overlap content).
+  if (skin === 'studio') {
+    return (
+      <div className="studio-shell relative flex min-h-screen flex-col" style={{ background: 'var(--bg)' }}>
+        <a
+          href="#main-content"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:start-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-primary focus:text-white focus:rounded-md"
+        >
+          {t('shell.skipToContent')}
+        </a>
+        <Header />
+        <main id="main-content" className="flex-1" data-hydrated={hydrated ? 'true' : 'false'}>
+          <Outlet />
+        </main>
+        <Footer />
+      </div>
+    );
+  }
 
   // Bento skin renders a sidebar + flat main area; glass keeps the
   // floating-pill header + ambient orbs and grain.
