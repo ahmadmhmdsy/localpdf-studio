@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { SKINS, getSkin, isKnownSkin, listSkins } from './skins';
+import { DEFAULT_SKIN, SKINS, getSkin, isKnownSkin, listSkins } from './skins';
 import type { SkinDefinition, SkinId, SkinLayout } from './types';
 
 describe('theme registry', () => {
@@ -26,7 +26,7 @@ describe('theme registry', () => {
           expect(s, `skin ${s.id} is missing ${key}`).toHaveProperty(key);
         }
         expect(['light', 'dark']).toContain(s.defaultTheme);
-        expect(['floating-header', 'sidebar']).toContain(s.layout);
+        expect(['top-bar', 'floating-header', 'sidebar']).toContain(s.layout);
         expect(typeof s.ambientEffects).toBe('boolean');
         expect(typeof s.accent.primary).toBe('string');
         expect(typeof s.accent.secondary).toBe('string');
@@ -57,11 +57,19 @@ describe('theme registry', () => {
       expect(s.layout).toBe<SkinLayout>('sidebar');
     });
 
-    it('returns the glassmorphism definition by default', () => {
+    it('returns the glassmorphism definition', () => {
       const s = getSkin('glass');
       expect(s.id).toBe('glass');
       expect(s.layout).toBe('floating-header');
       expect(s.ambientEffects).toBe(true);
+    });
+  });
+
+  describe('DEFAULT_SKIN', () => {
+    it('is the studio skin with the flat top bar', () => {
+      expect(DEFAULT_SKIN).toBe('studio');
+      expect(getSkin(DEFAULT_SKIN).layout).toBe('top-bar');
+      expect(getSkin(DEFAULT_SKIN).ambientEffects).toBe(false);
     });
   });
 

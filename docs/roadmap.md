@@ -168,6 +168,7 @@ Goal: every catalog tool delivers what its name promises, locally, or stays `dis
 | B6 | **Command palette** (Ctrl+K), built from the feature registry, not a second list | None | Keyboard only; screen-reader labels |
 | B7 | **One result screen** for every tool: download, continue with another tool, start over | B4 | The same component on every tool page |
 | B8 | **Skin and visual fixes found during the README work:** the glass skin's header overlaps content at 1440 px; the editor's "Export Page" button is clipped in Bento; the "UNAVAILABLE" badge is misplaced in the glass skin; in editor dark mode the PDF page renders inverted | None | Geometry tests per skin in `e2e/skins.spec.ts` (Playwright). Measured positions replace screenshot baselines, which differ between operating systems. DONE, merged in [PR #24](https://github.com/ahmadmhmdsy/localpdf-studio/pull/24) |
+| B9 | **Studio skin: the round-3 hybrid redesign** ([design/round3.md](design/round3.md)). Mint and forest, a flat top bar, self-hosted OFL fonts (Bricolage Grotesque, IBM Plex Sans Arabic, Noto Kufi Arabic), the default skin. Later slices bring the hybrid home sentence, the session chain and the selection toolbar, building on B3, B4, B6 and B7 | B8 | Text tokens meet WCAG 2.2 AA on every surface in both themes; geometry tests in `e2e/skins.spec.ts`; no new dependency, CSP change or `releaseState` change |
 
 **B1 slices:**
 
@@ -187,6 +188,15 @@ Goal: every catalog tool delivers what its name promises, locally, or stays `dis
 | B1.4b | Editor workspace: toolbar, tool picker, properties panel, canvas, thumbnails, signature modal, shortcuts help. | DONE, merged in [PR #21](https://github.com/ahmadmhmdsy/localpdf-studio/pull/21) |
 | B1.4c | Registry support, limitation and privacy sentences (`src/config/featureRegistry.ts`). | DONE, merged in [PR #22](https://github.com/ahmadmhmdsy/localpdf-studio/pull/22) |
 | B1.5 | Feedback loop: a test or lint guard that fails on new user-visible literals in migrated areas, and an Arabic copy review by the owner (native speaker) before release. | Guard DONE, merged in [PR #23](https://github.com/ahmadmhmdsy/localpdf-studio/pull/23); Arabic copy review WAITING FOR OWNER |
+
+**B9 slices:**
+
+| ID | Scope | Status |
+|---|---|---|
+| B9.1 | Studio skin and shell: tokens for light and dark, fonts in `src/theme/fonts/` (licences alongside), the shared Header flattened to a full-width sticky bar pinned to `--glass-header-offset`, no orbs or grain, `DEFAULT_SKIN = 'studio'` for new visitors and unknown saved values (a saved Glass or Bento choice is kept) | IN REVIEW |
+| B9.2 | Studio home: the "I want to [verb] [these PDFs]" sentence and drop field, verbs and synonyms in the locale files | PLANNED |
+| B9.3 | Tool-page surfaces: replace the glass leftovers (pink upload glow, gradient hero text, monospace stepper) with studio components | PLANNED |
+| B9.4 | Session chain and selection toolbar on the page grid (with B3 and B4) | PLANNED |
 
 ---
 
@@ -265,6 +275,7 @@ Each new tool is added through the feature registry and the catalog, with its li
 | 33 | `TranslatePdf.tsx` fetches its font from a root-absolute path that ignores `BASE_URL`, and pins the Gemini model inline; both belong in config (CLAUDE.md §6a) | AI tools | Before enabling AI tools |
 | 34 | The Limitations page promised that files never leave the device, with no guard on that page; B1.4a rewrote the note, and now that it lives in `en.ts` the release-claims test covers it. Closed in B1.5: the literal guard keeps page copy in the locale files, where the release-claims test reads it | i18n, release copy | DONE (B1.5) |
 | 35 | pdf-to-pptx stretches every page to a 16:9 slide, so portrait pages are distorted, and it uses thumbnail-scale images, so slides look soft; size the slide or picture from the page and render at a higher scale | Office | Before any `disabled` to `limited` proposal |
+| 36 | In the studio skin, tool pages still show glass-skin styling set inside components: the pink glow behind the upload icon, the gradient hero headline on Home, and the monospace step labels | UI | B9.3 |
 
 ## 6.2 Real-file compression check (2026-10-25, generated PDFs, production build)
 

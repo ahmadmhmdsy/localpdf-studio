@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { get, set } from 'idb-keyval';
-import type { SkinId } from '../theme';
+import { DEFAULT_SKIN, isKnownSkin, type SkinId } from '../theme';
 import { DEFAULT_LOCALE, isLocale, type Locale } from '../i18n';
 
 /**
@@ -11,7 +11,7 @@ import { DEFAULT_LOCALE, isLocale, type Locale } from '../i18n';
 const PREF_KEY = 'ui-preferences';
 type PersistedPrefs = {
   darkMode?: boolean;
-  skin?: 'glass' | 'bento';
+  skin?: string;
   locale?: string;
 };
 
@@ -76,7 +76,7 @@ export const useToolsStore = create<ToolsState>((setStore, getStore) => ({
   zoom: 1,
   activeTool: null,
   darkMode: initialPrefs.darkMode ?? false,
-  skin: initialPrefs.skin ?? 'glass',
+  skin: isKnownSkin(initialPrefs.skin) ? initialPrefs.skin : DEFAULT_SKIN,
   locale: DEFAULT_LOCALE,
   hydrated: false,
   propertiesPanelVisible: true,
@@ -115,7 +115,7 @@ export const useToolsStore = create<ToolsState>((setStore, getStore) => ({
     const prefs = await loadPrefs();
     setStore({
       darkMode: prefs.darkMode ?? false,
-      skin: prefs.skin ?? 'glass',
+      skin: isKnownSkin(prefs.skin) ? prefs.skin : DEFAULT_SKIN,
       locale: isLocale(prefs.locale) ? prefs.locale : DEFAULT_LOCALE,
       hydrated: true,
     });

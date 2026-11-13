@@ -39,7 +39,16 @@ describe('Layout', () => {
     expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
   });
 
-  it('sets data-skin="glass" by default and renders Header', async () => {
+  it('sets data-skin="studio" and renders the Header without ambient orbs', async () => {
+    useToolsStore.setState({ skin: 'studio', hydrated: true });
+    const { container } = renderWithProviders(<Layout />);
+    expect(document.documentElement.getAttribute('data-skin')).toBe('studio');
+    expect(screen.getByText('LocalPDF Studio')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Primary')).toBeNull();
+    expect(container.querySelector('.orbs')).toBeNull();
+  });
+
+  it('sets data-skin="glass" and renders Header', async () => {
     useToolsStore.setState({ skin: 'glass', hydrated: true });
     renderWithProviders(<Layout />);
     expect(document.documentElement.getAttribute('data-skin')).toBe('glass');

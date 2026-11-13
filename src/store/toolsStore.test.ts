@@ -102,7 +102,7 @@ describe('toolsStore', () => {
       expect(useToolsStore.getState().locale).toBe('ar');
       expect(set).toHaveBeenCalledWith('ui-preferences', {
         darkMode: false,
-        skin: 'glass',
+        skin: 'studio',
         locale: 'ar',
       });
     });
@@ -117,6 +117,26 @@ describe('toolsStore', () => {
       vi.mocked(get).mockResolvedValueOnce({ locale: 'fr' });
       await useToolsStore.getState().hydrate();
       expect(useToolsStore.getState().locale).toBe('en');
+    });
+  });
+
+  describe('skin', () => {
+    it('defaults to the studio skin', () => {
+      expect(useToolsStore.getState().skin).toBe('studio');
+    });
+
+    it('keeps a persisted skin choice', async () => {
+      vi.mocked(get).mockResolvedValueOnce({ skin: 'glass' });
+      await useToolsStore.getState().hydrate();
+      expect(useToolsStore.getState().skin).toBe('glass');
+      useToolsStore.setState({ skin: 'studio' });
+    });
+
+    it('falls back to the default for an unknown persisted skin', async () => {
+      useToolsStore.setState({ skin: 'bento' });
+      vi.mocked(get).mockResolvedValueOnce({ skin: 'neon' });
+      await useToolsStore.getState().hydrate();
+      expect(useToolsStore.getState().skin).toBe('studio');
     });
   });
 
