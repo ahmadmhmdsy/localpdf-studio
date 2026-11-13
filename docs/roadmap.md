@@ -193,7 +193,7 @@ Goal: every catalog tool delivers what its name promises, locally, or stays `dis
 
 | ID | Scope | Status |
 |---|---|---|
-| B9.1 | Studio skin and shell: tokens for light and dark, fonts in `src/theme/fonts/` (licences alongside), the shared Header flattened to a full-width sticky bar pinned to `--glass-header-offset`, no orbs or grain, `DEFAULT_SKIN = 'studio'` for new visitors and unknown saved values (a saved Glass or Bento choice is kept) | IN REVIEW |
+| B9.1 | Studio skin and shell: tokens for light and dark, fonts in `src/theme/fonts/` (licences alongside), the shared Header flattened to a full-width sticky bar pinned to `--glass-header-offset`, no orbs or grain, `DEFAULT_SKIN = 'studio'` for new visitors and unknown saved values (a saved Glass or Bento choice is kept) | IN REVIEW, [PR #28](https://github.com/ahmadmhmdsy/localpdf-studio/pull/28) |
 | B9.2 | Studio home: the "I want to [verb] [these PDFs]" sentence and drop field, verbs and synonyms in the locale files | PLANNED |
 | B9.3 | Tool-page surfaces: replace the glass leftovers (pink upload glow, gradient hero text, monospace stepper) with studio components | PLANNED |
 | B9.4 | Session chain and selection toolbar on the page grid (with B3 and B4) | PLANNED |
